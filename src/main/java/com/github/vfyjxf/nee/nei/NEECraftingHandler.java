@@ -15,6 +15,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -50,8 +51,27 @@ public class NEECraftingHandler implements IOverlayHandler {
         for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
             List<PositionedStack> inputs = processor.getRecipeInput(recipe, recipeIndex, identifier);
             List<PositionedStack> outputs = processor.getRecipeOutput(recipe, recipeIndex, identifier);
+
+            List<PositionedStack> tInputs = new ArrayList<>();
+
             if (inputs != null && outputs != null) {
+
                 for (PositionedStack positionedStack : inputs) {
+                    ItemStack currentStack = positionedStack.items[0];
+                    boolean find = false;
+                    for (PositionedStack storedStack : tInputs) {
+                        ItemStack StoredStack = storedStack.items[0];
+                        if (StoredStack.isItemEqual(currentStack) && (StoredStack.stackSize + currentStack.stackSize) <= StoredStack.getMaxStackSize()) {
+                            find = true;
+                            storedStack.items[0].stackSize = StoredStack.stackSize + currentStack.stackSize;
+                        }
+                    }
+                    if (!find) {
+                        tInputs.add(positionedStack);
+                    }
+                }
+
+                for (PositionedStack positionedStack : tInputs) {
                     ItemStack currentStack = positionedStack.items[0];
                     for (ItemStack stack : positionedStack.items) {
                         if (Platform.isRecipePrioritized(stack)) {
