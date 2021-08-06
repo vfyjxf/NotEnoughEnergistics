@@ -6,9 +6,22 @@ buildscript {
             name = "github"
             url = "https://github.com/juanmuscaria/maven/raw/master"
         }
+		maven {
+			name = "gt"
+			url = "https://gregtech.overminddl1.com/"
+		}
+		maven {
+			name = "jitpack"
+			url = "https://jitpack.io"
+		}
+		maven {
+			name = "sonatype"
+			url = "https://oss.sonatype.org/content/repositories/snapshots/"
+		}
 	}
 	dependencies {
-		classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-1.4.0-SNAPSHOT'
+		//Defaults to Java 8 & UTF-8 encoding
+		classpath "com.github.GTNH2:ForgeGradle:FG_1.2-SNAPSHOT"
 	}
 }
 
@@ -33,6 +46,29 @@ repositories {
 		name 'chickenbones'
 		url 'http://chickenbones.net/maven'
 	}
+	maven {
+		url = "https://jitpack.io"
+	}
+	maven {
+		name = "ic2"
+		url = "http://maven.ic2.player.to/"
+	}
+	maven {
+		name = "appleCore"
+		url = "http://www.ryanliptak.com/maven/"
+	}
+	ivy {
+		name = "gtnh_download_source"
+		artifactPattern("http://downloads.gtnewhorizons.com/Mods_for_Jenkins/[module]-[revision].[ext]")
+	}
+	maven {
+		name = "UsrvDE/GTNH"
+		url = "http://jenkins.usrv.eu:8081/nexus/content/repositories/releases/"
+	}
+	maven {
+		name = "gt"
+		url = "https://gregtech.overminddl1.com/"
+	}
 	flatDir {
 		dirs 'libs'
 	}
@@ -40,9 +76,12 @@ repositories {
 
 dependencies {
 
-	compile "codechicken:NotEnoughItems:${mc_version}-${nei_version}:universal"
 	compile "codechicken:CodeChickenLib:1.7.10-1.1.3.138:dev"
 	compile "codechicken:CodeChickenCore:1.7.10-1.0.7.+:dev"
+
+	compile("com.github.GTNewHorizons:GT5-Unofficial:experimental-SNAPSHOT:dev") {
+		setChanging(true)
+	}
 
 // https://mvnrepository.com/artifact/com.alibaba/fastjson
 	implementation group: 'com.alibaba', name: 'fastjson', version: '1.2.76'
