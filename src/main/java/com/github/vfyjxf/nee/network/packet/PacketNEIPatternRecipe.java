@@ -7,7 +7,6 @@ import appeng.api.networking.storage.IStorageGrid;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.implementations.ContainerPatternTermEx;
 import appeng.helpers.IContainerCraftingPacket;
-import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -21,15 +20,12 @@ import net.minecraft.nbt.NBTTagCompound;
 import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 
 public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketNEIPatternRecipe, IMessage> {
 
     NBTTagCompound input;
     NBTTagCompound output;
-    private final ItemStack EMPTY = (ItemStack) null;
 
     public PacketNEIPatternRecipe() {
     }
@@ -69,8 +65,9 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
         } else if (container instanceof ContainerPatternTerm) {
             ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(false);
             message.processRecipeHandler((ContainerPatternTerm) container, message);
-        } else if (container instanceof ContainerPatternTermEx){
-
+        } else if (container instanceof ContainerPatternTermEx && message.output != null){
+            ((ContainerPatternTermEx) container).getPatternTerminal().setInverted(false);
+            message.processRecipeHandler((ContainerPatternTermEx) container,message);
         }
         return null;
     }
@@ -152,6 +149,56 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
                 }
 
                 for (int i = 0; i < outputMatrix.getSizeInventory(); i++) {
+                    ItemStack currentItem = null;
+                    if (recipeOutput[i] != null) {
+                        currentItem = recipeOutput[i].copy();
+                    }
+                    outputMatrix.setInventorySlotContents(i, currentItem);
+                }
+                container.onCraftMatrixChanged(craftMatrix);
+            }
+        }
+    }
+
+    private void processRecipeHandler(ContainerPatternTermEx container, PacketNEIPatternRecipe message) {
+
+        ItemStack[] recipeInput = new ItemStack[16];
+        ItemStack[] recipeOutput = new ItemStack[4];
+
+
+        for (int i = 0; i < recipeInput.length; i++) {
+            NBTTagCompound currentStack = (NBTTagCompound) message.input.getTag("#" + i);
+            recipeInput[i] = currentStack == null ? null : ItemStack.loadItemStackFromNBT(currentStack);
+        }
+
+        for (int i = 0; i < recipeOutput.length; i++) {
+            NBTTagCompound currentStack = (NBTTagCompound) message.output.getTag(OUTPUT_KEY + i);
+            recipeOutput[i] = currentStack == null ? null : ItemStack.loadItemStackFromNBT(currentStack);
+        }
+
+        final IContainerCraftingPacket cct = container;
+        final IGridNode node = cct.getNetworkNode();
+
+        if (node != null) {
+            final IGrid grid = node.getGrid();
+            if (grid == null) {
+                return;
+            }
+            final IStorageGrid inv = grid.getCache(IStorageGrid.class);
+            final ISecurityGrid security = grid.getCache(ISecurityGrid.class);
+            final IInventory craftMatrix = cct.getInventoryByName("crafting");
+            final IInventory outputMatrix = cct.getInventoryByName("output");
+
+            if (inv != null && message.input != null && security != null) {
+                for (int i = 0; i < craftMatrix.getSizeInventory(); i++) {
+                    ItemStack currentItem = null;
+                    if (recipeInput[i] != null) {
+                        currentItem = recipeInput[i].copy();
+                    }
+                    craftMatrix.setInventorySlotContents(i, currentItem);
+                }
+
+                for (int i = 0; i < recipeOutput.length; i++) {
                     ItemStack currentItem = null;
                     if (recipeOutput[i] != null) {
                         currentItem = recipeOutput[i].copy();
