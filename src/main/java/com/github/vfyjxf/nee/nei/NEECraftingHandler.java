@@ -84,7 +84,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 for (PositionedStack positionedStack : outputs) {
-                    if (outputIndex >= 3 || positionedStack.item == null) {
+                    if (outputIndex >= 4 || positionedStack.item == null) {
                         continue;
                     }
                     recipeOutputs.setTag(OUTPUT_KEY + outputIndex, positionedStack.item.writeToNBT(new NBTTagCompound()));
