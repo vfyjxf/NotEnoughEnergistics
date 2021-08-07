@@ -20,7 +20,7 @@ public class ICRecipeProcessor implements IRecipeProcessor {
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         for (String ident : getAllOverlayIdentifier()) {
-            if (identifier.equals(ident)) {
+            if (ident.equals(identifier)) {
                 return new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
             }
         }
@@ -30,7 +30,7 @@ public class ICRecipeProcessor implements IRecipeProcessor {
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         for (String ident : getAllOverlayIdentifier()) {
-            if (identifier.equals(ident)) {
+            if (ident.equals(identifier)) {
                 List<PositionedStack> recipeOutputs = new ArrayList<>();
                 recipeOutputs.add(recipe.getResultStack(recipeIndex));
                 recipeOutputs.addAll(recipe.getOtherStacks(recipeIndex));

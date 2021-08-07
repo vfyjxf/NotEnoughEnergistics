@@ -8,9 +8,7 @@ import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 
 public class NEINeeConfig implements IConfigureNEI {
@@ -20,8 +18,10 @@ public class NEINeeConfig implements IConfigureNEI {
 
         RecipeProcessor.init();
 
-        List<String> defaultIdentifiers= Arrays.asList("crafting", "crafting2x2","brewing","smelting","fuel");
-        List<String> identifiers = new ArrayList<>(defaultIdentifiers);
+        Set<String> defaultIdentifiers= new HashSet<>(
+                Arrays.asList("crafting", "crafting2x2","brewing","smelting","fuel",null)
+        );
+        Set<String> identifiers = new HashSet<>(defaultIdentifiers);
 
         for(IRecipeProcessor processor : RecipeProcessor.recipeProcessors){
             identifiers.addAll(processor.getAllOverlayIdentifier());

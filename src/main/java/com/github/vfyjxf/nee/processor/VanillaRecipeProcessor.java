@@ -34,5 +34,4 @@ public class VanillaRecipeProcessor implements IRecipeProcessor {
         return null;
     }
 
-
 }
