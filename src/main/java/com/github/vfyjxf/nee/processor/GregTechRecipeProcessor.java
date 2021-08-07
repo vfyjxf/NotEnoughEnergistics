@@ -2,9 +2,14 @@ package com.github.vfyjxf.nee.processor;
 
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
+import gregtech.api.enums.ItemList;
 import gregtech.api.util.GT_Recipe;
 import gregtech.api.util.GT_Utility;
 import gregtech.nei.GT_NEI_DefaultHandler.FixedPositionedStack;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,7 +54,7 @@ public class GregTechRecipeProcessor implements IRecipeProcessor {
 
         if (gtDefaultClz.isInstance(recipe) || gtAssLineClz.isInstance(recipe)) {
             List<PositionedStack> recipeInputs = new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
-            recipeInputs.removeIf(positionedStack -> GT_Utility.getFluidFromDisplayStack(positionedStack.items[0]) != null || positionedStack.item.stackSize == 0);
+            recipeInputs.removeIf(positionedStack -> getFluidFromDisplayStack(positionedStack.items[0]) != null || positionedStack.item.stackSize == 0);
             return recipeInputs;
         }
         return null;
@@ -60,12 +65,29 @@ public class GregTechRecipeProcessor implements IRecipeProcessor {
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         if (gtDefaultClz.isInstance(recipe) || gtAssLineClz.isInstance(recipe)) {
             List<PositionedStack> recipeOutputs = new ArrayList<>(recipe.getOtherStacks(recipeIndex));
-            recipeOutputs.removeIf(positionedStack -> GT_Utility.getFluidFromDisplayStack(positionedStack.items[0]) != null);
+            recipeOutputs.removeIf(positionedStack -> getFluidFromDisplayStack(positionedStack.items[0]) != null);
             //remove output if it's chance != 1
             recipeOutputs.removeIf(stack -> stack instanceof FixedPositionedStack && !(((FixedPositionedStack) stack).mChance == 10000 || ((FixedPositionedStack) stack).mChance <= 0));
             return recipeOutputs;
         }
         return null;
+    }
+
+    /**
+     * For resolving NoSuchMethodError
+     * Copied from GTNewHorizons/GT5-Unofficial.
+     */
+    public static FluidStack getFluidFromDisplayStack(ItemStack aDisplayStack) {
+        if (!isStackValid(aDisplayStack) ||
+                aDisplayStack.getItem() != ItemList.Display_Fluid.getItem() ||
+                !aDisplayStack.hasTagCompound()) {
+            return null;
+        }
+        Fluid tFluid = FluidRegistry.getFluid(ItemList.Display_Fluid.getItem().getDamage(aDisplayStack));
+        return new FluidStack(tFluid, (int) aDisplayStack.getTagCompound().getLong("mFluidDisplayAmount"));
+    }
+    public static boolean isStackValid(Object aStack) {
+        return (aStack instanceof ItemStack) && ((ItemStack) aStack).getItem() != null && ((ItemStack) aStack).stackSize >= 0;
     }
 
 }

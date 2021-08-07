@@ -12,7 +12,8 @@ public class ICRecipeProcessor implements IRecipeProcessor {
     @Override
     public Set<String> getAllOverlayIdentifier() {
         return new HashSet<>(Arrays.asList(
-                "blastfurnace", "BlockCutter", "centrifuge", "compressor", "extractor", "fluidcanner", "macerator",
+                "blastfurnace", "BlockCutter", "centrifuge", "compressor",
+                "extractor", "fluidcanner", "macerator",
                 "metalformer", "oreWashing", "solidcanner"
         ));
     }
