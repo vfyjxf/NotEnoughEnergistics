@@ -10,6 +10,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - 根据配方自动切换样板终端的模式
 - 如果一个物品输出为概率输出，那么NEE不会将它写入样板终端
 - 在处理模式中合并同类物品
+- 支持增广样板终端(4 -> 16模式)
 
 ## 当前支持的Mod列表：
 
@@ -20,6 +21,8 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - [x]  Avaritia
 - [x]  EnderIO
 - [x]  Forestry(不支持发酵机和蒸馏器，因为它们没有物品输出)
+- [x]  Thaumcraft NEI Plugin
+- [x]  Thaumic Energistics(允许你从NEI转移奥术合成台配方，需要Thaumcraft NEI Plugin)
 
 如果你想要别的Mod的支持，请看[RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) 或者[模组支持处理区](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 

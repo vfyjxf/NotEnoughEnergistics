@@ -34,6 +34,10 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found Forestry, install Forestry support");
             recipeProcessors.add(new ForestryRecipeProcessor());
         }
+        if(Loader.isModLoaded("thaumcraftneiplugin")){
+            NotEnoughEnergistics.logger.info("Found TCNEIPlugin, install TCNEIPlugin support");
+            recipeProcessors.add(new TCNEIPluginRecipeProcessor());
+        }
         if (Loader.isModLoaded("appliedenergistics2")) {
             NotEnoughEnergistics.logger.info("Applied Energistics 2 will not be supported");
         }

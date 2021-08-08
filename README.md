@@ -12,9 +12,10 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 
 ## Features
 
-- Automatically switch the mode of PatternTerminal
+- Automatically switch the mode of PatternTerminal.
 - If an item is a probability output, then nee will not transfer it.
-- Combine like stacks in processing patterns
+- Combine like stacks in processing patterns.
+- Support Processing Pattern Terminal(4 -> 16 mode).
 
 ## Compatible Modslist as followed：
 
@@ -25,6 +26,8 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  Avaritia
 - [x]  EnderIO 
 - [x]  Forestry(Doesn't support Fermenter and Still,because they don't have an item output)
+- [x]  Thaumcraft NEI Plugin
+- [x]  Thaumic Energistics(Allows you transform ArcaneRecipe from NEI, it requires Thaumcraft NEI Plugin)
 
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 

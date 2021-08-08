@@ -27,8 +27,7 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
     NBTTagCompound input;
     NBTTagCompound output;
 
-    public PacketNEIPatternRecipe() {
-    }
+    public PacketNEIPatternRecipe() {}
 
     public PacketNEIPatternRecipe(@Nonnull NBTTagCompound input, NBTTagCompound output) {
         this.input = input;
@@ -119,6 +118,7 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
         for (int i = 0; i < recipeInput.length; i++) {
             NBTTagCompound currentStack = (NBTTagCompound) message.input.getTag("#" + i);
             recipeInput[i] = currentStack == null ? null : ItemStack.loadItemStackFromNBT(currentStack);
+            System.out.println(currentStack);
         }
 
         for (int i = 0; i < recipeOutput.length; i++) {

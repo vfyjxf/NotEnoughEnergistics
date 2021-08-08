@@ -8,6 +8,7 @@ import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import appeng.util.Platform;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
+import com.github.vfyjxf.nee.network.packet.PacketArcaneRecipe;
 import com.github.vfyjxf.nee.network.packet.PacketNEIPatternRecipe;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
@@ -29,8 +30,9 @@ public class NEECraftingHandler implements IOverlayHandler {
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
         if (firstGui instanceof GuiPatternTerm || firstGui instanceof GuiPatternTermEx) {
             NEENetworkHandler.getInstance().sendToServer(packRecipe(recipe, recipeIndex));
+        } else {
+            knowledgeInscriberHandler(firstGui, recipe, recipeIndex);
         }
-
     }
 
     private PacketNEIPatternRecipe packRecipe(IRecipeHandler recipe, int recipeIndex) {
@@ -84,7 +86,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 for (PositionedStack positionedStack : outputs) {
-                    if (outputIndex >= 4 ||positionedStack == null || positionedStack.item == null) {
+                    if (outputIndex >= 4 || positionedStack == null || positionedStack.item == null) {
                         continue;
                     }
                     recipeOutputs.setTag(OUTPUT_KEY + outputIndex, positionedStack.item.writeToNBT(new NBTTagCompound()));
@@ -115,6 +117,72 @@ public class NEECraftingHandler implements IOverlayHandler {
             }
         }
         return new PacketNEIPatternRecipe(recipeInputs, null);
+    }
+
+    private void knowledgeInscriberHandler(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
+        Class<?> knowledgeInscriberClz = null;
+        try {
+            knowledgeInscriberClz = Class.forName("thaumicenergistics.client.gui.GuiKnowledgeInscriber");
+        } catch (ClassNotFoundException e) {
+            return;
+        }
+        if (knowledgeInscriberClz.isInstance(firstGui)) {
+            NEENetworkHandler.getInstance().sendToServer(packetArcaneRecipe(recipe, recipeIndex));
+        }
+    }
+
+    private PacketArcaneRecipe packetArcaneRecipe(IRecipeHandler recipe, int recipeIndex) {
+        final Class<?> itemAspectClz;
+        Class<?> iA = null;
+        try {
+            iA = Class.forName("com.djgiannuzz.thaumcraftneiplugin.items.ItemAspect");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        itemAspectClz = iA;
+        final NBTTagCompound recipeInputs = new NBTTagCompound();
+        List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
+        ingredients.removeIf(positionedStack -> itemAspectClz.isInstance(positionedStack.item.getItem()));
+
+        for (PositionedStack positionedStack : ingredients) {
+
+            if (positionedStack.items != null && positionedStack.items.length > 0) {
+                int slotIndex = getSlotIndex(positionedStack.relx * 100 + positionedStack.rely);
+                final ItemStack[] currentStackList = positionedStack.items;
+                ItemStack stack = positionedStack.item;
+                for (ItemStack currentStack : currentStackList) {
+                    if (Platform.isRecipePrioritized(currentStack)) {
+                        stack = currentStack.copy();
+                    }
+                }
+                recipeInputs.setTag("#" + slotIndex, stack.writeToNBT(new NBTTagCompound()));
+            }
+        }
+        return new PacketArcaneRecipe(recipeInputs);
+    }
+
+    private int getSlotIndex(int xy) {
+        switch (xy) {
+            case 7533:
+                return 1;
+            case 10333:
+                return 2;
+            case 4960:
+                return 3;
+            case 7660:
+                return 4;
+            case 10360:
+                return 5;
+            case 4987:
+                return 6;
+            case 7687:
+                return 7;
+            case 10387:
+                return 8;
+            case 4832:
+            default:
+                return 0;
+        }
     }
 
     private boolean isCraftingTableRecipe(IRecipeHandler recipe) {
