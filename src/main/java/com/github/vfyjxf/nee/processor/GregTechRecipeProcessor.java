@@ -55,9 +55,11 @@ public class GregTechRecipeProcessor implements IRecipeProcessor {
         if (gtDefaultClz.isInstance(recipe) || gtAssLineClz.isInstance(recipe)) {
             List<PositionedStack> recipeInputs = new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
             recipeInputs.removeIf(positionedStack -> getFluidFromDisplayStack(positionedStack.items[0]) != null || positionedStack.item.stackSize == 0);
-            ItemStack specialItem = recipeInputs.get(recipeInputs.size() - 1).items[0];
-            if ((specialItem.isItemEqual(ItemList.Tool_DataStick.get(1)) || specialItem.isItemEqual(ItemList.Tool_DataOrb.get(1)) && (recipe.getRecipeName().equals("gt.recipe.scanner") || recipe.getRecipeName().equals("gt.recipe.fakeAssemblylineProcess"))))
-                recipeInputs.remove(recipeInputs.size() - 1);
+            if (!recipeInputs.isEmpty()) {
+                ItemStack specialItem = recipeInputs.get(recipeInputs.size() - 1).items[0];
+                if ((specialItem.isItemEqual(ItemList.Tool_DataStick.get(1)) || specialItem.isItemEqual(ItemList.Tool_DataOrb.get(1)) && (recipe.getRecipeName().equals("gt.recipe.scanner") || recipe.getRecipeName().equals("gt.recipe.fakeAssemblylineProcess"))))
+                    recipeInputs.remove(recipeInputs.size() - 1);
+            }
             return recipeInputs;
         }
         return null;
