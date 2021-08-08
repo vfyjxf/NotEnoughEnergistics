@@ -10,7 +10,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - 根据配方自动切换样板终端的模式
 - 如果一个物品输出为概率输出，那么NEE不会将它写入样板终端
 - 在处理模式中合并同类物品
-- 支持增广样板终端(4 -> 16模式)
+- 支持增广样板终端(16 -> 4模式)
 
 ## 当前支持的Mod列表：
 

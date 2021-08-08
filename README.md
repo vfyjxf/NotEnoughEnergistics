@@ -15,7 +15,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - Automatically switch the mode of PatternTerminal.
 - If an item is a probability output, then nee will not transfer it.
 - Combine like stacks in processing patterns.
-- Support Processing Pattern Terminal(4 -> 16 mode).
+- Support Processing Pattern Terminal(16 -> 4 mode).
 
 ## Compatible Modslist as followed：
 
