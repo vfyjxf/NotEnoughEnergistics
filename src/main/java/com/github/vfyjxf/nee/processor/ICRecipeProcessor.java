@@ -19,6 +19,11 @@ public class ICRecipeProcessor implements IRecipeProcessor {
     }
 
     @Override
+    public String getRecipeProcessorId() {
+        return "IC2";
+    }
+
+    @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         for (String ident : getAllOverlayIdentifier()) {
             if (ident.equals(identifier)) {

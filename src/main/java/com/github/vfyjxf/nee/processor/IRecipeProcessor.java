@@ -18,6 +18,8 @@ public interface IRecipeProcessor {
         return Collections.emptySet();
     }
 
+    String getRecipeProcessorId();
+
     List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier);
 
     List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier);

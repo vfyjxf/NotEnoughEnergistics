@@ -50,6 +50,11 @@ public class GregTechRecipeProcessor implements IRecipeProcessor {
     }
 
     @Override
+    public String getRecipeProcessorId() {
+        return "GregTech5";
+    }
+
+    @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
 
         if (gtDefaultClz.isInstance(recipe) || gtAssLineClz.isInstance(recipe)) {

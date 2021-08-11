@@ -11,6 +11,11 @@ import java.util.List;
 public class ForestryRecipeProcessor implements IRecipeProcessor {
 
     @Override
+    public String getRecipeProcessorId() {
+        return "Forestry";
+    }
+
+    @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         if (recipe instanceof NEIHandlerBottler) {
 

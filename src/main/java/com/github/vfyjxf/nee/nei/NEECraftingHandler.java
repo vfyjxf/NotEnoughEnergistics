@@ -12,6 +12,7 @@ import com.github.vfyjxf.nee.network.packet.PacketArcaneRecipe;
 import com.github.vfyjxf.nee.network.packet.PacketNEIPatternRecipe;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
+import com.github.vfyjxf.nee.utils.ItemUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -53,7 +54,7 @@ public class NEECraftingHandler implements IOverlayHandler {
         for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
             List<PositionedStack> inputs = processor.getRecipeInput(recipe, recipeIndex, identifier);
             List<PositionedStack> outputs = processor.getRecipeOutput(recipe, recipeIndex, identifier);
-
+            String recipeProcessorId = processor.getRecipeProcessorId();
             List<PositionedStack> tInputs = new ArrayList<>();
 
             if (inputs != null && outputs != null) {
@@ -76,10 +77,13 @@ public class NEECraftingHandler implements IOverlayHandler {
                 for (PositionedStack positionedStack : tInputs) {
                     ItemStack currentStack = positionedStack.items[0];
                     for (ItemStack stack : positionedStack.items) {
-                        if (Platform.isRecipePrioritized(stack)) {
+                        if (Platform.isRecipePrioritized(stack) || ItemUtils.isPreferItems(stack, recipeProcessorId, identifier)) {
                             currentStack = stack.copy();
                             break;
                         }
+                    }
+                    if (ItemUtils.isInBlackList(currentStack, recipeProcessorId, identifier)) {
+                        continue;
                     }
                     recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
                     inputIndex++;
@@ -94,7 +98,6 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
             }
         }
-
         return new PacketNEIPatternRecipe(recipeInputs, recipeOutputs);
     }
 
@@ -109,7 +112,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 final ItemStack[] currentStackList = positionedStack.items;
                 ItemStack stack = positionedStack.items[0];
                 for (ItemStack currentStack : currentStackList) {
-                    if (Platform.isRecipePrioritized(currentStack)) {
+                    if (Platform.isRecipePrioritized(currentStack) || ItemUtils.isPreferItems(currentStack)) {
                         stack = currentStack.copy();
                     }
                 }

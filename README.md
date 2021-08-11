@@ -16,6 +16,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - If an item is a probability output, then nee will not transfer it.
 - Combine like stacks in processing patterns.
 - Support Processing Pattern Terminal(16 -> 4 mode).
+- Allow you item blackList and item  priority list, if item in them, it will not be transferred / transfer it first.(use /nee RecipeProcessor to get RecipeProcessor and identifier in log)
 
 ## Compatible Modslist as followed：
 
@@ -27,16 +28,15 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  EnderIO 
 - [x]  Forestry(Doesn't support Fermenter and Still,because they don't have an item output)
 - [x]  Thaumcraft NEI Plugin
-- [x]  Thaumic Energistics(Allows you transform ArcaneRecipe from NEI, it requires Thaumcraft NEI Plugin)
+- [x]  Thaumic Energistics(Allows you to transfer ArcaneRecipe from NEI to Knowledge Inscriber, it requires Thaumcraft NEI Plugin)
 
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
 ## TODO
 
-- Add item blackList ,if item in the blacklist, it will not be transferred.
-- Add item  priority list, if item in tne priority list, it will be transferred first
-
-~~Combine like stacks in processing patterns.~~
+-[x]  Add item blackList ,if item in the blacklist, it will not be transferred.
+-[x]  Add item  priority list, if item in tne priority list, it will be transferred first.
+-[x]  Combine like stacks in processing patterns.
 
 ## Credits
 Thanks TheRealp455w0rd and his [Just Enough Energistics](https://www.curseforge.com/minecraft/mc-mods/just-enough-energistics-jee)

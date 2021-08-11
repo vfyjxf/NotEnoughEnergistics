@@ -16,6 +16,11 @@ public class EnderIORecipeProcessor implements IRecipeProcessor {
     }
 
     @Override
+    public String getRecipeProcessorId() {
+        return "EnderIO";
+    }
+
+    @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
             for (String ident : getAllOverlayIdentifier()) {
                 if (ident.equals(identifier)) {

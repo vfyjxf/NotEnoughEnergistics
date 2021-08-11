@@ -14,6 +14,11 @@ public class AvaritiaRecipeProcessor implements IRecipeProcessor {
     }
 
     @Override
+    public String getRecipeProcessorId() {
+        return "Avaritia";
+    }
+
+    @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         for (String ident : getAllOverlayIdentifier()) {
             if (ident.equals(identifier)) {

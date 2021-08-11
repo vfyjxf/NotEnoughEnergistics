@@ -74,7 +74,7 @@ public class NEINeeConfig implements IConfigureNEI {
             return;
         }
         identifiers.remove("crafting");
-        identifiers.remove( "crafting2x2");
+        identifiers.remove("crafting2x2");
         //PatternTermEx Support
         for (String ident : identifiers) {
             API.registerGuiOverlay(GuiPatternTermEx.class, ident);

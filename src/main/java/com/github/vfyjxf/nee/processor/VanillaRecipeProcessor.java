@@ -15,6 +15,11 @@ public class VanillaRecipeProcessor implements IRecipeProcessor {
     }
 
     @Override
+    public String getRecipeProcessorId() {
+        return "Vanilla";
+    }
+
+    @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         List<PositionedStack> recipeInputs = new ArrayList<>();
         if ("brewing".equals(identifier) || "smelting".equals(identifier) || "fuel".equals(identifier)) {
