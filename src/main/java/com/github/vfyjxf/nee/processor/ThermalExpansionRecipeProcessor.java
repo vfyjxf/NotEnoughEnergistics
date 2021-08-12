@@ -70,13 +70,16 @@ public class ThermalExpansionRecipeProcessor implements IRecipeProcessor {
                     }
                     if (NEIRecipeBase != null) {
                         Field secondaryOutputField = ReflectionHelper.findField(NEIRecipeBase, "secondaryOutput");
+                        Field secondaryOutputChanceField = ReflectionHelper.findField(NEIRecipeBase, "secondaryOutputChance");
                         PositionedStack secondaryOutput = null;
+                        int secondaryOutputChance = 0;
                         try {
                             secondaryOutput = (PositionedStack) secondaryOutputField.get(((RecipeHandlerBase) recipe).arecipes.get(recipeIndex));
+                            secondaryOutputChance = (int) secondaryOutputChanceField.get(((RecipeHandlerBase) recipe).arecipes.get(recipeIndex));
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         }
-                        if (secondaryOutput != null) {
+                        if (secondaryOutput != null && secondaryOutputChance >= 100) {
                             recipeOutputs.add(secondaryOutput);
                         }
                     }
