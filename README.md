@@ -31,6 +31,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  Thaumcraft NEI Plugin
 - [x]  Thaumic Energistics(Allows you to transfer ArcaneRecipe from NEI to Knowledge Inscriber, it requires Thaumcraft NEI Plugin)
 - [x]  ThermalExpansion
+
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
 ## TODO
