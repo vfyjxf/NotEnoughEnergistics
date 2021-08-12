@@ -24,7 +24,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - [x]  Forestry(不支持发酵机和蒸馏器，因为它们没有物品输出)
 - [x]  Thaumcraft NEI Plugin
 - [x]  Thaumic Energistics(允许你从NEI转移奥术合成台配方到知识记录仪，需要Thaumcraft NEI Plugin)
-
+- [x]  ThermalExpansion
 如果你想要别的Mod的支持，请看[RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) 或者[模组支持处理区](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
 ## TODO

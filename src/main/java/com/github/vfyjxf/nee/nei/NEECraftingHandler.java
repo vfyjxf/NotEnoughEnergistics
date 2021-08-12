@@ -75,7 +75,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 for (PositionedStack positionedStack : tInputs) {
-                    ItemStack currentStack = positionedStack.items[0];
+                    ItemStack currentStack = positionedStack.item;
                     for (ItemStack stack : positionedStack.items) {
                         if (Platform.isRecipePrioritized(stack) || ItemUtils.isPreferItems(stack, recipeProcessorId, identifier)) {
                             currentStack = stack.copy();

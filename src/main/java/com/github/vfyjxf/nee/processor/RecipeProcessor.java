@@ -42,6 +42,10 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found TCNEIPlugin, install TCNEIPlugin support");
             recipeProcessors.add(new TCNEIPluginRecipeProcessor());
         }
+        if (Loader.isModLoaded("ThermalExpansion")) {
+            NotEnoughEnergistics.logger.info("Found ThermalExpansion, install ThermalExpansion support");
+            recipeProcessors.add(new ThermalExpansionRecipeProcessor());
+        }
         if (Loader.isModLoaded("appliedenergistics2")) {
             NotEnoughEnergistics.logger.info("Applied Energistics 2 will not be supported");
         }
