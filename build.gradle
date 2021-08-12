@@ -55,8 +55,6 @@ dependencies {
     compile "codechicken:CodeChickenLib:1.7.10-1.1.3.138:dev"
     compile "codechicken:CodeChickenCore:1.7.10-1.0.7.+:dev"
 
-    runtime "thaumcraft:Thaumcraft:1.7.10-4.2.3.5:dev"
-
 }
 
 processResources {

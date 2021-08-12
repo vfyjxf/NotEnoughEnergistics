@@ -16,7 +16,8 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 
 - [ ]  AppliedEnergistics2(我们将不会支持AE2，因为AE2没有注册对应的OverlayHandler)
 - [x]  Vanilla
-- [x]  GregTech
+- [x]  GregTech5
+- [x]  GregTech6
 - [x]  IndustrialCraft2
 - [x]  Avaritia
 - [x]  EnderIO

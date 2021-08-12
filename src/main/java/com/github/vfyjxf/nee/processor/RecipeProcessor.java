@@ -14,9 +14,13 @@ public class RecipeProcessor {
         NotEnoughEnergistics.logger.info("Install Vanilla Support");
         recipeProcessors.add(new VanillaRecipeProcessor());
 
-        if (Loader.isModLoaded("gregtech")) {
-            NotEnoughEnergistics.logger.info("Found GregTech,install GregTech support");
-            recipeProcessors.add(new GregTechRecipeProcessor());
+        if (Loader.isModLoaded("gregtech") && !Loader.isModLoaded("gregapi")) {
+            NotEnoughEnergistics.logger.info("Found GregTech5,install GregTech5 support");
+            recipeProcessors.add(new GregTech5RecipeProcessor());
+        }
+        if (Loader.isModLoaded("gregapi") && Loader.isModLoaded("gregapi_post")) {
+            NotEnoughEnergistics.logger.info("Found GregTech6,install GregTech6 support");
+            recipeProcessors.add(new GregTech6RecipeProcessor());
         }
         if (Loader.isModLoaded("IC2")) {
             NotEnoughEnergistics.logger.info("Found IC2,install IC2 Support");
@@ -26,15 +30,15 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found Avaritia, install Avaritia support");
             recipeProcessors.add(new AvaritiaRecipeProcessor());
         }
-        if(Loader.isModLoaded("EnderIO")){
+        if (Loader.isModLoaded("EnderIO")) {
             NotEnoughEnergistics.logger.info("Found EnderIO, install EnderIO support");
             recipeProcessors.add(new EnderIORecipeProcessor());
         }
-        if(Loader.isModLoaded("Forestry")){
+        if (Loader.isModLoaded("Forestry")) {
             NotEnoughEnergistics.logger.info("Found Forestry, install Forestry support");
             recipeProcessors.add(new ForestryRecipeProcessor());
         }
-        if(Loader.isModLoaded("thaumcraftneiplugin")){
+        if (Loader.isModLoaded("thaumcraftneiplugin")) {
             NotEnoughEnergistics.logger.info("Found TCNEIPlugin, install TCNEIPlugin support");
             recipeProcessors.add(new TCNEIPluginRecipeProcessor());
         }

@@ -22,7 +22,8 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 
 - [ ]  AppliedEnergistics2(Won't support it because AE2 doesn't register OverlayHandler)
 - [x]  Vanilla
-- [x]  GregTech
+- [x]  GregTech5
+- [x]  GregTech6
 - [x]  IndustrialCraft2
 - [x]  Avaritia
 - [x]  EnderIO 
