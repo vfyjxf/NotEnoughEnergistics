@@ -46,6 +46,18 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found ThermalExpansion, install ThermalExpansion support");
             recipeProcessors.add(new ThermalExpansionRecipeProcessor());
         }
+        if(Loader.isModLoaded("ImmersiveEngineering")){
+            NotEnoughEnergistics.logger.info("Found ImmersiveEngineering, install ImmersiveEngineering support");
+            recipeProcessors.add(new ImmersiveEngineeringRecipeProcessor());
+        }
+        if(Loader.isModLoaded("Mekanism")){
+            NotEnoughEnergistics.logger.info("Found Mekanism, install Mekanism support");
+            recipeProcessors.add(new MekanismRecipeProcessor());
+        }
+        if(Loader.isModLoaded("AWWayofTime")){
+            NotEnoughEnergistics.logger.info("Found BloodMagic, install BloodMagic support");
+            recipeProcessors.add(new BloodMagicRecipeProcessor());
+        }
         if (Loader.isModLoaded("appliedenergistics2")) {
             NotEnoughEnergistics.logger.info("Applied Energistics 2 will not be supported");
         }

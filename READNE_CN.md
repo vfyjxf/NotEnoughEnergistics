@@ -25,6 +25,9 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - [x]  Thaumcraft NEI Plugin
 - [x]  Thaumic Energistics(允许你从NEI转移奥术合成台配方到知识记录仪，需要Thaumcraft NEI Plugin)
 - [x]  ThermalExpansion
+- [x]  ImmersiveEngineering
+- [x]  Mekanism
+- [x]  BloodMagic
 
 如果你想要别的Mod的支持，请看[RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) 或者[模组支持处理区](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
