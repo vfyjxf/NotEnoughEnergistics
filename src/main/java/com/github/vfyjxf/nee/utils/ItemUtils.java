@@ -1,8 +1,5 @@
 package com.github.vfyjxf.nee.utils;
 
-import static com.github.vfyjxf.nee.NEEConfig.transformBlacklist;
-import static com.github.vfyjxf.nee.NEEConfig.transformPriorityList;
-
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.google.gson.Gson;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -15,6 +12,8 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.github.vfyjxf.nee.NEEConfig.*;
 
 public final class ItemUtils {
 
@@ -124,4 +123,15 @@ public final class ItemUtils {
         return false;
     }
 
+    public static ItemStack getPreferModItem(ItemStack[] items) {
+        for (String currentId : transformPriorityModList) {
+            for(ItemStack stack : items){
+                GameRegistry.UniqueIdentifier itemId = GameRegistry.findUniqueIdentifierFor(stack.getItem());
+                if(currentId.equals(itemId.modId)){
+                    return stack;
+                }
+            }
+        }
+        return null;
+    }
 }

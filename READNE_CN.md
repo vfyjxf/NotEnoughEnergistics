@@ -12,6 +12,8 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - 在处理模式中合并同类物品
 - 支持增广样板终端(16 -> 4模式)
 - 允许你设置转换黑名单和转换优先名单，如对应物品在里面，那么他们将不会被转移/优先被转移
+- 允许你设置mod优先级列表，优先使用该mod的物品
+
 ## 当前支持的Mod列表：
 
 - [ ]  AppliedEnergistics2(我们将不会支持AE2，因为AE2没有注册对应的OverlayHandler)

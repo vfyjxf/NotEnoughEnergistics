@@ -75,7 +75,14 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 for (PositionedStack positionedStack : tInputs) {
-                    ItemStack currentStack = positionedStack.items[0];
+                    ItemStack currentStack = positionedStack.item;
+                    currentStack.stackSize = positionedStack.items[0].stackSize;
+
+                    ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
+                    if (preferModItem != null) {
+                        currentStack = preferModItem;
+                    }
+
                     for (ItemStack stack : positionedStack.items) {
                         if (Platform.isRecipePrioritized(stack) || ItemUtils.isPreferItems(stack, recipeProcessorId, identifier)) {
                             currentStack = stack.copy();
@@ -112,11 +119,18 @@ public class NEECraftingHandler implements IOverlayHandler {
             if (positionedStack.items != null && positionedStack.items.length > 0) {
                 final ItemStack[] currentStackList = positionedStack.items;
                 ItemStack stack = positionedStack.items[0];
+
+                ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
+                if (preferModItem != null) {
+                    stack = preferModItem;
+                }
+
                 for (ItemStack currentStack : currentStackList) {
                     if (Platform.isRecipePrioritized(currentStack) || ItemUtils.isPreferItems(currentStack)) {
                         stack = currentStack.copy();
                     }
                 }
+
                 recipeInputs.setTag("#" + slotIndex, stack.writeToNBT(new NBTTagCompound()));
             }
         }
@@ -146,8 +160,9 @@ public class NEECraftingHandler implements IOverlayHandler {
         itemAspectClz = iA;
         final NBTTagCompound recipeInputs = new NBTTagCompound();
         List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
-        ingredients.removeIf(positionedStack -> itemAspectClz.isInstance(positionedStack.item.getItem()));
-
+        if (itemAspectClz != null) {
+            ingredients.removeIf(positionedStack -> itemAspectClz.isInstance(positionedStack.item.getItem()));
+        }
         for (PositionedStack positionedStack : ingredients) {
 
             if (positionedStack.items != null && positionedStack.items.length > 0) {
