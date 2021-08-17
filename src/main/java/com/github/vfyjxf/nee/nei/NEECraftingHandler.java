@@ -73,14 +73,13 @@ public class NEECraftingHandler implements IOverlayHandler {
                         tInputs.add(positionedStack);
                     }
                 }
-
                 for (PositionedStack positionedStack : tInputs) {
-                    ItemStack currentStack = positionedStack.item;
-                    currentStack.stackSize = positionedStack.items[0].stackSize;
-
+                    ItemStack currentStack = positionedStack.items[0];
                     ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
+
                     if (preferModItem != null) {
                         currentStack = preferModItem;
+                        currentStack.stackSize = positionedStack.items[0].stackSize;
                     }
 
                     for (ItemStack stack : positionedStack.items) {
@@ -138,7 +137,7 @@ public class NEECraftingHandler implements IOverlayHandler {
     }
 
     private void knowledgeInscriberHandler(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
-        Class<?> knowledgeInscriberClz = null;
+        Class<?> knowledgeInscriberClz;
         try {
             knowledgeInscriberClz = Class.forName("thaumicenergistics.client.gui.GuiKnowledgeInscriber");
         } catch (ClassNotFoundException e) {

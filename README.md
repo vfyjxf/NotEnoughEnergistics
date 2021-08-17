@@ -17,7 +17,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - Combine like stacks in processing patterns.
 - Support Processing Pattern Terminal(16 -> 4 mode).
 - Allow you to add item blackList and item priority list, if item in them, it will not be transferred / transfer it first.(use /nee RecipeProcessor to get RecipeProcessor and identifier in log)
-- Allow you to add mod priority list,if it's the mod's item,it will be use first.
+- Allow you to add mod priority list,if the mod's has this item,it will be use first.
 
 ## Compatible Modslist as followed：
 
@@ -35,6 +35,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  ImmersiveEngineering
 - [x]  Mekanism
 - [x]  BloodMagic
+- [x]  BuildCraft
 
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 

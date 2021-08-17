@@ -58,6 +58,10 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found BloodMagic, install BloodMagic support");
             recipeProcessors.add(new BloodMagicRecipeProcessor());
         }
+        if(Loader.isModLoaded("BuildCraft|Compat")){
+            NotEnoughEnergistics.logger.info("Found BuildCraft-Compat, install BuildCraft-Compat support");
+            recipeProcessors.add(new BuildCraftRecipeProcessor());
+        }
         if (Loader.isModLoaded("appliedenergistics2")) {
             NotEnoughEnergistics.logger.info("Applied Energistics 2 will not be supported");
         }

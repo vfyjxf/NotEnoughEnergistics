@@ -30,6 +30,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - [x]  ImmersiveEngineering
 - [x]  Mekanism
 - [x]  BloodMagic
+- [x]  BuildCraft
 
 如果你想要别的Mod的支持，请看[RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) 或者[模组支持处理区](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
