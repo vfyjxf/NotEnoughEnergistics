@@ -1,10 +1,9 @@
 package com.github.vfyjxf.nee;
 
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,18 +19,15 @@ public class NotEnoughEnergistics {
     public static final String MODID = "neenergistics";
     public static final String NAME = "NotEnoughEnergistics";
     public static final String VERSION = "@VERSION@";
-    public static final String DEPENDENCIES = "required-after:NotEnoughItems;required-after:appliedenergistics2";
+    public static final String DEPENDENCIES = "required-after:jei;required-after:appliedenergistics2";
     public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         NEENetworkHandler.init();
-        NEEConfig.loadConfig(new File(Launch.minecraftHome, "config/NotEnoughEnergistics.cfg"));
+//        NEEConfig.loadConfig(new File(Launch.minecraftHome, "config/NotEnoughEnergistics.cfg"));
     }
 
-    @Mod.EventHandler
-    private void serverStarting(FMLServerStartingEvent event) {
-        event.registerServerCommand(new NEECommands());
-    }
+
 
 }
