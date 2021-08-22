@@ -80,8 +80,6 @@ dependencies {
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}"
     deobfCompile "curse.maven:applied-energistics-2-223794:2747063"
 
-    runtime "mezz.jei:jei_${mc_version}:${jei_version}"
-    runtime "curse.maven:applied-energistics-2-223794:2747063"
 }
 
 task devJar(type: Jar) {
@@ -92,6 +90,10 @@ task devJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+jar {
+    appendix project.minecraft.version
 }
 
 artifacts {
