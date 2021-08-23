@@ -1,92 +1,73 @@
 package com.github.vfyjxf.nee.utils;
 
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.google.gson.Gson;
-import cpw.mods.fml.common.registry.GameRegistry;
-import net.minecraft.item.Item;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
-
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.vfyjxf.nee.NEEConfig.*;
 
+/**
+ * @author vfyjxf
+ */
 public final class ItemUtils {
 
     public static Gson gson = new Gson();
 
-    public static List<StackProcessor> getTransformItemBlacklist() {
+    private static List<StackProcessor> getTransformItemBlacklist() {
         List<StackProcessor> transformItemBlacklist = new ArrayList<>();
-        for (String itemJsonString : transformBlacklist) {
-            StackProcessor processor = gson.fromJson(itemJsonString, StackProcessor.class);
-            if (processor != null) {
-                Item currentItem = GameRegistry.findItem(processor.modid, processor.name);
-                if (currentItem != null) {
-                    ItemStack currentStack = processor.meta != null ? new ItemStack(currentItem, 1, Integer.parseInt(processor.meta)) : new ItemStack(currentItem);
-                    if (processor.nbt != null) {
-                        NBTTagCompound nbt = null;
-                        try {
-                            nbt = (NBTTagCompound) JsonToNBT.func_150315_a(processor.nbt);
-                        } catch (NBTException e) {
-                            e.printStackTrace();
-                        }
-                        if (nbt != null) {
-                            currentStack.setTagCompound(nbt);
-                        }
-                    }
-                    transformItemBlacklist.add(new StackProcessor(currentStack, currentItem, processor.recipeProcessor, processor.identifier));
+        for (String itemJsonString : itemBlacklist) {
+            JsonObject jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            if (jsonObject != null) {
+                String itemName = jsonObject.get("itemName").getAsString();
+                if (itemName == null || itemName.isEmpty()) {
+                    continue;
                 }
+                int meta = itemJsonString.contains("meta") ? Integer.parseInt(jsonObject.get("meta").getAsString()) : 0;
+                String nbtJsonString = itemJsonString.contains("nbt") ? jsonObject.get("nbt").getAsString() : "";
+                ItemStack currentStack = GameRegistry.makeItemStack(itemName, meta, 1, nbtJsonString);
+                String recipeType = itemJsonString.contains("recipeType") ? jsonObject.get("name").getAsString() : "";
+                transformItemBlacklist.add(new StackProcessor(currentStack, recipeType));
             }
         }
-
         return transformItemBlacklist;
     }
 
-    public static List<StackProcessor> getTransformItemPriorityList() {
+    private static List<StackProcessor> getTransformItemPriorityList() {
         List<StackProcessor> transformItemPriorityList = new ArrayList<>();
-        for (String itemJsonString : transformPriorityList) {
-            StackProcessor processor = gson.fromJson(itemJsonString, StackProcessor.class);
-            if (processor != null) {
-                Item currentItem = GameRegistry.findItem(processor.modid, processor.name);
-                if (currentItem != null) {
-                    ItemStack currentStack = processor.meta != null ? new ItemStack(currentItem, 1, Integer.parseInt(processor.meta)) : new ItemStack(currentItem);
-                    if (processor.nbt != null) {
-                        NBTTagCompound nbt = null;
-                        try {
-                            nbt = (NBTTagCompound) JsonToNBT.func_150315_a(processor.nbt);
-                        } catch (NBTException e) {
-                            e.printStackTrace();
-                        }
-                        if (nbt != null) {
-                            currentStack.setTagCompound(nbt);
-                        }
-                    }
-                    transformItemPriorityList.add(new StackProcessor(currentStack, currentItem, processor.recipeProcessor, processor.identifier));
+        for (String itemJsonString : itemPriorityList) {
+            JsonObject jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            if (jsonObject != null) {
+                String itemName = jsonObject.get("itemName").getAsString();
+                if (itemName == null || itemName.isEmpty()) {
+                    continue;
                 }
+                int meta = itemJsonString.contains("meta") ? Integer.parseInt(jsonObject.get("meta").getAsString()) : 0;
+                String nbtJsonString = itemJsonString.contains("nbt") ? jsonObject.get("nbt").getAsString() : "";
+                ItemStack currentStack = GameRegistry.makeItemStack(itemName, meta, 1, nbtJsonString);
+                String recipeType = itemJsonString.contains("recipeType") ? jsonObject.get("name").getAsString() : "";
+                transformItemPriorityList.add(new StackProcessor(currentStack, recipeType));
             }
         }
-
         return transformItemPriorityList;
     }
 
-
-    public static boolean isPreferItems(ItemStack itemStack, String recipeProcessor, String identifier) {
-        for (StackProcessor processor : getTransformItemPriorityList()) {
-            ItemStack copyStack = itemStack.copy();
-            copyStack.stackSize = 1;
-            if (ItemStack.areItemStacksEqual(copyStack, processor.itemStack)) {
-                if (processor.recipeProcessor == null && processor.identifier == null) {
+    public static boolean isPreferItems(ItemStack itemStack, String recipeType) {
+        ItemStack stack = itemStack.copy();
+        stack.setCount(1);
+        for (StackProcessor stackProcessor : getTransformItemPriorityList()) {
+            if (ItemStack.areItemStacksEqual(stack, stackProcessor.itemStack)) {
+                String currentRecipeType = stackProcessor.recipeType;
+                if (currentRecipeType == null || currentRecipeType.isEmpty()) {
                     return true;
-                } else if (processor.recipeProcessor == null) {
-                    return identifier.equals(processor.identifier);
-                } else if (processor.identifier == null) {
-                    return recipeProcessor.equals(processor.recipeProcessor);
-                } else {
-                    return recipeProcessor.equals(processor.recipeProcessor) && identifier.equals(processor.identifier);
+                } else if (recipeType.equals(currentRecipeType)) {
+                    return true;
                 }
             }
         }
@@ -94,44 +75,51 @@ public final class ItemUtils {
     }
 
     public static boolean isPreferItems(ItemStack itemStack) {
-        for (StackProcessor processor : getTransformItemPriorityList()) {
-            ItemStack copyStack = itemStack.copy();
-            copyStack.stackSize = 1;
-            if (ItemStack.areItemStacksEqual(copyStack, processor.itemStack)) {
+        ItemStack stack = itemStack.copy();
+        stack.setCount(1);
+        for (StackProcessor stackProcessor : getTransformItemPriorityList()) {
+            if (ItemStack.areItemStacksEqual(stack, stackProcessor.itemStack)) {
                 return true;
             }
         }
         return false;
     }
 
-    public static boolean isInBlackList(ItemStack itemStack, String recipeProcessor, String identifier) {
-        for (StackProcessor processor : getTransformItemBlacklist()) {
-            ItemStack copyStack = itemStack.copy();
-            copyStack.stackSize = 1;
-            if (ItemStack.areItemStacksEqual(copyStack, processor.itemStack)) {
-                if (processor.recipeProcessor == null && processor.identifier == null) {
+    public static boolean isInBlackList(ItemStack itemStack, String recipeType) {
+        ItemStack stack = itemStack.copy();
+        stack.setCount(1);
+        for (StackProcessor stackProcessor : getTransformItemBlacklist()) {
+            if (ItemStack.areItemStacksEqual(stack, stackProcessor.itemStack)) {
+                String currentRecipeType = stackProcessor.recipeType;
+                if (currentRecipeType == null || currentRecipeType.isEmpty()) {
                     return true;
-                } else if (processor.recipeProcessor == null) {
-                    return identifier.equals(processor.identifier);
-                } else if (processor.identifier == null) {
-                    return recipeProcessor.equals(processor.recipeProcessor);
-                } else {
-                    return recipeProcessor.equals(processor.recipeProcessor) && identifier.equals(processor.identifier);
+                } else if (recipeType.equals(currentRecipeType)) {
+                    return true;
                 }
             }
         }
         return false;
     }
 
-    public static ItemStack getPreferModItem(ItemStack[] items) {
-        for (String currentId : transformPriorityModList) {
-            for(ItemStack stack : items){
-                GameRegistry.UniqueIdentifier itemId = GameRegistry.findUniqueIdentifierFor(stack.getItem());
-                if(currentId.equals(itemId.modId)){
-                    return stack;
+    public static ItemStack getPreferModItem(IGuiIngredient<ItemStack> ingredient) {
+        for (String currentId : modPriorityList) {
+            for (ItemStack currentIngredient : ingredient.getAllIngredients()) {
+                String itemModid = currentIngredient.getItem().getRegistryName().getNamespace();
+                if (itemModid.equals(currentId)) {
+                    return currentIngredient;
                 }
             }
         }
-        return null;
+        return ItemStack.EMPTY;
+    }
+
+    public static boolean isPreferModItem(ItemStack stack) {
+        for (String currentId : modPriorityList) {
+            String itemModid = stack.getItem().getRegistryName().getNamespace();
+            if (itemModid.equals(currentId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

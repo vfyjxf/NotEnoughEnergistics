@@ -1,39 +1,46 @@
 package com.github.vfyjxf.nee.utils;
 
-import net.minecraft.item.Item;
+import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.item.ItemStack;
 
-public class StackProcessor {
-    public String modid;
-    public String name;
+import java.io.Serializable;
+
+public class StackProcessor implements Serializable {
+    public String itemName;
     public String meta;
     public String nbt;
+    public String recipeType;
     public ItemStack itemStack;
-    public Item item;
-    public String recipeProcessor;
-    public String identifier;
+    public int stackSize;
+    public IGuiIngredient<ItemStack> ingredient;
 
-    public StackProcessor(String modid, String name, String meta, String nbt){
-        this.modid = modid;
-        this.name = name;
+    public StackProcessor(String itemName, String meta, String nbt, String recipeType) {
+        this.itemName = itemName;
         this.meta = meta;
         this.nbt = nbt;
-    }
-    public StackProcessor(String modid, String name, String meta){
-        this.modid = modid;
-        this.name = name;
-        this.meta = meta;
-    }
-    public StackProcessor(String modid, String name){
-        this.modid = modid;
-        this.name = name;
+        this.recipeType = recipeType;
     }
 
-    public StackProcessor(ItemStack itemStack, Item item, String recipeProcessor, String identifier){
+    public StackProcessor(String itemName, String meta) {
+        this.itemName = itemName;
+        this.meta = meta;
+    }
+
+    public StackProcessor(ItemStack itemStack, String recipeType){
         this.itemStack = itemStack;
-        this.item = item;
-        this.recipeProcessor = recipeProcessor;
-        this.identifier = identifier;
+        this.recipeType = recipeType;
+    }
+
+
+    public StackProcessor(String itemName) {
+        this.itemName = itemName;
+    }
+    public StackProcessor(IGuiIngredient<ItemStack> ingredient, int stackSize){
+        this.ingredient = ingredient;
+        this.stackSize = stackSize;
+    }
+    public StackProcessor(IGuiIngredient<ItemStack> ingredient){
+        this.ingredient = ingredient;
     }
 
 }

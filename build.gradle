@@ -2,10 +2,10 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
-		maven {
-			name = "forge"
-			url = "https://maven.minecraftforge.net"
-		}
+        maven {
+            name = "forge"
+            url = "https://maven.minecraftforge.net"
+        }
         maven {
             name = "github"
             url = "https://github.com/juanmuscaria/maven/raw/master"
@@ -14,12 +14,6 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
     }
-}
-
-repositories {
-	flatDir {
-		dirs 'libs'
-	}
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -32,12 +26,11 @@ archivesBaseName = mod_archives_name
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 minecraft {
-	version = "1.12.2-14.23.5.2847"
+    version = "1.12.2-14.23.5.2847"
     mappings = "stable_39"
-	runDir = "run"
-    
-	replace '@VERSION@', project.version
-	// makeObfSourceJar = false
+    runDir = "run"
+
+    replace '@VERSION@', project.version
 }
 
 processResources {
@@ -45,35 +38,65 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
         expand 'version': project.version,
-		'mod_id': mod_id,
-		'mod_name': mod_name,
-		'mod_author': mod_author,
-		'mod_description': mod_description,
-		'mc_version': mc_version,
-		'mod_version': mod_version,
-		'mod_icon': mod_logo
+                'mod_id': mod_id,
+                'mod_name': mod_name,
+                'mod_credits': mod_credits,
+                'mod_author': mod_author,
+                'mod_description': mod_description,
+                'mc_version': mc_version,
+                'mod_version': mod_version,
+                'mod_logo': mod_logo
     }
 
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+
+}
+
+repositories {
+    maven {
+        // location of the maven that hosts JEI files
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.k-4u.nl"
+    }
+    maven {
+        name = "CurseMaven"
+        url = "https://www.cursemaven.com"
+    }
+    maven { url = "http://maven.cil.li/" }
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {
 
+    deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}"
+    deobfCompile "curse.maven:applied-energistics-2-223794:2747063"
+
 }
 
 task devJar(type: Jar) {
-	classifier = 'dev'
-	from sourceSets.main.output
+    classifier = 'dev'
+    from sourceSets.main.output
 }
 
 task sourcesJar(type: Jar) {
-	classifier = 'sources'
-	from sourceSets.main.allSource
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+jar {
+    appendix project.minecraft.version
 }
 
 artifacts {
-	archives devJar
-	archives sourcesJar
+    archives devJar
+    archives sourcesJar
 }

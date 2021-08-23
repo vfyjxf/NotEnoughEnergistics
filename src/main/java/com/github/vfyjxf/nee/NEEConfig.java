@@ -1,34 +1,30 @@
 package com.github.vfyjxf.nee;
 
-import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.Config.Comment;
 
-import java.io.File;
 
 /**
  * @author vfyjxf
  */
+@Config(modid = "neenergistics", name = "NotEnoughEnergistics", category = "transfer")
 public class NEEConfig {
 
+    @Comment("Automatic switch Pattern Terminal's Mode when click [+].Default:true")
+    public static boolean allowAutomaticSwitchPatternTerminalMode = true;
 
-    public static String[] transformBlacklist = new String[0];
-    public static String[] transformPriorityList = new String[0];
-    public static String[] transformPriorityModList = new String[0];
+    @Comment("If true, print current recipe type in log.Default:false")
+    public static boolean allowPrintRecipeType = false;
 
-    public static void loadConfig(File configFile) {
-        Configuration config = new Configuration(configFile);
-        config.load();
+    @Comment("If oredict has this mod's item, use it first.")
+    public static String[] modPriorityList = new String[0];
 
-        transformBlacklist = config.get("client", "transformItemBlacklist", new String[0],
-                "If item in the blacklist, it will not be transferred.\n" +
-                        "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n"+
-                        "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
-        transformPriorityList = config.get("client", "transformItemPriorityList", new String[0],
-                "If item in tne priority list, it will be transferred first.").getStringList();
+    @Comment("If item in the blacklist, it will not be transferred.\n" +
+            "example:{\"itemName\":\"gregtech:meta_item_2\",\"meta\":\"32492\"}")
+    public static String[] itemBlacklist = new String[0];
 
-        transformPriorityModList = config.get("client","transformPriorityModList",new String[0],
-                "if oredict has this mod's item, use it first").getStringList();
-
-        if (config.hasChanged()) config.save();
-    }
+    @Comment("If item in tne priority list, it will be transferred first.\n" +
+            "example:{\"itemName\":\"gregtech:meta_item_2\",\"meta\":\"32492\"}")
+    public static String[] itemPriorityList = new String[0];
 
 }
