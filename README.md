@@ -36,14 +36,14 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  Mekanism
 - [x]  BloodMagic
 - [x]  BuildCraft
-- [x]  Avaritiaddons(auto extreme crafting table support)
+
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
 ## TODO
 
--[x]  Add item blackList ,if item in the blacklist, it will not be transferred.
--[x]  Add item  priority list, if item in tne priority list, it will be transferred first.
--[x]  Combine like stacks in processing patterns.
+- [x]  Add item blackList ,if item in the blacklist, it will not be transferred.
+- [x]  Add item  priority list, if item in tne priority list, it will be transferred first.
+- [x]  Combine like stacks in processing patterns.
 
 ## Credits
 Thanks TheRealp455w0rd and his [Just Enough Energistics](https://www.curseforge.com/minecraft/mc-mods/just-enough-energistics-jee)
