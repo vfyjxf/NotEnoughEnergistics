@@ -41,9 +41,9 @@ If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/v
 
 ## TODO
 
-- [x]  Add item blackList ,if item in the blacklist, it will not be transferred.
-- [x]  Add item  priority list, if item in tne priority list, it will be transferred first.
-- [x]  Combine like stacks in processing patterns.
+-[x]  Add item blackList ,if item in the blacklist, it will not be transferred.
+-[x]  Add item  priority list, if item in tne priority list, it will be transferred first.
+-[x]  Combine like stacks in processing patterns.
 
 ## Credits
 Thanks TheRealp455w0rd and his [Just Enough Energistics](https://www.curseforge.com/minecraft/mc-mods/just-enough-energistics-jee)
