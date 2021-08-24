@@ -37,7 +37,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  BloodMagic
 - [x]  BuildCraft
 - [x]  Avaritiaddons(auto extreme crafting table support)
-- 
+
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
 ## TODO
