@@ -1,4 +1,9 @@
 # Not Enough Energistics
+
+[![Downloads](https://cf.way2muchnoise.eu/full_515565_downloads.svg)]([Not Enough Energistics - Mods - Minecraft - CurseForge](https://www.curseforge.com/minecraft/mc-mods/not-enough-energistics)) ![MCVsrsion](https://cf.way2muchnoise.eu/versions/515565.svg)
+
+----
+
 NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/minecraft/mc-mods/just-enough-energistics-jee) 的逆向移植版本
 
 它替换了AE2默认的NEI集成, 默认情况下ae只能识别玩家身上或者网络里的存储物品。
@@ -32,6 +37,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - [x]  BloodMagic
 - [x]  BuildCraft
 - [x]  Avaritiaddons(允许你从nei转移终极工作台配方到梦魇工作台)
+- [x]  GT++
 
 如果你想要别的Mod的支持，请看[RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) 或者[模组支持处理区](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 

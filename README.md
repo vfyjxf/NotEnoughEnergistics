@@ -1,6 +1,11 @@
 [中文](READNE_CN.md)
 
 # Not Enough Energistics
+
+[![Downloads](https://cf.way2muchnoise.eu/full_515565_downloads.svg)]([Not Enough Energistics - Mods - Minecraft - CurseForge](https://www.curseforge.com/minecraft/mc-mods/not-enough-energistics)) ![MCVsrsion](https://cf.way2muchnoise.eu/versions/515565.svg)
+
+----
+
 NotEnoughEnergistics is a port of [Just Enough Energistics](https://www.curseforge.com/minecraft/mc-mods/just-enough-energistics-jee) to Minecraft 1.7.10
 
 This mod replaces AE2's default NEI integration for the Pattern Terminal.
@@ -37,6 +42,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  BloodMagic
 - [x]  BuildCraft
 - [x]  Avaritiaddons(auto extreme crafting table support)
+- [x]  GT++
 
 If you want other Mod support,see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 

@@ -62,6 +62,11 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found BuildCraft-Compat, install BuildCraft-Compat support");
             recipeProcessors.add(new BuildCraftRecipeProcessor());
         }
+        if(Loader.isModLoaded("miscutils")){
+            NotEnoughEnergistics.logger.info("Found GT++, install GT++ support");
+            recipeProcessors.add(new GTPPRecipeProcessor());
+        }
+
         if (Loader.isModLoaded("appliedenergistics2")) {
             NotEnoughEnergistics.logger.info("Applied Energistics 2 will not be supported");
         }
