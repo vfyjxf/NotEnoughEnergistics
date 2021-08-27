@@ -19,6 +19,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 
@@ -47,7 +48,7 @@ public class NotEnoughEnergistics {
     }
 
     @SubscribeEvent
-    public void onMouseInput(GuiScreenEvent.MouseInputEvent event) {
+    public void onMouseInput(GuiScreenEvent.MouseInputEvent.Post event) {
         Minecraft mc = Minecraft.getMinecraft();
         int i = Mouse.getEventDWheel();
         if (i != 0 && mc.currentScreen instanceof GuiPatternTerm) {
@@ -56,7 +57,8 @@ public class NotEnoughEnergistics {
             int y = guiPatternTerm.height - Mouse.getEventY() * guiPatternTerm.height / mc.displayHeight - 1;
             Slot currentSlot = GuiUtils.getSlotUnderMouse(guiPatternTerm, x, y);
             if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
-                NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, i / 120));
+                int changeCount = GuiContainer.isCtrlKeyDown() ? i / 60 : i / 120;
+                NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
             }
         }
     }
