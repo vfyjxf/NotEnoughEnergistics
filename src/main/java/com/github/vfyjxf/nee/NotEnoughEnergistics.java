@@ -1,7 +1,9 @@
 package com.github.vfyjxf.nee;
 
 import appeng.client.gui.implementations.GuiPatternTerm;
+import appeng.client.gui.implementations.GuiPatternTermEx;
 import appeng.container.slot.SlotFake;
+import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
@@ -59,11 +61,10 @@ public class NotEnoughEnergistics {
         if (event.phase == TickEvent.Phase.START) {
             Minecraft mc = Minecraft.getMinecraft();
             int i = Mouse.getDWheel();
-            if (i != 0 && mc.currentScreen instanceof GuiPatternTerm) {
-                GuiPatternTerm guiPatternTerm = (GuiPatternTerm) mc.currentScreen;
-                int x = Mouse.getEventX() * guiPatternTerm.width / mc.displayWidth;
-                int y = guiPatternTerm.height - Mouse.getEventY() * guiPatternTerm.height / mc.displayHeight - 1;
-                Slot currentSlot = GuiUtils.getSlotUnderMouse(guiPatternTerm, x, y);
+            if (i != 0 && mc.currentScreen instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(mc.currentScreen)) {
+                int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
+                int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
+                Slot currentSlot = GuiUtils.getSlotUnderMouse((GuiContainer) mc.currentScreen, x, y);
                 if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
                     int changeCount = GuiContainer.isCtrlKeyDown() ? i / 60 : i / 120;
                     NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
