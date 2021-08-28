@@ -2,7 +2,6 @@ package com.github.vfyjxf.nee.processor;
 
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
-import com.github.vfyjxf.nee.network.packet.PacketNEIPatternRecipe;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,9 +1,7 @@
 package com.github.vfyjxf.nee.processor;
 
-import blusunrize.immersiveengineering.client.nei.NEICrusherHandler.CachedCrusherRecipe;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
-import codechicken.nei.recipe.TemplateRecipeHandler;
 
 import java.util.*;
 
