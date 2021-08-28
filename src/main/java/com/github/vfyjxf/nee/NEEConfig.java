@@ -23,7 +23,7 @@ public class NEEConfig {
                         "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n"+
                         "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
         transformPriorityList = config.get("client", "transformItemPriorityList", new String[0],
-                "If item in tne priority list, it will be transferred first.").getStringList();
+                "If item in the priority list, it will be transferred first.").getStringList();
 
         transformPriorityModList = config.get("client","transformPriorityModList",new String[0],
                 "if oredict has this mod's item, use it first").getStringList();

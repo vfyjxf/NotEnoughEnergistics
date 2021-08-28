@@ -2,6 +2,7 @@ package com.github.vfyjxf.nee.utils;
 
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -18,11 +19,19 @@ import static com.github.vfyjxf.nee.NEEConfig.*;
 public final class ItemUtils {
 
     public static Gson gson = new Gson();
+    public static List<StackProcessor> transformItemBlacklist = getTransformItemBlacklist();
+    public static List<StackProcessor> transformItemPriorityList = getTransformItemPriorityList();
 
     public static List<StackProcessor> getTransformItemBlacklist() {
         List<StackProcessor> transformItemBlacklist = new ArrayList<>();
         for (String itemJsonString : transformBlacklist) {
-            StackProcessor processor = gson.fromJson(itemJsonString, StackProcessor.class);
+            StackProcessor processor;
+            try {
+                processor = gson.fromJson(itemJsonString, StackProcessor.class);
+            } catch (JsonSyntaxException e) {
+                NotEnoughEnergistics.logger.error("Found a error item json in item blacklist: " + itemJsonString);
+                continue;
+            }
             if (processor != null) {
                 Item currentItem = GameRegistry.findItem(processor.modid, processor.name);
                 if (currentItem != null) {
@@ -49,7 +58,13 @@ public final class ItemUtils {
     public static List<StackProcessor> getTransformItemPriorityList() {
         List<StackProcessor> transformItemPriorityList = new ArrayList<>();
         for (String itemJsonString : transformPriorityList) {
-            StackProcessor processor = gson.fromJson(itemJsonString, StackProcessor.class);
+            StackProcessor processor;
+            try {
+                processor = gson.fromJson(itemJsonString, StackProcessor.class);
+            } catch (JsonSyntaxException e) {
+                NotEnoughEnergistics.logger.error("Found a error item json in item priority list: " + itemJsonString);
+                continue;
+            }
             if (processor != null) {
                 Item currentItem = GameRegistry.findItem(processor.modid, processor.name);
                 if (currentItem != null) {
@@ -75,7 +90,7 @@ public final class ItemUtils {
 
 
     public static boolean isPreferItems(ItemStack itemStack, String recipeProcessor, String identifier) {
-        for (StackProcessor processor : getTransformItemPriorityList()) {
+        for (StackProcessor processor : ItemUtils.transformItemPriorityList) {
             ItemStack copyStack = itemStack.copy();
             copyStack.stackSize = 1;
             if (ItemStack.areItemStacksEqual(copyStack, processor.itemStack)) {
@@ -94,7 +109,7 @@ public final class ItemUtils {
     }
 
     public static boolean isPreferItems(ItemStack itemStack) {
-        for (StackProcessor processor : getTransformItemPriorityList()) {
+        for (StackProcessor processor : ItemUtils.transformItemPriorityList) {
             ItemStack copyStack = itemStack.copy();
             copyStack.stackSize = 1;
             if (ItemStack.areItemStacksEqual(copyStack, processor.itemStack)) {
@@ -105,7 +120,7 @@ public final class ItemUtils {
     }
 
     public static boolean isInBlackList(ItemStack itemStack, String recipeProcessor, String identifier) {
-        for (StackProcessor processor : getTransformItemBlacklist()) {
+        for (StackProcessor processor : ItemUtils.transformItemBlacklist) {
             ItemStack copyStack = itemStack.copy();
             copyStack.stackSize = 1;
             if (ItemStack.areItemStacksEqual(copyStack, processor.itemStack)) {
@@ -125,9 +140,9 @@ public final class ItemUtils {
 
     public static ItemStack getPreferModItem(ItemStack[] items) {
         for (String currentId : transformPriorityModList) {
-            for(ItemStack stack : items){
+            for (ItemStack stack : items) {
                 GameRegistry.UniqueIdentifier itemId = GameRegistry.findUniqueIdentifierFor(stack.getItem());
-                if(itemId.modId.equals(currentId)){
+                if (itemId.modId.equals(currentId)) {
                     return stack;
                 }
             }
