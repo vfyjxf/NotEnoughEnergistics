@@ -3,18 +3,17 @@
  */
 package com.github.vfyjxf.nee.utils;
 
+import appeng.container.implementations.ContainerPatternTerm;
+import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.jei.NEERecipeTransferHandler;
+import com.google.common.collect.ImmutableTable;
+import mezz.jei.collect.Table;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
-import com.github.vfyjxf.nee.jei.NEERecipeTransferHandler;
-import com.google.common.collect.ImmutableTable;
-
-import appeng.container.implementations.ContainerPatternTerm;
-import mezz.jei.collect.Table;
 
 public class WrappedTable<R, C, V> extends Table<R, C, V> {
 

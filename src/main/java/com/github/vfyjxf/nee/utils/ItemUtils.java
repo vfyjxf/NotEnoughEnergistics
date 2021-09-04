@@ -1,7 +1,6 @@
 package com.github.vfyjxf.nee.utils;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mezz.jei.api.gui.IGuiIngredient;
@@ -121,5 +120,18 @@ public final class ItemUtils {
             }
         }
         return false;
+    }
+
+    public static int getIngredientIndex(ItemStack stack, List<ItemStack> currentIngredients) {
+        ItemStack stackInput = stack.copy();
+        stackInput.setCount(1);
+        for (int i = 0; i < currentIngredients.size(); i++) {
+            ItemStack currentStack = currentIngredients.get(i).copy();
+            currentStack.setCount(1);
+            if (ItemStack.areItemStacksEqual(stackInput, currentStack)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

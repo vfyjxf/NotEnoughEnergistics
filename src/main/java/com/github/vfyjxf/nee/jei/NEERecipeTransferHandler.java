@@ -17,12 +17,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-import static com.github.vfyjxf.nee.jei.NEEJEIPlugin.registry;
-
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.github.vfyjxf.nee.jei.NEEJEIPlugin.registry;
 
 /**
  * @author vfyjxf
@@ -30,6 +31,7 @@ import java.util.Map;
 public class NEERecipeTransferHandler implements IRecipeTransferHandler<ContainerPatternTerm> {
 
     public static final String OUTPUT_KEY = "Outputs";
+    public static Map<String, IGuiIngredient<ItemStack>> ingredients = new HashMap<>();
 
     public NEERecipeTransferHandler() {
     }
@@ -118,6 +120,7 @@ public class NEERecipeTransferHandler implements IRecipeTransferHandler<Containe
                     continue;
                 }
                 recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
+                NEERecipeTransferHandler.ingredients.put("input" + inputIndex, currentIngredient.ingredient);
                 inputIndex++;
             }
             NEENetworkHandler.getInstance().sendToServer(new NEERecipeTransferPacket(recipeInputs, recipeOutputs, isCraftingRecipe));

@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -53,15 +52,15 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
         Container container = player.openContainer;
         player.getServerWorld().addScheduledTask(() -> {
             if (container instanceof ContainerPatternTerm && !((ContainerPatternTerm) container).isCraftingMode()) {
-                Slot currentSlot = container.getSlot(message.slotIndex);
-                for (int i = 0; i < Math.abs(message.changeCount); i++) {
-                    if (message.changeCount > 0) {
-                        if (currentSlot.getStack().getCount() == currentSlot.getStack().getMaxStackSize()) {
+                Slot currentSlot = container.getSlot(message.getSlotIndex());
+                for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
+                    if (message.getChangeCount() > 0) {
+                        if (currentSlot.getStack().getCount() >= currentSlot.getStack().getMaxStackSize()) {
                             break;
                         }
                         currentSlot.getStack().setCount(currentSlot.getStack().getCount() + 1);
                     } else {
-                        if (currentSlot.getStack().getCount() - 1 == 0) {
+                        if (currentSlot.getStack().getCount() - 1 <= 0) {
                             break;
                         }
                         currentSlot.getStack().setCount(currentSlot.getStack().getCount() - 1);
