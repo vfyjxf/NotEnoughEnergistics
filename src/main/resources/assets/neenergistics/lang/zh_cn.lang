@@ -1,2 +1,5 @@
 jei.tooltip.nee.need.crating=你必须设置样板终端为合成中模式。
 jei.tooltip.nee.need.processing=你必须设置样板终端为处理中模式。
+key.neenergistics.recipe.ingredient.change=更改材料
+key.neenergistics.stack.count.change=更改物品数量
+neenergistics.NotEnoughEnergistics=Not Enough Energistics

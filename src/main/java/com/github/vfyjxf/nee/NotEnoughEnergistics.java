@@ -6,11 +6,12 @@ import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -35,6 +36,9 @@ public class NotEnoughEnergistics {
     public static final String DEPENDENCIES = "required-after:jei;required-after:appliedenergistics2";
     public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
 
+    private static final KeyBinding recipeIngredientChange = new KeyBinding("key.neenergistics.recipe.ingredient.change", KeyConflictContext.GUI, Keyboard.KEY_LSHIFT, "neenergistics.NotEnoughEnergistics");
+    private static final KeyBinding stackCountChange = new KeyBinding("key.neenergistics.stack.count.change", KeyConflictContext.GUI, Keyboard.KEY_LCONTROL, "neenergistics.NotEnoughEnergistics");
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         NEENetworkHandler.init();
@@ -43,6 +47,8 @@ public class NotEnoughEnergistics {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         if (FMLCommonHandler.instance().getSide().isClient()) {
+            ClientRegistry.registerKeyBinding(recipeIngredientChange);
+            ClientRegistry.registerKeyBinding(stackCountChange);
             MinecraftForge.EVENT_BUS.register(this);
         }
     }
@@ -57,8 +63,12 @@ public class NotEnoughEnergistics {
             int y = guiPatternTerm.height - Mouse.getEventY() * guiPatternTerm.height / mc.displayHeight - 1;
             Slot currentSlot = GuiUtils.getSlotUnderMouse(guiPatternTerm, x, y);
             if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
-                int changeCount = GuiContainer.isCtrlKeyDown() ? i / 60 : i / 120;
-                NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                if (Keyboard.isKeyDown(NotEnoughEnergistics.recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
+                    GuiUtils.handleRecipeIngredientChange(currentSlot, i);
+                } else {
+                    int changeCount = Keyboard.isKeyDown(NotEnoughEnergistics.stackCountChange.getKeyCode()) ? i / 60 : i / 120;
+                    NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                }
             }
         }
     }
