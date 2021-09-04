@@ -17,9 +17,10 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 
 import javax.annotation.Nonnull;
+
+import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 
 
 public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketNEIPatternRecipe, IMessage> {

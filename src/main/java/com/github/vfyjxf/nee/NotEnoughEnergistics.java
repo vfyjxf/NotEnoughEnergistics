@@ -58,14 +58,19 @@ public class NotEnoughEnergistics {
     public void onRenderTick(TickEvent.RenderTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             Minecraft mc = Minecraft.getMinecraft();
-            int i = Mouse.getDWheel();
-            if (i != 0 && mc.currentScreen instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(mc.currentScreen)) {
+            int dWheel = Mouse.getDWheel();
+            if (dWheel != 0 && mc.currentScreen instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(mc.currentScreen)) {
                 int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
                 int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
                 Slot currentSlot = GuiUtils.getSlotUnderMouse((GuiContainer) mc.currentScreen, x, y);
                 if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
-                    int changeCount = GuiContainer.isCtrlKeyDown() ? i / 60 : i / 120;
-                    NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                    //try to change current itemstack to next ingredient;
+                    if (GuiContainer.isShiftKeyDown() && GuiUtils.isCraftingSlot(currentSlot)) {
+                        GuiUtils.handleRecipeIngredientChange(currentSlot, dWheel);
+                    } else {
+                        int changeCount = GuiContainer.isCtrlKeyDown() ? dWheel / 60 : dWheel / 120;
+                        NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                    }
                 }
             }
         }
