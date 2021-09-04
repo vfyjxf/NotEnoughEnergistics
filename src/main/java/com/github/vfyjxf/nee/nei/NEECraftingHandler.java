@@ -1,25 +1,27 @@
 package com.github.vfyjxf.nee.nei;
 
 import appeng.client.gui.implementations.GuiPatternTerm;
-import appeng.client.gui.implementations.GuiPatternTermEx;
-import codechicken.nei.api.IOverlayHandler;
-import codechicken.nei.recipe.TemplateRecipeHandler;
-import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import appeng.util.Platform;
 import codechicken.nei.PositionedStack;
+import codechicken.nei.api.IOverlayHandler;
 import codechicken.nei.recipe.IRecipeHandler;
+import codechicken.nei.recipe.TemplateRecipeHandler;
+import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketArcaneRecipe;
 import com.github.vfyjxf.nee.network.packet.PacketExtremeRecipe;
 import com.github.vfyjxf.nee.network.packet.PacketNEIPatternRecipe;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
+import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author vfyjxf
@@ -27,11 +29,14 @@ import java.util.List;
 public class NEECraftingHandler implements IOverlayHandler {
 
     public static final String OUTPUT_KEY = "Outputs";
+    public static Map<String, PositionedStack> ingredients = new HashMap<>();
+    public static boolean isPatternTermExGui = false;
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
-        if (firstGui instanceof GuiPatternTerm || (hasPatternTermExClz() && firstGui instanceof GuiPatternTermEx)) {
+        if (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) {
             NEENetworkHandler.getInstance().sendToServer(packRecipe(recipe, recipeIndex));
+            NEECraftingHandler.isPatternTermExGui = GuiUtils.isPatternTermExGui(firstGui);
         } else {
             knowledgeInscriberHandler(firstGui, recipe, recipeIndex);
             extremeAutoCrafterHandler(firstGui, recipe, recipeIndex);
@@ -95,6 +100,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                         continue;
                     }
                     recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
+                    NEECraftingHandler.ingredients.put("input" + inputIndex, positionedStack);
                     inputIndex++;
                 }
 
@@ -133,6 +139,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 recipeInputs.setTag("#" + slotIndex, stack.writeToNBT(new NBTTagCompound()));
+                NEECraftingHandler.ingredients.put("input" + slotIndex, positionedStack);
             }
         }
         return new PacketNEIPatternRecipe(recipeInputs, null);
@@ -249,13 +256,4 @@ public class NEECraftingHandler implements IOverlayHandler {
         return "crafting".equals(overlayIdentifier) || "crafting2x2".equals(overlayIdentifier);
     }
 
-    private boolean hasPatternTermExClz() {
-        try {
-            Class.forName("appeng.client.gui.implementations.GuiPatternTermEx");
-        } catch (ClassNotFoundException ignored) {
-            return false;
-        }
-
-        return true;
-    }
 }

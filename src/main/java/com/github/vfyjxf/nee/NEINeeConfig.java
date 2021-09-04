@@ -11,7 +11,9 @@ import cpw.mods.fml.common.Loader;
 import thaumicenergistics.client.gui.GuiKnowledgeInscriber;
 import wanion.avaritiaddons.block.extremeautocrafter.GuiExtremeAutoCrafter;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 
 public class NEINeeConfig implements IConfigureNEI {

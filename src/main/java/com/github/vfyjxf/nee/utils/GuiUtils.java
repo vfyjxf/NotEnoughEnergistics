@@ -1,11 +1,23 @@
 package com.github.vfyjxf.nee.utils;
 
 import appeng.client.gui.AEBaseGui;
+import appeng.container.implementations.ContainerPatternTerm;
+import appeng.helpers.IContainerCraftingPacket;
+import codechicken.nei.PositionedStack;
+import com.github.vfyjxf.nee.nei.NEECraftingHandler;
+import com.github.vfyjxf.nee.network.NEENetworkHandler;
+import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import org.lwjgl.input.Keyboard;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,6 +26,7 @@ import java.lang.reflect.Method;
  * @author vfyjxf
  */
 public class GuiUtils {
+
     public static Slot getSlotUnderMouse(GuiContainer guiContainer, int mouseX, int mouseY) {
         Method getSlotMethod = ReflectionHelper.findMethod(AEBaseGui.class, (AEBaseGui) guiContainer, new String[]{"getSlot"}, int.class, int.class);
         try {
@@ -34,13 +47,46 @@ public class GuiUtils {
         }
     }
 
-    public static boolean isPatternTermExContainer(Container container){
+    public static boolean isPatternTermExContainer(Container container) {
         try {
             Class<?> patternTermExClz = Class.forName("appeng.container.implementations.ContainerPatternTermEx");
             return patternTermExClz.isInstance(container);
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static boolean isInCraftingInventory(Slot slot) {
+        Container container = Minecraft.getMinecraft().thePlayer.openContainer;
+        if (container instanceof ContainerPatternTerm || GuiUtils.isPatternTermExContainer(container)) {
+            IContainerCraftingPacket cct = (IContainerCraftingPacket) container;
+            IInventory craftMatrix = cct.getInventoryByName("crafting");
+            return slot.inventory.equals(craftMatrix);
+        }
+        return false;
+    }
+
+    public static void handleRecipeIngredientChange(Slot currentSlot, int dWheel) {
+        int currentSlotIndex = currentSlot.getSlotIndex();
+        PositionedStack currentIngredients = NEECraftingHandler.ingredients.get("input" + currentSlotIndex);
+        if (currentIngredients != null && currentIngredients.items.length > 1) {
+            int currentStackIndex = ItemUtils.getIngredientIndex(currentSlot.getStack(), currentIngredients);
+            if (currentStackIndex >= 0) {
+                int nextStackIndex = dWheel / 120;
+                for (int j = 0; j < Math.abs(nextStackIndex); j++) {
+                    currentStackIndex = nextStackIndex > 0 ? currentStackIndex + 1 : currentStackIndex - 1;
+                    if (currentStackIndex >= currentIngredients.items.length) {
+                        currentStackIndex = 0;
+                    } else if (currentStackIndex < 0) {
+                        currentStackIndex = currentIngredients.items.length - 1;
+                    }
+                    ItemStack currentStack = currentIngredients.items[currentStackIndex].copy();
+                    currentStack.stackSize = currentSlot.getStack().stackSize;
+                    NEENetworkHandler.getInstance().sendToServer(new PacketRecipeItemChange(currentStack.writeToNBT(new NBTTagCompound()), currentSlot.slotNumber));
+                }
+            }
+        }
+
     }
 
 }
