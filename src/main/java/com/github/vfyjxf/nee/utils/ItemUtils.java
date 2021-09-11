@@ -1,23 +1,21 @@
 package com.github.vfyjxf.nee.utils;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.vfyjxf.nee.NEEConfig.*;
+import static com.github.vfyjxf.nee.config.NEEConfig.*;
 
 /**
  * @author vfyjxf
  */
 public final class ItemUtils {
-
-    public static Gson gson = new Gson();
 
     private static List<StackProcessor> getTransformItemBlacklist() {
         List<StackProcessor> transformItemBlacklist = new ArrayList<>();
@@ -134,4 +132,21 @@ public final class ItemUtils {
         }
         return -1;
     }
+
+    public static String toItemJsonString(ItemStack currentStack) {
+        String nbtString = currentStack.hasTagCompound() ? ",\"nbt\":" + "\"" + currentStack.getTagCompound().toString() + "\"" : "";
+        ResourceLocation registryName = currentStack.getItem().getRegistryName();
+        int meta = currentStack.getItemDamage();
+        return "{" + "\"itemName\":" + "\"" + registryName.toString() + "\"" + "," + "\"meta\":" + "\"" + meta + "\"" + nbtString + "}";
+    }
+
+    public static boolean hasModId(String modid) {
+        for (String currentId : modPriorityList) {
+            if (currentId.equals(modid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

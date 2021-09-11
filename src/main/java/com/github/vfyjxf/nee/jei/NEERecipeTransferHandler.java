@@ -1,8 +1,8 @@
 package com.github.vfyjxf.nee.jei;
 
 import appeng.container.implementations.ContainerPatternTerm;
-import com.github.vfyjxf.nee.NEEConfig;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.NEERecipeTransferPacket;
 import com.github.vfyjxf.nee.utils.ItemUtils;
@@ -116,7 +116,7 @@ public class NEERecipeTransferHandler implements IRecipeTransferHandler<Containe
                         currentStack.setCount(currentIngredient.stackSize);
                     }
                 }
-                if (!currentStack.isEmpty() && ItemUtils.isInBlackList(currentStack, recipeType)) {
+                if (!currentStack.isEmpty() && ItemUtils.isInBlackList(currentStack, recipeType) && !isCraftingRecipe) {
                     continue;
                 }
                 recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));

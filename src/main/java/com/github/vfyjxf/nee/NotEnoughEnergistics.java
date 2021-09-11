@@ -2,12 +2,14 @@ package com.github.vfyjxf.nee;
 
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.slot.SlotFake;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.inventory.Slot;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,12 +30,14 @@ import org.lwjgl.input.Mouse;
         version = NotEnoughEnergistics.VERSION,
         name = NotEnoughEnergistics.NAME,
         dependencies = NotEnoughEnergistics.DEPENDENCIES,
+        guiFactory = NotEnoughEnergistics.GUI_FACTORY,
         useMetadata = true)
 public class NotEnoughEnergistics {
     public static final String MODID = "neenergistics";
     public static final String NAME = "NotEnoughEnergistics";
     public static final String VERSION = "@VERSION@";
     public static final String DEPENDENCIES = "required-after:jei;required-after:appliedenergistics2";
+    public static final String GUI_FACTORY = "com.github.vfyjxf.nee.config.NEEConfigGuiFactory";
     public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
 
     private static final KeyBinding recipeIngredientChange = new KeyBinding("key.neenergistics.recipe.ingredient.change", KeyConflictContext.GUI, Keyboard.KEY_LSHIFT, "neenergistics.NotEnoughEnergistics");
@@ -42,6 +46,7 @@ public class NotEnoughEnergistics {
     @EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         NEENetworkHandler.init();
+        MinecraftForge.EVENT_BUS.register(new NEEConfig());
     }
 
     @EventHandler
@@ -49,6 +54,7 @@ public class NotEnoughEnergistics {
         if (FMLCommonHandler.instance().getSide().isClient()) {
             ClientRegistry.registerKeyBinding(recipeIngredientChange);
             ClientRegistry.registerKeyBinding(stackCountChange);
+            ClientCommandHandler.instance.registerCommand(new NEECommands());
             MinecraftForge.EVENT_BUS.register(this);
         }
     }
@@ -65,8 +71,8 @@ public class NotEnoughEnergistics {
             if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
                 if (Keyboard.isKeyDown(NotEnoughEnergistics.recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
                     GuiUtils.handleRecipeIngredientChange(currentSlot, i);
-                } else {
-                    int changeCount = Keyboard.isKeyDown(NotEnoughEnergistics.stackCountChange.getKeyCode()) ? i / 60 : i / 120;
+                } else if (Keyboard.isKeyDown(NotEnoughEnergistics.stackCountChange.getKeyCode())) {
+                    int changeCount = i / 120;
                     NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
                 }
             }

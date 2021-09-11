@@ -12,7 +12,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - 支持增广样板终端(16 -> 4模式)
 - 允许你设置转换黑名单和转换优先名单，如对应物品在里面，那么他们将不会被转移/优先被转移
 - 允许你设置mod优先级列表，优先使用该mod的物品
-- 你可以使用鼠标滚轮来修改样板的输入/输出数量
+- 你可以使用ctrl + 鼠标滚轮来修改样板的输入/输出数量
 - 你可以使用shift + 鼠标滚轮来选择材料
 
 ## Credits

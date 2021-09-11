@@ -1,7 +1,11 @@
-package com.github.vfyjxf.nee;
+package com.github.vfyjxf.nee.config;
 
+import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Comment;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 
 /**
@@ -26,5 +30,12 @@ public class NEEConfig {
     @Comment("If item in tne priority list, it will be transferred first.\n" +
             "example:{\"itemName\":\"gregtech:meta_item_2\",\"meta\":\"32492\"}")
     public static String[] itemPriorityList = new String[0];
+
+    @SubscribeEvent
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event){
+        if(NotEnoughEnergistics.MODID.equals(event.getModID())){
+            ConfigManager.sync(NotEnoughEnergistics.MODID, Config.Type.INSTANCE);
+        }
+    }
 
 }
