@@ -2,6 +2,8 @@ package com.github.vfyjxf.nee.utils;
 
 import codechicken.nei.PositionedStack;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.processor.IRecipeProcessor;
+import com.github.vfyjxf.nee.processor.RecipeProcessor;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -14,13 +16,18 @@ import net.minecraft.nbt.NBTTagCompound;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.vfyjxf.nee.NEEConfig.*;
+import static com.github.vfyjxf.nee.config.NEEConfig.*;
 
 public final class ItemUtils {
 
     public static Gson gson = new Gson();
     public static List<StackProcessor> transformItemBlacklist = getTransformItemBlacklist();
     public static List<StackProcessor> transformItemPriorityList = getTransformItemPriorityList();
+
+    public static void reloadConfig() {
+        transformItemBlacklist = getTransformItemBlacklist();
+        transformItemPriorityList = getTransformItemPriorityList();
+    }
 
     public static List<StackProcessor> getTransformItemBlacklist() {
         List<StackProcessor> transformItemBlacklist = new ArrayList<>();
@@ -88,6 +95,7 @@ public final class ItemUtils {
         return transformItemPriorityList;
     }
 
+
     public static boolean isPreferItems(ItemStack itemStack, String recipeProcessor, String identifier) {
         for (StackProcessor processor : ItemUtils.transformItemPriorityList) {
             ItemStack copyStack = itemStack.copy();
@@ -149,17 +157,53 @@ public final class ItemUtils {
         return null;
     }
 
-    public static int getIngredientIndex(ItemStack stack, PositionedStack positionedStack){
+    public static int getIngredientIndex(ItemStack stack, PositionedStack positionedStack) {
         ItemStack stackInput = stack.copy();
         stackInput.stackSize = 1;
-        for(int i = 0; i < positionedStack.items.length; i++){
+        for (int i = 0; i < positionedStack.items.length; i++) {
             ItemStack currentStack = positionedStack.items[i].copy();
             currentStack.stackSize = 1;
-            if(ItemStack.areItemStacksEqual(currentStack,stackInput)){
+            if (ItemStack.areItemStacksEqual(currentStack, stackInput)) {
                 return i;
             }
         }
         return -1;
+    }
+
+    public static String toItemJsonString(ItemStack stack) {
+        GameRegistry.UniqueIdentifier identifier = GameRegistry.findUniqueIdentifierFor(stack.getItem());
+        String nbtString = stack.hasTagCompound() ? ",\"nbt\":" + stack.getTagCompound().toString() : "";
+        int meta = stack.getItemDamage();
+        return "{" + "\"modid\":" + identifier.modId + "," + "\"name\":" + identifier.name + "," + "\"meta\":" + meta + nbtString + "}";
+    }
+
+    public static boolean hasRecipeProcessor(String processorId) {
+        for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
+            if (processor.getRecipeProcessorId().equals(processorId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasOverlayIdentifier(String identifier) {
+        for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
+            for (String ident : processor.getAllOverlayIdentifier()) {
+                if (ident.equals(identifier)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasModId(String modid) {
+        for (String currentId : transformPriorityModList) {
+            if (currentId.equals(modid)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
