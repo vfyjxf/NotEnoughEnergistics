@@ -67,8 +67,8 @@ public class NotEnoughEnergistics {
                     //try to change current itemstack to next ingredient;
                     if (GuiContainer.isShiftKeyDown() && GuiUtils.isCraftingSlot(currentSlot)) {
                         GuiUtils.handleRecipeIngredientChange(currentSlot, dWheel);
-                    } else {
-                        int changeCount = GuiContainer.isCtrlKeyDown() ? dWheel / 60 : dWheel / 120;
+                    } else if (GuiContainer.isCtrlKeyDown()) {
+                        int changeCount = dWheel / 120;
                         NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
                     }
                 }
