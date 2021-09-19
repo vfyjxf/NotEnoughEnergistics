@@ -44,5 +44,6 @@ public class NEEJEIPlugin implements IModPlugin {
             newRegistry = new WrappedTable<>(newRegistry);
         }
         ObfuscationReflectionHelper.setPrivateValue(RecipeTransferRegistry.class, (RecipeTransferRegistry) registry.getRecipeTransferRegistry(), newRegistry, "recipeTransferHandlers");
+        registry.getRecipeTransferRegistry().addRecipeTransferHandler(new CraftingRecipeTransferHandler(), VanillaRecipeCategoryUid.CRAFTING);
     }
 }
