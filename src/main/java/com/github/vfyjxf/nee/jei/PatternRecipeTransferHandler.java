@@ -4,7 +4,7 @@ import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.NEERecipeTransferPacket;
+import com.github.vfyjxf.nee.network.packet.PacketRecipeTransfer;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import com.github.vfyjxf.nee.utils.StackProcessor;
 import mezz.jei.api.gui.IGuiIngredient;
@@ -28,12 +28,12 @@ import static com.github.vfyjxf.nee.jei.NEEJEIPlugin.registry;
 /**
  * @author vfyjxf
  */
-public class NEERecipeTransferHandler implements IRecipeTransferHandler<ContainerPatternTerm> {
+public class PatternRecipeTransferHandler implements IRecipeTransferHandler<ContainerPatternTerm> {
 
     public static final String OUTPUT_KEY = "Outputs";
     public static Map<String, IGuiIngredient<ItemStack>> ingredients = new HashMap<>();
 
-    public NEERecipeTransferHandler() {
+    public PatternRecipeTransferHandler() {
     }
 
     @Override
@@ -120,10 +120,10 @@ public class NEERecipeTransferHandler implements IRecipeTransferHandler<Containe
                     continue;
                 }
                 recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-                NEERecipeTransferHandler.ingredients.put("input" + inputIndex, currentIngredient.ingredient);
+                PatternRecipeTransferHandler.ingredients.put("input" + inputIndex, currentIngredient.ingredient);
                 inputIndex++;
             }
-            NEENetworkHandler.getInstance().sendToServer(new NEERecipeTransferPacket(recipeInputs, recipeOutputs, isCraftingRecipe));
+            NEENetworkHandler.getInstance().sendToServer(new PacketRecipeTransfer(recipeInputs, recipeOutputs, isCraftingRecipe));
             if (NEEConfig.allowPrintRecipeType) {
                 NotEnoughEnergistics.logger.info(recipeType);
             }

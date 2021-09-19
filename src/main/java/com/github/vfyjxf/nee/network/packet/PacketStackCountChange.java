@@ -1,6 +1,7 @@
 package com.github.vfyjxf.nee.network.packet;
 
 import appeng.container.implementations.ContainerPatternTerm;
+import appeng.container.slot.SlotFake;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -53,12 +54,14 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
         player.getServerWorld().addScheduledTask(() -> {
             if (container instanceof ContainerPatternTerm && !((ContainerPatternTerm) container).isCraftingMode()) {
                 Slot currentSlot = container.getSlot(message.getSlotIndex());
-                for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
-                    int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().getCount() + 1 : currentSlot.getStack().getCount() - 1;
-                    if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
-                        currentSlot.getStack().setCount(currentStackSize);
-                    } else {
-                        break;
+                if (currentSlot instanceof SlotFake) {
+                    for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
+                        int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().getCount() + 1 : currentSlot.getStack().getCount() - 1;
+                        if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
+                            currentSlot.getStack().setCount(currentStackSize);
+                        } else {
+                            break;
+                        }
                     }
                 }
             }

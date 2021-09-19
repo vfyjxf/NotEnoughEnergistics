@@ -1,6 +1,7 @@
 package com.github.vfyjxf.nee.network.packet;
 
 import appeng.container.implementations.ContainerPatternTerm;
+import appeng.container.slot.SlotFake;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
@@ -27,7 +28,7 @@ public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketR
         return slotNumber;
     }
 
-    public PacketRecipeItemChange(){
+    public PacketRecipeItemChange() {
 
     }
 
@@ -44,17 +45,17 @@ public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketR
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeTag(buf,this.stack);
+        ByteBufUtils.writeTag(buf, this.stack);
         buf.writeInt(this.slotNumber);
     }
 
     @Override
     public IMessage onMessage(PacketRecipeItemChange message, MessageContext ctx) {
         Container container = ctx.getServerHandler().player.openContainer;
-        if(container instanceof ContainerPatternTerm){
+        if (container instanceof ContainerPatternTerm) {
             Slot currentSlot = container.getSlot(message.getSlotNumber());
             ItemStack nextStack = new ItemStack(message.getStack());
-            if(!nextStack.isEmpty()){
+            if (currentSlot instanceof SlotFake && !nextStack.isEmpty()) {
                 currentSlot.putStack(nextStack);
             }
         }
