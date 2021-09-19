@@ -10,6 +10,7 @@ import com.google.common.collect.Table.Cell;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
+import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.collect.Table;
 import mezz.jei.config.Constants;
@@ -36,7 +37,7 @@ public class NEEJEIPlugin implements IModPlugin {
             }
             newRegistry.put(currentCell.getRowKey(), currentCell.getColumnKey(), currentCell.getValue());
         }
-        newRegistry.put(ContainerPatternTerm.class, Constants.UNIVERSAL_RECIPE_TRANSFER_UID, new NEERecipeTransferHandler());
+        newRegistry.put(ContainerPatternTerm.class, Constants.UNIVERSAL_RECIPE_TRANSFER_UID, new PatternRecipeTransferHandler());
         if (ae2found) {
             NotEnoughEnergistics.logger.info("AE2 RecipeTransferHandler Replaced Successfully (Registered prior)");
         } else {

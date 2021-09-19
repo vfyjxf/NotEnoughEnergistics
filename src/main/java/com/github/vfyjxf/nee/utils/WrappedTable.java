@@ -5,7 +5,7 @@ package com.github.vfyjxf.nee.utils;
 
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
-import com.github.vfyjxf.nee.jei.NEERecipeTransferHandler;
+import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.google.common.collect.ImmutableTable;
 import mezz.jei.collect.Table;
 
@@ -58,7 +58,7 @@ public class WrappedTable<R, C, V> extends Table<R, C, V> {
     @SuppressWarnings("unchecked")
     public V onValueSet(R row, V value) {
         if (row == ContainerPatternTerm.class && value.getClass().getCanonicalName().equals("appeng.integration.modules.jei.RecipeTransferHandler")) {
-            value = (V) new NEERecipeTransferHandler();
+            value = (V) new PatternRecipeTransferHandler();
             NotEnoughEnergistics.logger.info("AE2 RecipeTransfeHandler Replaced Successfully (Overwrite Denied)");
         }
         return value;

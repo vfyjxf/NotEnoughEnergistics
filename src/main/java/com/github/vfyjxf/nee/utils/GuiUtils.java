@@ -3,7 +3,7 @@ package com.github.vfyjxf.nee.utils;
 import appeng.client.gui.AEBaseGui;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFakeCraftingMatrix;
-import com.github.vfyjxf.nee.jei.NEERecipeTransferHandler;
+import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
 import mezz.jei.api.gui.IGuiIngredient;
@@ -57,7 +57,7 @@ public class GuiUtils {
     }
 
     public static void handleRecipeIngredientChange(Slot currentSlot, int dWheel) {
-        IGuiIngredient<ItemStack> ingredient = NEERecipeTransferHandler.ingredients.get("input" + currentSlot.getSlotIndex());
+        IGuiIngredient<ItemStack> ingredient = PatternRecipeTransferHandler.ingredients.get("input" + currentSlot.getSlotIndex());
         if (ingredient != null && ingredient.getDisplayedIngredient() != null && ingredient.getAllIngredients().size() > 1) {
             List<ItemStack> currentIngredients = ingredient.getAllIngredients();
             int currentStackIndex = ItemUtils.getIngredientIndex(currentSlot.getStack(), currentIngredients);

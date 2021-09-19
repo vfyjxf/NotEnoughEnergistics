@@ -21,22 +21,22 @@ import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 
-import static com.github.vfyjxf.nee.jei.NEERecipeTransferHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.OUTPUT_KEY;
 
 /**
  * @author vfyjxf
  */
-public class NEERecipeTransferPacket implements IMessage, IMessageHandler<NEERecipeTransferPacket, IMessage> {
+public class PacketRecipeTransfer implements IMessage, IMessageHandler<PacketRecipeTransfer, IMessage> {
 
     private NBTTagCompound input;
     private NBTTagCompound output;
     private boolean craftingMode;
 
-    public NEERecipeTransferPacket() {
+    public PacketRecipeTransfer() {
 
     }
 
-    public NEERecipeTransferPacket(@Nonnull NBTTagCompound input, NBTTagCompound output, boolean craftingMode) {
+    public PacketRecipeTransfer(@Nonnull NBTTagCompound input, NBTTagCompound output, boolean craftingMode) {
         this.input = input;
         this.output = output;
         this.craftingMode = craftingMode;
@@ -76,7 +76,7 @@ public class NEERecipeTransferPacket implements IMessage, IMessageHandler<NEERec
     }
 
     @Override
-    public IMessage onMessage(NEERecipeTransferPacket message, MessageContext ctx) {
+    public IMessage onMessage(PacketRecipeTransfer message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         Container container = player.openContainer;
         player.getServerWorld().addScheduledTask(() -> {
