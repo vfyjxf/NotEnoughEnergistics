@@ -1,0 +1,5 @@
+nei.options.keys.nee=NotEnoughEnergistics
+nei.options.keys.nee.count=修改物品数量
+nei.options.keys.nee.ingredient=选择材料
+nei.options.keys.nee.preview=合成帮助
+nei.options.keys.nee.nopreview=合成帮助(无预览)
