@@ -85,6 +85,7 @@ public class NEECommands extends CommandBase {
                         newList.add(modid);
                         NEEConfig.config.getCategory("client").get("transformPriorityModList").set(newList.toArray(new String[0]));
                         NEEConfig.config.save();
+                        NEEConfig.reload();
                     }
                 }
             } else if ("reload".equalsIgnoreCase(args[0])) {

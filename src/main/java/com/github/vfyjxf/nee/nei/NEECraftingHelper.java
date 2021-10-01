@@ -51,7 +51,7 @@ public class NEECraftingHelper implements IOverlayHandler {
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
         Container container = Minecraft.getMinecraft().thePlayer.openContainer;
         if (firstGui instanceof GuiCraftingTerm && NEECraftingHandler.isCraftingTableRecipe(recipe) && container instanceof ContainerCraftingTerm) {
-            tracker = createTracker((GuiCraftingTerm) firstGui, recipe, recipeIndex);
+            tracker = createTracker((GuiCraftingTerm) firstGui, (ContainerCraftingTerm) container, recipe, recipeIndex);
             if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview"))) {
                 if (!tracker.getRequireToCraftStacks().isEmpty()) {
                     NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(0), false));
@@ -83,7 +83,7 @@ public class NEECraftingHelper implements IOverlayHandler {
         }
     }
 
-    private IngredientTracker createTracker(GuiCraftingTerm firstGui, IRecipeHandler recipe, int recipeIndex) {
+    private IngredientTracker createTracker(GuiCraftingTerm firstGui, ContainerCraftingTerm container, IRecipeHandler recipe, int recipeIndex) {
         IngredientTracker tracker = new IngredientTracker(firstGui);
         List<PositionedStack> requiredIngredient = new ArrayList<>();
         for (PositionedStack positionedStack : recipe.getIngredientStacks(recipeIndex)) {
@@ -105,8 +105,15 @@ public class NEECraftingHelper implements IOverlayHandler {
             for (ItemStack currentStack : currentIngredient.items) {
                 if (tracker.hasCraftableStack(currentStack)) {
                     ItemStack requiredStack = currentStack.copy();
+                    for (ItemStack stack : GuiUtils.getStacksFromCraftingTerminal(container)) {
+                        if (stack.isItemEqual(requiredStack) && ItemStack.areItemStackTagsEqual(stack, requiredStack)) {
+                            currentIngredient.items[0].stackSize -= stack.stackSize;
+                        }
+                    }
                     requiredStack.stackSize = currentIngredient.items[0].stackSize;
-                    tracker.addRequireToCraftStack(requiredStack);
+                    if (requiredStack.stackSize > 0) {
+                        tracker.addRequireToCraftStack(requiredStack);
+                    }
                     break;
                 }
             }

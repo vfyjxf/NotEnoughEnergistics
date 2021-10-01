@@ -1,6 +1,7 @@
 package com.github.vfyjxf.nee.utils;
 
 import appeng.client.gui.AEBaseGui;
+import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.helpers.IContainerCraftingPacket;
 import codechicken.nei.PositionedStack;
@@ -19,6 +20,8 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author vfyjxf
@@ -62,6 +65,28 @@ public class GuiUtils {
             return slot.inventory.equals(craftMatrix);
         }
         return false;
+    }
+
+    public static List<ItemStack> getStacksFromCraftingTerminal(ContainerCraftingTerm container) {
+        List<ItemStack> stacks = new ArrayList<>();
+        IInventory craftingGrid = container.getInventoryByName("crafting");
+        for (int i = 0; i < craftingGrid.getSizeInventory(); i++) {
+            ItemStack currentStack = craftingGrid.getStackInSlot(i);
+            boolean find = false;
+            if (currentStack != null) {
+                for (ItemStack stack : stacks) {
+                    boolean isStackEqual = stack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(stack, currentStack);
+                    if (isStackEqual && stack.stackSize + currentStack.stackSize <= stack.getMaxStackSize()) {
+                        stack.stackSize = stack.stackSize + currentStack.stackSize;
+                        find = true;
+                    }
+                }
+            }
+            if (!find && currentStack != null) {
+                stacks.add(currentStack.copy());
+            }
+        }
+        return stacks;
     }
 
     public static void handleRecipeIngredientChange(Slot currentSlot, int dWheel) {
