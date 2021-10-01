@@ -42,7 +42,7 @@ public class NEECommands extends CommandBase {
                     }
                 }
             } else if ("add".equalsIgnoreCase(args[0]) && args.length > 1) {
-                if ("blacklist".equals(args[1]) || "priorityItem".equalsIgnoreCase(args[1])) {
+                if ("blacklist".equalsIgnoreCase(args[1]) || "priorityItem".equalsIgnoreCase(args[1])) {
                     ItemStack currentStack = Minecraft.getMinecraft().thePlayer.getCurrentEquippedItem();
                     if (currentStack != null) {
                         String currentItemJsonString = ItemUtils.toItemJsonString(currentStack);

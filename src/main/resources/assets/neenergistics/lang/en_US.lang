@@ -1,0 +1,5 @@
+nei.options.keys.nee=NotEnoughEnergistics
+nei.options.keys.nee.count=Change Item Count
+nei.options.keys.nee.ingredient=Choose ingredient
+nei.options.keys.nee.preview=Crafting Help
+nei.options.keys.nee.nopreview=Crafting Help(No Preview)

@@ -19,6 +19,7 @@ public class NEENetworkHandler {
         INSTANCE.registerMessage(PacketExtremeRecipe.class, PacketExtremeRecipe.class, 2, Side.SERVER);
         INSTANCE.registerMessage(PacketStackCountChange.class, PacketStackCountChange.class, 3, Side.SERVER);
         INSTANCE.registerMessage(PacketRecipeItemChange.class, PacketRecipeItemChange.class, 4, Side.SERVER);
+        INSTANCE.registerMessage(PacketCraftingHelper.class, PacketCraftingHelper.class, 5, Side.SERVER);
     }
 
 }

@@ -1,13 +1,16 @@
 package com.github.vfyjxf.nee;
 
+import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.gui.implementations.GuiPatternTermEx;
 import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
+import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
 import cpw.mods.fml.common.Loader;
+import org.lwjgl.input.Keyboard;
 import thaumicenergistics.client.gui.GuiKnowledgeInscriber;
 import wanion.avaritiaddons.block.extremeautocrafter.GuiExtremeAutoCrafter;
 
@@ -23,6 +26,8 @@ public class NEINeeConfig implements IConfigureNEI {
 
         RecipeProcessor.init();
 
+        registerKeyBindings();
+
         Set<String> defaultIdentifiers = new HashSet<>(
                 Arrays.asList("crafting", "crafting2x2", "brewing", "smelting", "fuel", null)
         );
@@ -36,6 +41,8 @@ public class NEINeeConfig implements IConfigureNEI {
             API.registerGuiOverlay(GuiPatternTerm.class, ident);
             API.registerGuiOverlayHandler(GuiPatternTerm.class, new NEECraftingHandler(), ident);
         }
+
+        installCraftingTermSupport();
 
         installPatternTerminalExSupport(identifiers);
 
@@ -52,6 +59,20 @@ public class NEINeeConfig implements IConfigureNEI {
     @Override
     public String getVersion() {
         return NotEnoughEnergistics.VERSION;
+    }
+
+    private void registerKeyBindings() {
+        API.addKeyBind("nee.count", Keyboard.KEY_LCONTROL);
+        API.addKeyBind("nee.ingredient", Keyboard.KEY_LSHIFT);
+        API.addKeyBind("nee.preview", Keyboard.KEY_LCONTROL);
+        API.addKeyBind("nee.nopreview", Keyboard.KEY_LMENU);
+    }
+
+    private void installCraftingTermSupport() {
+        API.registerGuiOverlay(GuiCraftingTerm.class, "crafting");
+        API.registerGuiOverlay(GuiCraftingTerm.class, "crafting2x2");
+        API.registerGuiOverlayHandler(GuiCraftingTerm.class, new NEECraftingHelper(), "crafting");
+        API.registerGuiOverlayHandler(GuiCraftingTerm.class, new NEECraftingHelper(), "crafting2x2");
     }
 
     private void installThaumicEnergisticsSupport() {

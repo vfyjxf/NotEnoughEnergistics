@@ -248,7 +248,7 @@ public class NEECraftingHandler implements IOverlayHandler {
         }
     }
 
-    private boolean isCraftingTableRecipe(IRecipeHandler recipe) {
+    public static boolean isCraftingTableRecipe(IRecipeHandler recipe) {
         TemplateRecipeHandler templateRecipeHandler = (TemplateRecipeHandler) recipe;
         String overlayIdentifier = templateRecipeHandler.getOverlayIdentifier();
         return "crafting".equals(overlayIdentifier) || "crafting2x2".equals(overlayIdentifier);

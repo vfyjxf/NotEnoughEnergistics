@@ -23,7 +23,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - Support Processing Pattern Terminal(16 -> 4 mode).
 - Allow you to add item blackList and item priority list, if item in them, it will not be transferred / transfer it first.(use /nee RecipeProcessor to get RecipeProcessor and identifier in log)
 - Allow you to add mod priority list,if the mod's has this item,it will be use first.
-- You can use the mouse wheel to change the Pattern item input/output amount.
+- You can use the ctrl + mouse wheel to change the Pattern item input/output amount.
 - You can use shift + mouse wheel to choose ingredient.
 
 ## Compatible Modslist as followed：

@@ -5,10 +5,12 @@ import appeng.container.slot.SlotFake;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
+import com.github.vfyjxf.nee.proxy.CommonProxy;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -39,6 +41,9 @@ public class NotEnoughEnergistics {
     public static final String GUI_FACTORY = "com.github.vfyjxf.nee.config.NEEConfigGuiFactory";
     public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
 
+    @SidedProxy(clientSide = "com.github.vfyjxf.nee.proxy.ClientProxy", serverSide = "com.github.vfyjxf.nee.proxy.ServerProxy")
+    public static CommonProxy proxy;
+
     @EventHandler
     public void preInit(FMLPreInitializationEvent e) {
         NEENetworkHandler.init();
@@ -48,32 +53,7 @@ public class NotEnoughEnergistics {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        if (FMLCommonHandler.instance().getSide().isClient()) {
-            FMLCommonHandler.instance().bus().register(this);
-            ClientCommandHandler.instance.registerCommand(new NEECommands());
-        }
-    }
-
-    @SubscribeEvent
-    public void onRenderTick(TickEvent.RenderTickEvent event) {
-        if (event.phase == TickEvent.Phase.START) {
-            Minecraft mc = Minecraft.getMinecraft();
-            int dWheel = Mouse.getDWheel();
-            if (dWheel != 0 && mc.currentScreen instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(mc.currentScreen)) {
-                int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
-                int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
-                Slot currentSlot = GuiUtils.getSlotUnderMouse((GuiContainer) mc.currentScreen, x, y);
-                if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
-                    //try to change current itemstack to next ingredient;
-                    if (GuiContainer.isShiftKeyDown() && GuiUtils.isCraftingSlot(currentSlot)) {
-                        GuiUtils.handleRecipeIngredientChange(currentSlot, dWheel);
-                    } else if (GuiContainer.isCtrlKeyDown()) {
-                        int changeCount = dWheel / 120;
-                        NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
-                    }
-                }
-            }
-        }
+        proxy.init(event);
     }
 
 }
