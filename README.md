@@ -25,6 +25,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - Allow you to add mod priority list,if the mod's has this item,it will be use first.
 - You can use the ctrl + mouse wheel to change the Pattern item input/output amount.
 - You can use shift + mouse wheel to choose ingredient.
+- you can use ctrl+ click [?] in crafting terminal to request the items while missing in AE and having existing pattern in AE(alt + click for no preview)
 
 ## Compatible Modslist as followed：
 

@@ -37,7 +37,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -51,80 +50,45 @@ public class NEECraftingHelper implements IOverlayHandler {
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
         Container container = Minecraft.getMinecraft().thePlayer.openContainer;
         if (firstGui instanceof GuiCraftingTerm && NEECraftingHandler.isCraftingTableRecipe(recipe) && container instanceof ContainerCraftingTerm) {
-            tracker = createTracker((GuiCraftingTerm) firstGui, (ContainerCraftingTerm) container, recipe, recipeIndex);
-            if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview"))) {
-                if (!tracker.getRequireToCraftStacks().isEmpty()) {
-                    NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(0), false));
-                    noPreview = false;
-                    stackIndex = 1;
-                }
-            } else if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"))) {
-                //no preview
-                if (!tracker.getRequireToCraftStacks().isEmpty()) {
-                    NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(0), true));
-                    noPreview = true;
-                    stackIndex = 1;
-                }
+            tracker = createTracker(firstGui, recipe, recipeIndex);
+            boolean doCraftingHelp = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview")) || Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
+            noPreview = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
+            if (doCraftingHelp && !tracker.getRequireToCraftStacks().isEmpty()) {
+                NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(0), noPreview));
+                stackIndex = 1;
             } else {
-                /*
-                  Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
-                 */
-                try {
-                    final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
-                    PacketNEIRecipe packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, false));
-                    if (packet.size() >= 32 * 1024) {
-                        AELog.warn("Recipe for " + recipe.getRecipeName() + " has too many variants, reduced version will be used");
-                        packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, true));
-                    }
-                    NetworkHandler.instance.sendToServer(packet);
-                } catch (final Exception | Error ignored) {
-                }
+                moveItem(firstGui, recipe, recipeIndex);
             }
         }
     }
 
-    private IngredientTracker createTracker(GuiCraftingTerm firstGui, ContainerCraftingTerm container, IRecipeHandler recipe, int recipeIndex) {
-        IngredientTracker tracker = new IngredientTracker(firstGui);
-        List<PositionedStack> requiredIngredient = new ArrayList<>();
-        for (PositionedStack positionedStack : recipe.getIngredientStacks(recipeIndex)) {
-            ItemStack firstStack = positionedStack.items[0];
-            boolean find = false;
-            for (PositionedStack currentIngredient : requiredIngredient) {
-                ItemStack currentStack = currentIngredient.items[0];
-                if (currentStack.isItemEqual(firstStack) && ItemStack.areItemStackTagsEqual(currentStack, firstStack)) {
-                    find = true;
-                    currentStack.stackSize = currentStack.stackSize + firstStack.stackSize;
-                }
-            }
-            if (!find) {
-                requiredIngredient.add(positionedStack);
-            }
-        }
+    private IngredientTracker createTracker(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
+        IngredientTracker tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
 
-        for (PositionedStack currentIngredient : requiredIngredient) {
-            for (ItemStack currentStack : currentIngredient.items) {
-                if (tracker.hasCraftableStack(currentStack)) {
-                    ItemStack requiredStack = currentStack.copy();
-                    for (ItemStack stack : GuiUtils.getStacksFromCraftingTerminal(container)) {
-                        if (stack.isItemEqual(requiredStack) && ItemStack.areItemStackTagsEqual(stack, requiredStack)) {
-                            currentIngredient.items[0].stackSize -= stack.stackSize;
-                        }
-                    }
-                    requiredStack.stackSize = currentIngredient.items[0].stackSize;
-                    if (requiredStack.stackSize > 0) {
-                        tracker.addRequireToCraftStack(requiredStack);
-                    }
-                    break;
-                }
+        //check stacks in player's inventory and crafting grid
+        for (Slot slot : (List<Slot>) firstGui.inventorySlots.inventorySlots) {
+            boolean canGetStack = slot != null && slot.getHasStack() && slot.getStack().stackSize > 0 && slot.isItemValid(slot.getStack()) && slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
+            if (canGetStack) {
+                tracker.addIngredientStack(slot.getStack());
             }
         }
 
         return tracker;
     }
 
-    /**
-     * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
-     */
+    private void moveItem(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
+        try {
+            final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
+            PacketNEIRecipe packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, false));
+            if (packet.size() >= 32 * 1024) {
+                AELog.warn("Recipe for " + recipe.getRecipeName() + " has too many variants, reduced version will be used");
+                packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, true));
+            }
+            NetworkHandler.instance.sendToServer(packet);
+        } catch (final Exception | Error ignored) {
+        }
+    }
+
     private boolean testSize(final NBTTagCompound recipe) throws IOException {
         final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         final DataOutputStream outputStream = new DataOutputStream(bytes);
@@ -132,9 +96,6 @@ public class NEECraftingHelper implements IOverlayHandler {
         return bytes.size() > 3 * 1024;
     }
 
-    /**
-     * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
-     */
     private NBTTagCompound packIngredients(GuiContainer gui, List<PositionedStack> ingredients, boolean limited) throws IOException {
         final NBTTagCompound recipe = new NBTTagCompound();
         for (final PositionedStack positionedStack : ingredients) {

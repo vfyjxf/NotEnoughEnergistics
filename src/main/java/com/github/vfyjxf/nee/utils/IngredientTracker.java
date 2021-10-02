@@ -1,10 +1,15 @@
 package com.github.vfyjxf.nee.utils;
 
+import appeng.api.AEApi;
 import appeng.api.storage.data.IAEItemStack;
-import appeng.client.gui.implementations.GuiCraftingTerm;
+import appeng.api.storage.data.IItemList;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.me.ItemRepo;
+import codechicken.nei.PositionedStack;
+import codechicken.nei.recipe.IRecipeHandler;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
@@ -13,24 +18,51 @@ import java.util.List;
 public class IngredientTracker {
 
     private List<IAEItemStack> craftbleAEItemStacks;
-    private List<ItemStack> requireToCraftStacks = new ArrayList<>();
+    private List<Ingredient> ingredients = new ArrayList<>();
 
-    public IngredientTracker(GuiCraftingTerm gui) {
+    public IngredientTracker(GuiContainer gui, IRecipeHandler recipe, int recipeIndex) {
         this.craftbleAEItemStacks = getCraftableStacks(gui);
+        List<PositionedStack> requiredIngredients = new ArrayList<>();
+        for (PositionedStack positionedStack : recipe.getIngredientStacks(recipeIndex)) {
+            boolean find = false;
+            for (PositionedStack currentIngredient : requiredIngredients) {
+                boolean areItemStackEquals = currentIngredient.items[0].isItemEqual(positionedStack.items[0]) && ItemStack.areItemStackTagsEqual(currentIngredient.items[0], positionedStack.items[0]);
+                if (areItemStackEquals) {
+                    currentIngredient.items[0].stackSize += positionedStack.items[0].stackSize;
+                    find = true;
+                }
+            }
+
+            if (!find) {
+                requiredIngredients.add(positionedStack);
+            }
+
+        }
+        for (PositionedStack requiredIngredient : requiredIngredients) {
+            Ingredient ingredient = new Ingredient(requiredIngredient);
+            ingredients.add(ingredient);
+
+            for (IAEItemStack craftableStack : NEEConfig.matchOtherItems ? this.getAEStacks(gui) : craftbleAEItemStacks) {
+                if (requiredIngredient.contains(craftableStack.getItemStack())) {
+                    ingredient.setCraftableIngredient(craftableStack.getItemStack());
+                    ingredient.addCurrentCount(craftableStack.getItemStack().stackSize);
+                }
+            }
+        }
     }
 
 
-    private List<IAEItemStack> getCraftableStacks(GuiCraftingTerm gui) {
+    private List<IAEItemStack> getCraftableStacks(GuiContainer gui) {
         List<IAEItemStack> craftableAEItemSafcks = new ArrayList<>();
-        ArrayList<IAEItemStack> view = null;
+        IItemList<IAEItemStack> list = null;
         try {
             ItemRepo repo = (ItemRepo) ReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(gui);
-            view = (ArrayList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "view").get(repo);
+            list = (IItemList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "list").get(repo);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        if (view != null) {
-            for (IAEItemStack stack : view) {
+        if (list != null) {
+            for (IAEItemStack stack : list) {
                 if (stack.isCraftable()) {
                     craftableAEItemSafcks.add(stack);
                 }
@@ -39,31 +71,37 @@ public class IngredientTracker {
         return craftableAEItemSafcks;
     }
 
-    public boolean hasCraftableStack(ItemStack stack) {
-        for (IAEItemStack aeItemStack : this.craftbleAEItemStacks) {
-            if (aeItemStack.isSameType(stack)) {
-                return true;
-            }
+    private IItemList<IAEItemStack> getAEStacks(GuiContainer gui) {
+        IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
+        try {
+            ItemRepo repo = (ItemRepo) ReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(gui);
+            list = (IItemList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "list").get(repo);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
-        return false;
-    }
-
-    public List<IAEItemStack> getCraftbleAEItemStacks() {
-        return this.craftbleAEItemStacks;
+        return list;
     }
 
     public List<ItemStack> getRequireToCraftStacks() {
-        return this.requireToCraftStacks;
+        List<ItemStack> requireToCraftStacks = new ArrayList<>();
+        for (Ingredient ingredient : this.ingredients) {
+            ItemStack craftableStack = ingredient.getCraftableIngredient();
+            if (craftableStack != null && ingredient.requiresToCraft()) {
+                ItemStack requireStack = craftableStack.copy();
+                requireStack.stackSize = ingredient.getMissingCount();
+                requireToCraftStacks.add(requireStack);
+            }
+        }
+        return requireToCraftStacks;
     }
 
-
-    public void addRequireToCraftStack(ItemStack requiredStack) {
-        for (IAEItemStack craftableStack : this.getCraftbleAEItemStacks()) {
-            if (craftableStack.isSameType(requiredStack)) {
-                int requiredCount = (int) (requiredStack.stackSize - craftableStack.getStackSize());
-                if (requiredCount > 0) {
-                    requiredStack.stackSize = requiredCount;
-                    this.requireToCraftStacks.add(requiredStack);
+    public void addIngredientStack(ItemStack stack) {
+        for (Ingredient ingredient : this.ingredients) {
+            if (ingredient.requiresToCraft()) {
+                ItemStack craftableStack = ingredient.getCraftableIngredient();
+                if (craftableStack != null && craftableStack.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(craftableStack, stack)) {
+                    ingredient.addCurrentCount(stack.stackSize);
+                    break;
                 }
             }
         }

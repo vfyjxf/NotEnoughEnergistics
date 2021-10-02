@@ -20,6 +20,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 - 允许你设置mod优先级列表，优先使用该mod的物品
 - 你可以使用ctrl + 鼠标滚轮来修改样板的输入/输出数量
 - 你可以使用shift + 鼠标滚轮来选择材料
+- 你可以使用shift + 点击[?]按钮来在合成终端中请求有配方的缺失材料(alt + 点击[?]来跳过预览)
 
 ## 当前支持的Mod列表：
 

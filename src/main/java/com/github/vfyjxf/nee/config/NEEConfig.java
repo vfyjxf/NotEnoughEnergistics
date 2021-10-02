@@ -20,6 +20,7 @@ public class NEEConfig {
     public static String[] transformPriorityModList = new String[0];
 
     public static boolean noShift = true;
+    public static boolean matchOtherItems = false;
 
     public static void loadConfig(File configFile) {
         config = new Configuration(configFile);
@@ -35,6 +36,12 @@ public class NEEConfig {
         transformPriorityModList = config.get("client", "transformPriorityModList", new String[0],
                 "if oredict has this mod's item, use it first").getStringList();
 
+        noShift = config.get("client", "noShift", true,
+                "if true, you don't need to press shift to use NEI's transfer system in CratingTerminal and PatternTerminal").getBoolean();
+
+        matchOtherItems = config.get("client", "matchOnCraftableItems", false,
+                "If false, Crafting Helper will not match other items").getBoolean();
+
         if (config.hasChanged()) config.save();
     }
 
@@ -49,6 +56,9 @@ public class NEEConfig {
 
         transformPriorityModList = config.get("client", "transformPriorityModList", new String[0],
                 "if oredict has this mod's item, use it first").getStringList();
+
+        matchOtherItems = config.get("client", "matchOnCraftableItems", false,
+                "If false, Crafting Helper will not match other items").getBoolean();
         ItemUtils.reloadConfig();
     }
 
