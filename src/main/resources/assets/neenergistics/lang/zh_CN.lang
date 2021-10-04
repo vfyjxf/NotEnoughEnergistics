@@ -1,3 +1,5 @@
+neenergistics.gui.tooltip.helper.crafting=点击以请求缺失的物品
+neenergistics.gui.tooltip.helper.pattern=自动合成已可用
 nei.options.keys.nee=NotEnoughEnergistics
 nei.options.keys.nee.count=修改物品数量
 nei.options.keys.nee.ingredient=选择材料

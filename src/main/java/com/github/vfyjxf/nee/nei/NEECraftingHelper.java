@@ -76,6 +76,9 @@ public class NEECraftingHelper implements IOverlayHandler {
         return tracker;
     }
 
+    /**
+     * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
+     */
     private void moveItem(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
         try {
             final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
@@ -89,6 +92,9 @@ public class NEECraftingHelper implements IOverlayHandler {
         }
     }
 
+    /**
+     * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
+     */
     private boolean testSize(final NBTTagCompound recipe) throws IOException {
         final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         final DataOutputStream outputStream = new DataOutputStream(bytes);
@@ -96,6 +102,9 @@ public class NEECraftingHelper implements IOverlayHandler {
         return bytes.size() > 3 * 1024;
     }
 
+    /**
+     * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
+     */
     private NBTTagCompound packIngredients(GuiContainer gui, List<PositionedStack> ingredients, boolean limited) throws IOException {
         final NBTTagCompound recipe = new NBTTagCompound();
         for (final PositionedStack positionedStack : ingredients) {

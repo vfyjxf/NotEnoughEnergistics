@@ -51,6 +51,29 @@ public class IngredientTracker {
         }
     }
 
+    public IngredientTracker(GuiContainer gui, List<PositionedStack> requiredIngredients) {
+        IItemList<IAEItemStack> aeItemStacks = this.getAEStacks(gui);
+        for (PositionedStack positionedStack : requiredIngredients) {
+            this.ingredients.add(new Ingredient(positionedStack));
+        }
+        for (Ingredient ingredient : this.ingredients) {
+            for (IAEItemStack stack : aeItemStacks) {
+                if (ingredient.getIngredients().contains(stack.getItemStack())) {
+                    if (ingredient.getCraftableIngredient() == null && stack.isCraftable()) {
+                        ingredient.setCraftableIngredient(stack.getItemStack());
+                    }
+                    if (stack.getStackSize() > 0) {
+                        ingredient.addCurrentCount(stack.getStackSize());
+                        if (ingredient.requiresToCraft()) {
+                            stack.setStackSize(0);
+                        } else {
+                            stack.setStackSize(stack.getStackSize() - ingredient.getRequireCount());
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private List<IAEItemStack> getCraftableStacks(GuiContainer gui) {
         List<IAEItemStack> craftableAEItemSafcks = new ArrayList<>();
@@ -64,7 +87,7 @@ public class IngredientTracker {
         if (list != null) {
             for (IAEItemStack stack : list) {
                 if (stack.isCraftable()) {
-                    craftableAEItemSafcks.add(stack);
+                    craftableAEItemSafcks.add(stack.copy());
                 }
             }
         }
@@ -75,11 +98,17 @@ public class IngredientTracker {
         IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
         try {
             ItemRepo repo = (ItemRepo) ReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(gui);
-            list = (IItemList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "list").get(repo);
+            for (IAEItemStack stack : (IItemList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "list").get(repo)) {
+                list.add(stack.copy());
+            }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public List<Ingredient> getIngredients() {
+        return ingredients;
     }
 
     public List<ItemStack> getRequireToCraftStacks() {
@@ -88,7 +117,7 @@ public class IngredientTracker {
             ItemStack craftableStack = ingredient.getCraftableIngredient();
             if (craftableStack != null && ingredient.requiresToCraft()) {
                 ItemStack requireStack = craftableStack.copy();
-                requireStack.stackSize = ingredient.getMissingCount();
+                requireStack.stackSize = (int) ingredient.getMissingCount();
                 requireToCraftStacks.add(requireStack);
             }
         }

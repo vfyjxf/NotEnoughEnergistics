@@ -10,6 +10,7 @@ import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
@@ -87,6 +88,13 @@ public class GuiUtils {
             }
         }
         return stacks;
+    }
+
+    public static boolean isMouseOverButton(GuiButton button, int mouseX, int mouseY) {
+        return mouseX >= button.xPosition &&
+                mouseY >= button.yPosition &&
+                mouseX < button.xPosition + button.width &&
+                mouseY < button.yPosition + button.height;
     }
 
     public static void handleRecipeIngredientChange(Slot currentSlot, int dWheel) {

@@ -5,6 +5,9 @@ import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.gui.implementations.GuiPatternTermEx;
 import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
+import codechicken.nei.guihook.GuiContainerManager;
+import com.github.vfyjxf.nee.client.NEEContainerDrawHandler;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
@@ -40,6 +43,10 @@ public class NEINeeConfig implements IConfigureNEI {
         for (String ident : identifiers) {
             API.registerGuiOverlay(GuiPatternTerm.class, ident);
             API.registerGuiOverlayHandler(GuiPatternTerm.class, new NEECraftingHandler(), ident);
+        }
+
+        if(NEEConfig.drawHighlight){
+            GuiContainerManager.addDrawHandler(NEEContainerDrawHandler.instance);
         }
 
         installCraftingTermSupport();

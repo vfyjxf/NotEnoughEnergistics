@@ -21,6 +21,7 @@ public class NEEConfig {
 
     public static boolean noShift = true;
     public static boolean matchOtherItems = false;
+    public static boolean drawHighlight = true;
 
     public static void loadConfig(File configFile) {
         config = new Configuration(configFile);
@@ -41,6 +42,9 @@ public class NEEConfig {
 
         matchOtherItems = config.get("client", "matchOnCraftableItems", false,
                 "If false, Crafting Helper will not match other items").getBoolean();
+
+        drawHighlight = config.get("client","drawHighlight",true,
+                "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
 
         if (config.hasChanged()) config.save();
     }

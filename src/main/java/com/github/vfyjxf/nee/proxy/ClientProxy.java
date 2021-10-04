@@ -2,6 +2,7 @@ package com.github.vfyjxf.nee.proxy;
 
 import com.github.vfyjxf.nee.NEECommands;
 import com.github.vfyjxf.nee.client.GuiHandler;
+import com.github.vfyjxf.nee.client.NEEContainerDrawHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -18,6 +19,9 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(new GuiHandler());
         if (NEEConfig.noShift) {
             MinecraftForge.EVENT_BUS.register(new NEECraftingHelper());
+        }
+        if(NEEConfig.drawHighlight){
+            MinecraftForge.EVENT_BUS.register(NEEContainerDrawHandler.instance);
         }
     }
 }
