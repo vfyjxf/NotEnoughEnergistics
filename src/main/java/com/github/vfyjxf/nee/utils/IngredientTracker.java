@@ -124,12 +124,18 @@ public class IngredientTracker {
         return requireToCraftStacks;
     }
 
-    public void addIngredientStack(ItemStack stack) {
+    public void addAvailableStack(ItemStack stack) {
         for (Ingredient ingredient : this.ingredients) {
             if (ingredient.requiresToCraft()) {
                 ItemStack craftableStack = ingredient.getCraftableIngredient();
-                if (craftableStack != null && craftableStack.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(craftableStack, stack)) {
+                if (craftableStack != null && craftableStack.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(craftableStack, stack) && stack.stackSize > 0) {
+                    int missingCount = (int) ingredient.getMissingCount();
                     ingredient.addCurrentCount(stack.stackSize);
+                    if (ingredient.requiresToCraft()) {
+                        stack.stackSize = 0;
+                    } else {
+                        stack.stackSize -= missingCount;
+                    }
                     break;
                 }
             }

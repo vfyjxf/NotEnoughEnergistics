@@ -69,7 +69,7 @@ public class NEECraftingHelper implements IOverlayHandler {
         for (Slot slot : (List<Slot>) firstGui.inventorySlots.inventorySlots) {
             boolean canGetStack = slot != null && slot.getHasStack() && slot.getStack().stackSize > 0 && slot.isItemValid(slot.getStack()) && slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
             if (canGetStack) {
-                tracker.addIngredientStack(slot.getStack());
+                tracker.addAvailableStack(slot.getStack());
             }
         }
 

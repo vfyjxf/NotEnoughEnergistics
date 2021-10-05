@@ -17,6 +17,7 @@ import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.input.Keyboard;
@@ -175,10 +176,17 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         IngredientTracker tracker = new IngredientTracker(firstGui, ingredients);
 
         //check stacks in player's inventory and crafting grid
+        List<ItemStack> inventoryStacks = new ArrayList<>();
         for (Slot slot : (List<Slot>) firstGui.inventorySlots.inventorySlots) {
             boolean canGetStack = slot != null && slot.getHasStack() && slot.getStack().stackSize > 0 && slot.isItemValid(slot.getStack()) && slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
             if (canGetStack) {
-                tracker.addIngredientStack(slot.getStack());
+                inventoryStacks.add(slot.getStack().copy());
+            }
+        }
+
+        for (int i = 0; i < tracker.getIngredients().size(); i++) {
+            for (ItemStack stack : inventoryStacks) {
+                tracker.addAvailableStack(stack);
             }
         }
 
