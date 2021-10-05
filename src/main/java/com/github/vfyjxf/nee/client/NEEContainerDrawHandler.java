@@ -73,52 +73,54 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
     public void renderSlotOverlay(GuiContainer gui, Slot slot) {
         if (gui instanceof GuiRecipe) {
             Minecraft mc = Minecraft.getMinecraft();
-            final ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-            int i = scaledresolution.getScaledWidth();
-            int j = scaledresolution.getScaledHeight();
-            final int mouseX = Mouse.getX() * i / mc.displayWidth;
-            final int mouseY = j - Mouse.getY() * j / mc.displayHeight - 1;
             GuiRecipe guiRecipe = (GuiRecipe) gui;
-            GuiButton[] overlayButtons = null;
-            try {
-                overlayButtons = (GuiButton[]) this.overlayButtonsField.get(guiRecipe);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-            if (overlayButtons != null) {
-                for (GuiButton button : overlayButtons) {
-                    if (button.visible && button.enabled && GuiUtils.isMouseOverButton(button, mouseX, mouseY)) {
-                        final int OVERLAY_BUTTON_ID_START = 4;
-                        IRecipeHandler handler = null;
-                        int recipesPerPage = -1;
-                        try {
-                            recipesPerPage = (int) this.recipesPerPageMethod.invoke(guiRecipe);
-                            handler = (IRecipeHandler) this.handlerField.get(guiRecipe);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
-                        if (recipesPerPage >= 0 && handler != null) {
-                            int recipeIndex = guiRecipe.page * recipesPerPage + button.id - OVERLAY_BUTTON_ID_START;
-                            List<PositionedStack> ingredients = handler.getIngredientStacks(recipeIndex);
-                            IngredientTracker tracker = createTracker(guiRecipe.firstGui, ingredients);
+            if (guiRecipe.firstGui instanceof GuiCraftingTerm || guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui)) {
+                final ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+                int i = scaledresolution.getScaledWidth();
+                int j = scaledresolution.getScaledHeight();
+                final int mouseX = Mouse.getX() * i / mc.displayWidth;
+                final int mouseY = j - Mouse.getY() * j / mc.displayHeight - 1;
+                GuiButton[] overlayButtons = null;
+                try {
+                    overlayButtons = (GuiButton[]) this.overlayButtonsField.get(guiRecipe);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (overlayButtons != null) {
+                    for (GuiButton button : overlayButtons) {
+                        if (button.visible && button.enabled && GuiUtils.isMouseOverButton(button, mouseX, mouseY)) {
+                            final int OVERLAY_BUTTON_ID_START = 4;
+                            IRecipeHandler handler = null;
+                            int recipesPerPage = -1;
+                            try {
+                                recipesPerPage = (int) this.recipesPerPageMethod.invoke(guiRecipe);
+                                handler = (IRecipeHandler) this.handlerField.get(guiRecipe);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
+                            if (recipesPerPage >= 0 && handler != null) {
+                                int recipeIndex = guiRecipe.page * recipesPerPage + button.id - OVERLAY_BUTTON_ID_START;
+                                List<PositionedStack> ingredients = handler.getIngredientStacks(recipeIndex);
+                                IngredientTracker tracker = createTracker(guiRecipe.firstGui, ingredients);
 
-                            for (int var1 = 0; var1 < ingredients.size(); var1++) {
-                                PositionedStack stack = ingredients.get(var1);
-                                Ingredient ingredient = tracker.getIngredients().get(var1);
-                                Slot stackSlot = guiRecipe.slotcontainer.getSlotWithStack(stack, guiRecipe.getRecipePosition(recipeIndex).x, guiRecipe.getRecipePosition(recipeIndex).y);
-                                if (stackSlot.equals(slot)) {
-                                    GuiContainer firstGui = guiRecipe.firstGui;
-                                    boolean renderAutoAbleItems = firstGui instanceof GuiCraftingTerm && ingredient.isCraftable() && ingredient.requiresToCraft();
-                                    boolean renderCraftableItems = (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) && ingredient.isCraftable();
-                                    boolean renderMissingItems = firstGui instanceof GuiCraftingTerm && !ingredient.isCraftable() && ingredient.requiresToCraft();
-                                    if (renderAutoAbleItems || renderCraftableItems) {
-                                        Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
-                                    } else if (renderMissingItems) {
-                                        Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
+                                for (int var1 = 0; var1 < ingredients.size(); var1++) {
+                                    PositionedStack stack = ingredients.get(var1);
+                                    Ingredient ingredient = tracker.getIngredients().get(var1);
+                                    Slot stackSlot = guiRecipe.slotcontainer.getSlotWithStack(stack, guiRecipe.getRecipePosition(recipeIndex).x, guiRecipe.getRecipePosition(recipeIndex).y);
+                                    if (stackSlot.equals(slot)) {
+                                        GuiContainer firstGui = guiRecipe.firstGui;
+                                        boolean renderAutoAbleItems = firstGui instanceof GuiCraftingTerm && ingredient.isCraftable() && ingredient.requiresToCraft();
+                                        boolean renderCraftableItems = (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) && ingredient.isCraftable();
+                                        boolean renderMissingItems = firstGui instanceof GuiCraftingTerm && !ingredient.isCraftable() && ingredient.requiresToCraft();
+                                        if (renderAutoAbleItems || renderCraftableItems) {
+                                            Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                                    slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                                    new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
+                                        } else if (renderMissingItems) {
+                                            Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                                    slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                                    new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
+                                        }
                                     }
                                 }
                             }
