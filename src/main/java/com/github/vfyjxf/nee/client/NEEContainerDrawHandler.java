@@ -74,7 +74,8 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         if (gui instanceof GuiRecipe) {
             Minecraft mc = Minecraft.getMinecraft();
             GuiRecipe guiRecipe = (GuiRecipe) gui;
-            if (guiRecipe.firstGui instanceof GuiCraftingTerm || guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui)) {
+            GuiContainer firstGui = guiRecipe.firstGui;
+            if (firstGui instanceof GuiPatternTerm || firstGui instanceof GuiCraftingTerm || GuiUtils.isPatternTermExGui(firstGui) || GuiUtils.isGuiWirelessCrafting(firstGui)) {
                 final ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
                 int i = scaledresolution.getScaledWidth();
                 int j = scaledresolution.getScaledHeight();
@@ -108,10 +109,9 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                                     Ingredient ingredient = tracker.getIngredients().get(var1);
                                     Slot stackSlot = guiRecipe.slotcontainer.getSlotWithStack(stack, guiRecipe.getRecipePosition(recipeIndex).x, guiRecipe.getRecipePosition(recipeIndex).y);
                                     if (stackSlot.equals(slot)) {
-                                        GuiContainer firstGui = guiRecipe.firstGui;
-                                        boolean renderAutoAbleItems = firstGui instanceof GuiCraftingTerm && ingredient.isCraftable() && ingredient.requiresToCraft();
+                                        boolean renderAutoAbleItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && ingredient.isCraftable() && ingredient.requiresToCraft();
                                         boolean renderCraftableItems = (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) && ingredient.isCraftable();
-                                        boolean renderMissingItems = firstGui instanceof GuiCraftingTerm && !ingredient.isCraftable() && ingredient.requiresToCraft();
+                                        boolean renderMissingItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && !ingredient.isCraftable() && ingredient.requiresToCraft();
                                         if (renderAutoAbleItems || renderCraftableItems) {
                                             Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
                                                     slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
@@ -154,7 +154,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     private void drawCraftingHelperTooltip(GuiRecipe guiRecipe, int mouseX, int mouseY) {
         List<String> tooltips = new ArrayList<>();
-        if (guiRecipe.firstGui instanceof GuiCraftingTerm) {
+        if (guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui)) {
             tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
                             EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
                     EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
@@ -174,6 +174,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private IngredientTracker createTracker(GuiContainer firstGui, List<PositionedStack> ingredients) {
         IngredientTracker tracker = new IngredientTracker(firstGui, ingredients);
 

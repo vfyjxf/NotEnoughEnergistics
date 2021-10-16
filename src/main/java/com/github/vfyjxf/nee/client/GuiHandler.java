@@ -49,7 +49,9 @@ public class GuiHandler {
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-        if (event.gui instanceof GuiCraftingTerm && currentScreen instanceof GuiCraftConfirm && tracker != null) {
+        boolean isGuiCraftingTerm = event.gui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(event.gui);
+        boolean isGuiCraftConfirm = currentScreen instanceof GuiCraftConfirm || GuiUtils.isWirelessGuiCraftConfirm(currentScreen);
+        if (isGuiCraftingTerm && isGuiCraftConfirm && tracker != null) {
             if (tracker.getRequireToCraftStacks().size() > 1 && stackIndex < tracker.getRequireToCraftStacks().size()) {
                 NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(stackIndex), noPreview));
                 stackIndex++;

@@ -20,7 +20,7 @@ public class NEEConfig {
     public static String[] transformPriorityModList = new String[0];
 
     public static boolean noShift = true;
-    public static boolean matchOtherItems = false;
+    public static boolean matchOtherItems = true;
     public static boolean drawHighlight = true;
 
     public static void loadConfig(File configFile) {
@@ -40,10 +40,10 @@ public class NEEConfig {
         noShift = config.get("client", "noShift", true,
                 "if true, you don't need to press shift to use NEI's transfer system in CratingTerminal and PatternTerminal").getBoolean();
 
-        matchOtherItems = config.get("client", "matchOnCraftableItems", false,
-                "If false, Crafting Helper will not match other items").getBoolean();
+        matchOtherItems = config.get("client", "matchOnCraftableItems", true,
+                "If true, Crafting Helper will match other items even they can't auto-crafting").getBoolean();
 
-        drawHighlight = config.get("client","drawHighlight",true,
+        drawHighlight = config.get("client", "drawHighlight", true,
                 "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
 
         if (config.hasChanged()) config.save();

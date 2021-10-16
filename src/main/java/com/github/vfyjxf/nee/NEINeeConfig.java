@@ -13,6 +13,7 @@ import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
 import cpw.mods.fml.common.Loader;
+import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal;
 import org.lwjgl.input.Keyboard;
 import thaumicenergistics.client.gui.GuiKnowledgeInscriber;
 import wanion.avaritiaddons.block.extremeautocrafter.GuiExtremeAutoCrafter;
@@ -45,11 +46,13 @@ public class NEINeeConfig implements IConfigureNEI {
             API.registerGuiOverlayHandler(GuiPatternTerm.class, new NEECraftingHandler(), ident);
         }
 
-        if(NEEConfig.drawHighlight){
+        if (NEEConfig.drawHighlight) {
             GuiContainerManager.addDrawHandler(NEEContainerDrawHandler.instance);
         }
 
         installCraftingTermSupport();
+
+        installWirelessCraftingTermSupport();
 
         installPatternTerminalExSupport(identifiers);
 
@@ -80,6 +83,13 @@ public class NEINeeConfig implements IConfigureNEI {
         API.registerGuiOverlay(GuiCraftingTerm.class, "crafting2x2");
         API.registerGuiOverlayHandler(GuiCraftingTerm.class, new NEECraftingHelper(), "crafting");
         API.registerGuiOverlayHandler(GuiCraftingTerm.class, new NEECraftingHelper(), "crafting2x2");
+    }
+
+    private void installWirelessCraftingTermSupport() {
+        if (Loader.isModLoaded("ae2wct")) {
+            API.registerGuiOverlayHandler(GuiWirelessCraftingTerminal.class, new NEECraftingHelper(), "crafting");
+            API.registerGuiOverlayHandler(GuiWirelessCraftingTerminal.class, new NEECraftingHelper(), "crafting2x2");
+        }
     }
 
     private void installThaumicEnergisticsSupport() {
