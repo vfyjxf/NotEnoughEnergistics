@@ -8,6 +8,7 @@ import codechicken.nei.PositionedStack;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -18,6 +19,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -68,33 +70,40 @@ public class GuiUtils {
         return false;
     }
 
-    public static List<ItemStack> getStacksFromCraftingTerminal(ContainerCraftingTerm container) {
-        List<ItemStack> stacks = new ArrayList<>();
-        IInventory craftingGrid = container.getInventoryByName("crafting");
-        for (int i = 0; i < craftingGrid.getSizeInventory(); i++) {
-            ItemStack currentStack = craftingGrid.getStackInSlot(i);
-            boolean find = false;
-            if (currentStack != null) {
-                for (ItemStack stack : stacks) {
-                    boolean isStackEqual = stack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(stack, currentStack);
-                    if (isStackEqual && stack.stackSize + currentStack.stackSize <= stack.getMaxStackSize()) {
-                        stack.stackSize = stack.stackSize + currentStack.stackSize;
-                        find = true;
-                    }
-                }
-            }
-            if (!find && currentStack != null) {
-                stacks.add(currentStack.copy());
-            }
-        }
-        return stacks;
-    }
-
     public static boolean isMouseOverButton(GuiButton button, int mouseX, int mouseY) {
         return mouseX >= button.xPosition &&
                 mouseY >= button.yPosition &&
                 mouseX < button.xPosition + button.width &&
                 mouseY < button.yPosition + button.height;
+    }
+
+    public static boolean isGuiWirelessCrafting(GuiScreen gui) {
+
+        try {
+            Class<?> guiWirelessCraftingClass = Class.forName("net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal");
+            return guiWirelessCraftingClass.isInstance(gui);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+
+    }
+
+    public static boolean isWirelessCraftingTermContainer(Container container) {
+        try {
+            Class<?> wirelessCraftingTermContainerClass = Class.forName("net.p455w0rd.wirelesscraftingterminal.common.container.ContainerWirelessCraftingTerminal");
+            return wirelessCraftingTermContainerClass.isInstance(container);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public static boolean isWirelessGuiCraftConfirm(GuiScreen gui) {
+        try {
+            Class<?> wirelessGuiCraftConfirmClass = Class.forName("net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm");
+            return wirelessGuiCraftConfirmClass.isInstance(gui);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     public static void handleRecipeIngredientChange(Slot currentSlot, int dWheel) {

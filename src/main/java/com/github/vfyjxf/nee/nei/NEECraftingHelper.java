@@ -48,8 +48,8 @@ public class NEECraftingHelper implements IOverlayHandler {
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
-        Container container = Minecraft.getMinecraft().thePlayer.openContainer;
-        if (firstGui instanceof GuiCraftingTerm && NEECraftingHandler.isCraftingTableRecipe(recipe) && container instanceof ContainerCraftingTerm) {
+        boolean isCraftingGuiTerm = firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui);
+        if (isCraftingGuiTerm && NEECraftingHandler.isCraftingTableRecipe(recipe)) {
             tracker = createTracker(firstGui, recipe, recipeIndex);
             boolean doCraftingHelp = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview")) || Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
             noPreview = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
@@ -62,6 +62,7 @@ public class NEECraftingHelper implements IOverlayHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private IngredientTracker createTracker(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
         IngredientTracker tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
 
@@ -82,12 +83,16 @@ public class NEECraftingHelper implements IOverlayHandler {
     private void moveItem(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
         try {
             final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
-            PacketNEIRecipe packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, false));
-            if (packet.size() >= 32 * 1024) {
-                AELog.warn("Recipe for " + recipe.getRecipeName() + " has too many variants, reduced version will be used");
-                packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, true));
+            if (firstGui instanceof GuiCraftingTerm) {
+                PacketNEIRecipe packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, false));
+                if (packet.size() >= 32 * 1024) {
+                    AELog.warn("Recipe for " + recipe.getRecipeName() + " has too many variants, reduced version will be used");
+                    packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, true));
+                }
+                NetworkHandler.instance.sendToServer(packet);
+            } else if (GuiUtils.isGuiWirelessCrafting(firstGui)) {
+                net.p455w0rd.wirelesscraftingterminal.core.sync.network.NetworkHandler.instance.sendToServer(new net.p455w0rd.wirelesscraftingterminal.core.sync.packets.PacketNEIRecipe(packIngredients(firstGui, ingredients, false)));
             }
-            NetworkHandler.instance.sendToServer(packet);
         } catch (final Exception | Error ignored) {
         }
     }
@@ -105,6 +110,7 @@ public class NEECraftingHelper implements IOverlayHandler {
     /**
      * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
      */
+    @SuppressWarnings("unchecked")
     private NBTTagCompound packIngredients(GuiContainer gui, List<PositionedStack> ingredients, boolean limited) throws IOException {
         final NBTTagCompound recipe = new NBTTagCompound();
         for (final PositionedStack positionedStack : ingredients) {
@@ -112,7 +118,7 @@ public class NEECraftingHelper implements IOverlayHandler {
             final int row = (positionedStack.rely - 6) / 18;
             if (positionedStack.items != null && positionedStack.items.length > 0) {
                 for (final Slot slot : (List<Slot>) gui.inventorySlots.inventorySlots) {
-                    if (slot instanceof SlotCraftingMatrix || slot instanceof SlotFakeCraftingMatrix) {
+                    if (isCraftingMatrixSlot(gui, slot)) {
                         if (slot.getSlotIndex() == col + row * 3) {
                             final NBTTagList tags = new NBTTagList();
                             final List<ItemStack> list = new LinkedList<>();
@@ -149,6 +155,15 @@ public class NEECraftingHelper implements IOverlayHandler {
         return recipe;
     }
 
+    private boolean isCraftingMatrixSlot(GuiContainer gui, Slot slot) {
+        if (gui instanceof GuiCraftingTerm) {
+            return slot instanceof SlotCraftingMatrix || slot instanceof SlotFakeCraftingMatrix;
+        } else if (GuiUtils.isGuiWirelessCrafting(gui)) {
+            return slot instanceof net.p455w0rd.wirelesscraftingterminal.common.container.slot.SlotCraftingMatrix || slot instanceof net.p455w0rd.wirelesscraftingterminal.common.container.slot.SlotFakeCraftingMatrix;
+        }
+        return false;
+    }
+
     @SubscribeEvent
     public void onActionPerformedEventPre(GuiScreenEvent.ActionPerformedEvent.Pre event) {
         //make nei's transfer system doesn't require presses shift
@@ -162,7 +177,9 @@ public class NEECraftingHelper implements IOverlayHandler {
                 e.printStackTrace();
             }
             if (overlayButtons != null && event.button.id >= OVERLAY_BUTTON_ID_START && event.button.id < OVERLAY_BUTTON_ID_START + overlayButtons.length) {
-                if (guiRecipe.firstGui instanceof GuiPatternTerm || guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui)) {
+                boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
+                boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
+                if (isCraftingTerm || isPatternTerm) {
                     int recipesPerPage = -1;
                     IRecipeHandler handler = null;
                     try {
