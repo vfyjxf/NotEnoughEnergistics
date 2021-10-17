@@ -1,3 +1,5 @@
+jei.tooltip.nee.helper.crafting=click to request missing items
+jei.tooltip.nee.helper.pattern=Autocrafting available
 jei.tooltip.nee.need.crating=You must set the Pattern Terminal to crating mode.
 jei.tooltip.nee.need.processing=You must set the Pattern Terminal to processing mode.
 key.neenergistics.recipe.ingredient.change=Change Ingredient

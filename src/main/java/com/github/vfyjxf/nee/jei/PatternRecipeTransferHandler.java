@@ -5,6 +5,7 @@ import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeTransfer;
+import com.github.vfyjxf.nee.utils.IngredientTracker;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import com.github.vfyjxf.nee.utils.StackProcessor;
 import mezz.jei.api.gui.IGuiIngredient;
@@ -127,6 +128,8 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
             if (NEEConfig.allowPrintRecipeType) {
                 NotEnoughEnergistics.logger.info(recipeType);
             }
+        } else {
+            return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout), false);
         }
 
         return null;

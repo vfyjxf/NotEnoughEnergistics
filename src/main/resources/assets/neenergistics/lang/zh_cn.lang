@@ -1,3 +1,5 @@
+jei.tooltip.nee.helper.crafting=点击以请求缺失的物品
+jei.tooltip.nee.helper.pattern=自动合成已可用
 jei.tooltip.nee.need.crating=你必须设置样板终端为合成中模式。
 jei.tooltip.nee.need.processing=你必须设置样板终端为处理中模式。
 key.neenergistics.recipe.ingredient.change=更改材料

@@ -8,6 +8,7 @@ import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
@@ -53,6 +54,18 @@ public class GuiUtils {
                 }
             }
         }
+        return false;
+    }
+
+    public static boolean isGuiWirelessCrafting(GuiScreen gui) {
+        return false;
+    }
+
+    public static boolean isWirelessCraftingTermContainer(Container container) {
+        return false;
+    }
+
+    public static boolean isWirelessGuiCraftConfirm(GuiScreen gui) {
         return false;
     }
 

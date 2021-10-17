@@ -3,6 +3,7 @@
  */
 package com.github.vfyjxf.nee.jei;
 
+import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.utils.WrappedTable;
@@ -29,16 +30,22 @@ public class NEEJEIPlugin implements IModPlugin {
     public void register(IModRegistry registry) {
         NEEJEIPlugin.registry = registry;
         Table<Class<?>, String, IRecipeTransferHandler> newRegistry = Table.hashBasedTable();
-        boolean ae2found = false;
+        boolean patternHandlerFound = false;
+        boolean craftingHandlerFound = false;
         for (final Cell<Class, String, IRecipeTransferHandler> currentCell : ((RecipeTransferRegistry) registry.getRecipeTransferRegistry()).getRecipeTransferHandlers().cellSet()) {
             if (currentCell.getRowKey().equals(ContainerPatternTerm.class)) {
-                ae2found = true;
+                patternHandlerFound = true;
+                continue;
+            }
+            if (currentCell.getRowKey().equals(ContainerCraftingTerm.class)) {
+                craftingHandlerFound = true;
                 continue;
             }
             newRegistry.put(currentCell.getRowKey(), currentCell.getColumnKey(), currentCell.getValue());
         }
         newRegistry.put(ContainerPatternTerm.class, Constants.UNIVERSAL_RECIPE_TRANSFER_UID, new PatternRecipeTransferHandler());
-        if (ae2found) {
+        newRegistry.put(ContainerCraftingTerm.class, VanillaRecipeCategoryUid.CRAFTING, new CraftingHelperTransferHandler());
+        if (patternHandlerFound && craftingHandlerFound) {
             NotEnoughEnergistics.logger.info("AE2 RecipeTransferHandler Replaced Successfully (Registered prior)");
         } else {
             newRegistry = new WrappedTable<>(newRegistry);
