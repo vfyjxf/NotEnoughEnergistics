@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import p455w0rd.wct.client.gui.GuiWCT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,49 +53,42 @@ public class IngredientTracker {
 
     }
 
+    @SuppressWarnings("unchecked")
     private IItemList<IAEItemStack> getStorageStacks() {
         IItemList<IAEItemStack> list = AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class).createList();
-        GuiScreen parentScreen = null;
-        try {
-            parentScreen = (GuiScreen) ObfuscationReflectionHelper.findField(RecipesGui.class, "parentScreen").get(Minecraft.getMinecraft().currentScreen);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        if (parentScreen instanceof GuiCraftingTerm || parentScreen instanceof GuiPatternTerm) {
-            try {
-                ItemRepo repo = (ItemRepo) ObfuscationReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(parentScreen);
-                for (IAEItemStack stack : (IItemList<IAEItemStack>) ObfuscationReflectionHelper.findField(ItemRepo.class, "list").get(repo)) {
+        if (Minecraft.getMinecraft().currentScreen instanceof RecipesGui) {
+            RecipesGui recipesGui = (RecipesGui) Minecraft.getMinecraft().currentScreen;
+            GuiScreen parentScreen = ObfuscationReflectionHelper.getPrivateValue(RecipesGui.class, recipesGui, "parentScreen");
+            ItemRepo repo = null;
+            if (parentScreen instanceof GuiCraftingTerm || parentScreen instanceof GuiPatternTerm) {
+                repo = ObfuscationReflectionHelper.getPrivateValue(GuiMEMonitorable.class, (GuiMEMonitorable) parentScreen, "repo");
+            } else if (GuiUtils.isGuiWirelessCrafting(parentScreen)) {
+                repo = ObfuscationReflectionHelper.getPrivateValue(GuiWCT.class, (GuiWCT) parentScreen, "repo");
+            }
+            if (repo != null) {
+                for (IAEItemStack stack : (IItemList<IAEItemStack>) ObfuscationReflectionHelper.getPrivateValue(ItemRepo.class, repo, "list")) {
                     list.add(stack.copy());
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
             }
         }
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     private List<IAEItemStack> getCraftableStacks() {
         List<IAEItemStack> craftableStacks = new ArrayList<>();
-        GuiScreen parentScreen = null;
-        try {
-            parentScreen = (GuiScreen) ObfuscationReflectionHelper.findField(RecipesGui.class, "parentScreen").get(Minecraft.getMinecraft().currentScreen);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        if (parentScreen instanceof GuiCraftingTerm || parentScreen instanceof GuiPatternTerm) {
-            IItemList<IAEItemStack> list = null;
-            try {
-                ItemRepo repo = (ItemRepo) ObfuscationReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(parentScreen);
-                list = (IItemList<IAEItemStack>) ObfuscationReflectionHelper.findField(ItemRepo.class, "list").get(repo);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+        if (Minecraft.getMinecraft().currentScreen instanceof RecipesGui) {
+            RecipesGui recipesGui = (RecipesGui) Minecraft.getMinecraft().currentScreen;
+            GuiScreen parentScreen = ObfuscationReflectionHelper.getPrivateValue(RecipesGui.class, recipesGui, "parentScreen");
+            ItemRepo repo = null;
+            if (parentScreen instanceof GuiCraftingTerm || parentScreen instanceof GuiPatternTerm) {
+                repo = ObfuscationReflectionHelper.getPrivateValue(GuiMEMonitorable.class, (GuiMEMonitorable) parentScreen, "repo");
+            } else if (GuiUtils.isGuiWirelessCrafting(parentScreen)) {
+                repo = ObfuscationReflectionHelper.getPrivateValue(GuiWCT.class, (GuiWCT) parentScreen, "repo");
             }
-            if (list != null) {
-                for (IAEItemStack stack : list) {
-                    if (stack.isCraftable()) {
-                        craftableStacks.add(stack.copy());
-                    }
+            if (repo != null) {
+                for (IAEItemStack stack : (IItemList<IAEItemStack>) ObfuscationReflectionHelper.getPrivateValue(ItemRepo.class, repo, "list")) {
+                    craftableStacks.add(stack.copy());
                 }
             }
         }

@@ -20,6 +20,9 @@ public class NEEConfig {
     @Comment("If true, print current recipe type in log.Default:false")
     public static boolean allowPrintRecipeType = false;
 
+    @Comment("If true, it will make all similar ingredient switch at the same time ")
+    public static boolean allowSynchronousSwitchIngredient = false;
+
     @Comment("If oredict has this mod's item, use it first.")
     public static String[] modPriorityList = new String[0];
 

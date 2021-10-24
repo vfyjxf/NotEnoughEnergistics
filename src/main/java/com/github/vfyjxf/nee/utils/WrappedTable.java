@@ -10,6 +10,7 @@ import com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.google.common.collect.ImmutableTable;
 import mezz.jei.collect.Table;
+import p455w0rd.wct.container.ContainerWCT;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -37,8 +38,7 @@ public class WrappedTable<R, C, V> extends Table<R, C, V> {
             f_rowMappingFunction.setAccessible(true);
             makeWriteable(f_rowMappingFunction);
 
-        }
-        catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Unable to do reflection things.", e);
         }
     }
@@ -51,8 +51,7 @@ public class WrappedTable<R, C, V> extends Table<R, C, V> {
         try {
             f_table.set(this, f_table.get(other));
             f_rowMappingFunction.set(this, f_rowMappingFunction.get(other));
-        }
-        catch (IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             throw new RuntimeException("Unable to do reflection things.", e);
         }
     }
@@ -63,9 +62,18 @@ public class WrappedTable<R, C, V> extends Table<R, C, V> {
             value = (V) new PatternRecipeTransferHandler();
             NotEnoughEnergistics.logger.info("AE2 PatternRecipeTransfeHandler Replaced Successfully (Overwrite Denied)");
         }
-        if(row == ContainerCraftingTerm.class && value.getClass().getCanonicalName().equals("appeng.integration.modules.jei.RecipeTransferHandler")){
-            value = (V) new CraftingHelperTransferHandler();
+        if (row == ContainerCraftingTerm.class && value.getClass().getCanonicalName().equals("appeng.integration.modules.jei.RecipeTransferHandler")) {
+            value = (V) new CraftingHelperTransferHandler<>(ContainerCraftingTerm.class);
             NotEnoughEnergistics.logger.info("AE2 RecipeTransfeHandler Replaced Successfully (Overwrite Denied)");
+        }
+        Class<?> wirelessCraftingContainer = null;
+        try {
+            wirelessCraftingContainer = Class.forName("p455w0rd.wct.container.ContainerWCT");
+        } catch (ClassNotFoundException ignored) {
+        }
+        if (wirelessCraftingContainer != null && row == wirelessCraftingContainer) {
+            value = (V) new CraftingHelperTransferHandler<>(ContainerWCT.class);
+            NotEnoughEnergistics.logger.info("Wireless Crafting Terminal RecipeTransfeHandler Replaced Successfully");
         }
         return value;
     }

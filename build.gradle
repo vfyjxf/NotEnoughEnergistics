@@ -80,8 +80,8 @@ dependencies {
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}"
     deobfCompile "curse.maven:applied-energistics-2-223794:2747063"
     deobfCompile "curse.maven:wireless-crafting-terminal-244559:2830252"
-    runtime "curse.maven:ae2wtlib-304024:2830114"
-    runtime "curse.maven:p455w0rds-library-255232:2830265"
+    compile "curse.maven:ae2wtlib-304024:2830114"
+    compile "curse.maven:p455w0rds-library-255232:2830265"
 
 }
 
