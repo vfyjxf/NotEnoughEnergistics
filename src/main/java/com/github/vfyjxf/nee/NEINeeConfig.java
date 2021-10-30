@@ -13,6 +13,7 @@ import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.Optional;
 import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal;
 import org.lwjgl.input.Keyboard;
 import thaumicenergistics.client.gui.GuiKnowledgeInscriber;
@@ -32,6 +33,10 @@ public class NEINeeConfig implements IConfigureNEI {
 
         registerKeyBindings();
 
+        if (NEEConfig.drawHighlight) {
+            GuiContainerManager.addDrawHandler(NEEContainerDrawHandler.instance);
+        }
+
         Set<String> defaultIdentifiers = new HashSet<>(
                 Arrays.asList("crafting", "crafting2x2", "brewing", "smelting", "fuel", null)
         );
@@ -44,10 +49,6 @@ public class NEINeeConfig implements IConfigureNEI {
         for (String ident : identifiers) {
             API.registerGuiOverlay(GuiPatternTerm.class, ident);
             API.registerGuiOverlayHandler(GuiPatternTerm.class, new NEECraftingHandler(), ident);
-        }
-
-        if (NEEConfig.drawHighlight) {
-            GuiContainerManager.addDrawHandler(NEEContainerDrawHandler.instance);
         }
 
         installCraftingTermSupport();
@@ -81,14 +82,14 @@ public class NEINeeConfig implements IConfigureNEI {
     private void installCraftingTermSupport() {
         API.registerGuiOverlay(GuiCraftingTerm.class, "crafting");
         API.registerGuiOverlay(GuiCraftingTerm.class, "crafting2x2");
-        API.registerGuiOverlayHandler(GuiCraftingTerm.class, new NEECraftingHelper(), "crafting");
-        API.registerGuiOverlayHandler(GuiCraftingTerm.class, new NEECraftingHelper(), "crafting2x2");
+        API.registerGuiOverlayHandler(GuiCraftingTerm.class, NEECraftingHelper.INSTANCE, "crafting");
+        API.registerGuiOverlayHandler(GuiCraftingTerm.class, NEECraftingHelper.INSTANCE, "crafting2x2");
     }
 
     private void installWirelessCraftingTermSupport() {
         if (Loader.isModLoaded("ae2wct")) {
-            API.registerGuiOverlayHandler(GuiWirelessCraftingTerminal.class, new NEECraftingHelper(), "crafting");
-            API.registerGuiOverlayHandler(GuiWirelessCraftingTerminal.class, new NEECraftingHelper(), "crafting2x2");
+            API.registerGuiOverlayHandler(GuiWirelessCraftingTerminal.class, NEECraftingHelper.INSTANCE, "crafting");
+            API.registerGuiOverlayHandler(GuiWirelessCraftingTerminal.class, NEECraftingHelper.INSTANCE, "crafting2x2");
         }
     }
 

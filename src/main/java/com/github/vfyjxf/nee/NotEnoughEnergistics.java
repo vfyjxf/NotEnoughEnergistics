@@ -26,7 +26,7 @@ public class NotEnoughEnergistics {
     public static final String MODID = "neenergistics";
     public static final String NAME = "NotEnoughEnergistics";
     public static final String VERSION = "@VERSION@";
-    public static final String DEPENDENCIES = "required-after:NotEnoughItems;required-after:appliedenergistics2";
+    public static final String DEPENDENCIES = "required-after:NotEnoughItems;required-after:appliedenergistics2;after:ae2wct";
     public static final String GUI_FACTORY = "com.github.vfyjxf.nee.config.NEEConfigGuiFactory";
     public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
 

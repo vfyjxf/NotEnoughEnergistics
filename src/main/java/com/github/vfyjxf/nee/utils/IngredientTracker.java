@@ -1,6 +1,5 @@
 package com.github.vfyjxf.nee.utils;
 
-import appeng.api.AEApi;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.client.gui.implementations.GuiMEMonitorable;
@@ -18,11 +17,10 @@ import java.util.List;
 
 public class IngredientTracker {
 
-    private List<IAEItemStack> craftbleAEItemStacks;
-    private List<Ingredient> ingredients = new ArrayList<>();
+    private final List<Ingredient> ingredients = new ArrayList<>();
 
     public IngredientTracker(GuiContainer gui, IRecipeHandler recipe, int recipeIndex) {
-        this.craftbleAEItemStacks = getCraftableStacks(gui);
+        List<IAEItemStack> craftableStacks = getCraftableStacks(gui);
         List<PositionedStack> requiredIngredients = new ArrayList<>();
         for (PositionedStack positionedStack : recipe.getIngredientStacks(recipeIndex)) {
             boolean find = false;
@@ -43,7 +41,7 @@ public class IngredientTracker {
             Ingredient ingredient = new Ingredient(requiredIngredient);
             ingredients.add(ingredient);
 
-            for (IAEItemStack stack : NEEConfig.matchOtherItems ? this.getStorageStacks(gui) : craftbleAEItemStacks) {
+            for (IAEItemStack stack : NEEConfig.matchOtherItems ? this.getStorageStacks(gui) : craftableStacks) {
                 if (requiredIngredient.contains(stack.getItemStack())) {
                     if (stack.isCraftable()) {
                         ingredient.setCraftableIngredient(stack.getItemStack());
@@ -55,32 +53,56 @@ public class IngredientTracker {
     }
 
     public IngredientTracker(GuiContainer gui, List<PositionedStack> requiredIngredients) {
-        IItemList<IAEItemStack> aeItemStacks = this.getStorageStacks(gui);
+
         for (PositionedStack positionedStack : requiredIngredients) {
             this.ingredients.add(new Ingredient(positionedStack));
         }
+
+        List<IAEItemStack> craftableStacks = this.getCraftableStacks(gui);
+
+        //set craftable stack
         for (Ingredient ingredient : this.ingredients) {
-            for (IAEItemStack stack : aeItemStacks) {
+            for (IAEItemStack stack : craftableStacks) {
                 if (ingredient.getIngredients().contains(stack.getItemStack())) {
-                    if (ingredient.getCraftableIngredient() == null && stack.isCraftable()) {
+                    if (!ingredient.isCraftable()) {
                         ingredient.setCraftableIngredient(stack.getItemStack());
                     }
                     if (stack.getStackSize() > 0) {
+                        int missingCount = (int) ingredient.getMissingCount();
                         ingredient.addCurrentCount(stack.getStackSize());
                         if (ingredient.requiresToCraft()) {
                             stack.setStackSize(0);
                         } else {
-                            stack.setStackSize(stack.getStackSize() - ingredient.getRequireCount());
+                            stack.setStackSize(stack.getStackSize() - missingCount);
                         }
                     }
                 }
             }
         }
+
+        if (NEEConfig.matchOtherItems) {
+            List<IAEItemStack> otherStacks = this.getStorageStacks(gui);
+            otherStacks.removeAll(craftableStacks);
+            for (Ingredient ingredient : this.ingredients) {
+                for (IAEItemStack stack : otherStacks) {
+                    if (ingredient.requiresToCraft() && ingredient.getIngredients().contains(stack.getItemStack())) {
+                        int missingCount = (int) ingredient.getMissingCount();
+                        ingredient.addCurrentCount(stack.getStackSize());
+                        if (ingredient.requiresToCraft()) {
+                            stack.setStackSize(0);
+                        } else {
+                            stack.setStackSize(stack.getStackSize() - missingCount);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     @SuppressWarnings("unchecked")
     private List<IAEItemStack> getCraftableStacks(GuiContainer gui) {
-        List<IAEItemStack> craftableAEItemSafcks = new ArrayList<>();
+        List<IAEItemStack> craftableStacks = new ArrayList<>();
         IItemList<IAEItemStack> list = null;
         try {
             if (!GuiUtils.isGuiWirelessCrafting(gui)) {
@@ -98,16 +120,16 @@ public class IngredientTracker {
         if (list != null) {
             for (IAEItemStack stack : list) {
                 if (stack.isCraftable()) {
-                    craftableAEItemSafcks.add(stack.copy());
+                    craftableStacks.add(stack.copy());
                 }
             }
         }
-        return craftableAEItemSafcks;
+        return craftableStacks;
     }
 
     @SuppressWarnings("unchecked")
-    private IItemList<IAEItemStack> getStorageStacks(GuiContainer gui) {
-        IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
+    private List<IAEItemStack> getStorageStacks(GuiContainer gui) {
+        List<IAEItemStack> list = new ArrayList<>();
         try {
             if (!GuiUtils.isGuiWirelessCrafting(gui)) {
                 ItemRepo repo = (ItemRepo) ReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(gui);
@@ -149,7 +171,7 @@ public class IngredientTracker {
         for (Ingredient ingredient : this.ingredients) {
             if (ingredient.requiresToCraft()) {
                 if (NEEConfig.matchOtherItems) {
-                    if (stack.stackSize > 0 && ingredient.getIngredients().contains(stack) && ItemStack.areItemStackTagsEqual(ingredient.getCraftableIngredient(), stack)) {
+                    if (stack.stackSize > 0 && ingredient.getIngredients().contains(stack)) {
                         int missingCount = (int) ingredient.getMissingCount();
                         ingredient.addCurrentCount(stack.stackSize);
                         if (ingredient.requiresToCraft()) {

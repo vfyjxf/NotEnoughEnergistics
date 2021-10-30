@@ -37,6 +37,8 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
     private final Field overlayButtonsField;
     private final Field handlerField;
     private Method recipesPerPageMethod;
+    private boolean drawRequestTooltip;
+    private boolean drawCraftableTooltip;
 
     public NEEContainerDrawHandler() {
         this.overlayButtonsField = ReflectionHelper.findField(GuiRecipe.class, "overlayButtons");
@@ -116,6 +118,8 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                                             Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
                                                     slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
                                                     new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
+                                            this.drawCraftableTooltip = renderCraftableItems;
+                                            this.drawRequestTooltip = renderAutoAbleItems;
                                         } else if (renderMissingItems) {
                                             Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
                                                     slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
@@ -133,33 +137,38 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     @SubscribeEvent
     public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (event.gui instanceof GuiRecipe) {
-            GuiRecipe guiRecipe = (GuiRecipe) event.gui;
-            GuiButton[] overlayButtons = null;
-            try {
-                overlayButtons = (GuiButton[]) ReflectionHelper.findField(GuiRecipe.class, "overlayButtons").get(guiRecipe);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-            if (overlayButtons != null) {
-                for (GuiButton button : overlayButtons) {
-                    if (button.visible && button.enabled && GuiUtils.isMouseOverButton(button, event.mouseX, event.mouseY)) {
-                        drawCraftingHelperTooltip(guiRecipe, event.mouseX, event.mouseY);
+        if (this.drawCraftableTooltip || this.drawRequestTooltip) {
+            if (event.gui instanceof GuiRecipe) {
+                GuiRecipe guiRecipe = (GuiRecipe) event.gui;
+                GuiButton[] overlayButtons = null;
+                try {
+                    overlayButtons = (GuiButton[]) ReflectionHelper.findField(GuiRecipe.class, "overlayButtons").get(guiRecipe);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (overlayButtons != null) {
+                    for (GuiButton button : overlayButtons) {
+                        if (button.visible && button.enabled && GuiUtils.isMouseOverButton(button, event.mouseX, event.mouseY)) {
+                            drawCraftingHelperTooltip(guiRecipe, event.mouseX, event.mouseY);
+                            this.drawCraftableTooltip = false;
+                            this.drawRequestTooltip = false;
+                        }
                     }
                 }
             }
         }
-
     }
 
     private void drawCraftingHelperTooltip(GuiRecipe guiRecipe, int mouseX, int mouseY) {
         List<String> tooltips = new ArrayList<>();
-        if (guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui)) {
+        boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
+        if (this.drawRequestTooltip && isCraftingTerm) {
             tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
                             EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
                     EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
         }
-        if (guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui)) {
+        boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
+        if (this.drawCraftableTooltip && isPatternTerm) {
             tooltips.add(EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.pattern"));
         }
         try {

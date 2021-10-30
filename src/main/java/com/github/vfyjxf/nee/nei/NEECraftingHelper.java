@@ -2,10 +2,10 @@ package com.github.vfyjxf.nee.nei;
 
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiPatternTerm;
-import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.slot.SlotCraftingMatrix;
 import appeng.container.slot.SlotFakeCraftingMatrix;
 import appeng.core.AELog;
+import appeng.core.sync.AppEngPacket;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketNEIRecipe;
 import appeng.util.Platform;
@@ -15,16 +15,19 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.api.IOverlayHandler;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
+import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingHelper;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
+import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -45,6 +48,8 @@ public class NEECraftingHelper implements IOverlayHandler {
     public static IngredientTracker tracker = null;
     public static int stackIndex = 1;
     public static boolean noPreview = false;
+
+    public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
@@ -85,13 +90,19 @@ public class NEECraftingHelper implements IOverlayHandler {
             final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
             if (firstGui instanceof GuiCraftingTerm) {
                 PacketNEIRecipe packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, false));
-                if (packet.size() >= 32 * 1024) {
+                //don't use gtnh ae2's method;
+                int packetSize = getPacketSize(packet);
+                if (packetSize >= 32 * 1024) {
                     AELog.warn("Recipe for " + recipe.getRecipeName() + " has too many variants, reduced version will be used");
                     packet = new PacketNEIRecipe(packIngredients(firstGui, ingredients, true));
                 }
-                NetworkHandler.instance.sendToServer(packet);
+                if (packetSize >= 0) {
+                    NetworkHandler.instance.sendToServer(packet);
+                }else {
+                    NotEnoughEnergistics.logger.error("Can't get packet size!");
+                }
             } else if (GuiUtils.isGuiWirelessCrafting(firstGui)) {
-                net.p455w0rd.wirelesscraftingterminal.core.sync.network.NetworkHandler.instance.sendToServer(new net.p455w0rd.wirelesscraftingterminal.core.sync.packets.PacketNEIRecipe(packIngredients(firstGui, ingredients, false)));
+                moveItemsForWirelessCrafting(firstGui, ingredients);
             }
         } catch (final Exception | Error ignored) {
         }
@@ -164,36 +175,56 @@ public class NEECraftingHelper implements IOverlayHandler {
         return false;
     }
 
+    private int getPacketSize(AppEngPacket packet) {
+        try {
+            ByteBuf p = (ByteBuf) ReflectionHelper.findField(AppEngPacket.class, "p").get(packet);
+            return p.array().length;
+        } catch (IllegalAccessException e) {
+            return -1;
+        }
+    }
+
+    @Optional.Method(modid = "ae2wct")
+    private void moveItemsForWirelessCrafting(GuiContainer firstGui, List<PositionedStack> ingredients) {
+        try {
+            net.p455w0rd.wirelesscraftingterminal.core.sync.network.NetworkHandler.instance.sendToServer(new net.p455w0rd.wirelesscraftingterminal.core.sync.packets.PacketNEIRecipe(packIngredients(firstGui, ingredients, false)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @SubscribeEvent
     public void onActionPerformedEventPre(GuiScreenEvent.ActionPerformedEvent.Pre event) {
-        //make nei's transfer system doesn't require presses shift
-        if (event.gui instanceof GuiRecipe) {
-            GuiRecipe guiRecipe = (GuiRecipe) event.gui;
-            GuiButton[] overlayButtons = null;
-            final int OVERLAY_BUTTON_ID_START = 4;
-            try {
-                overlayButtons = (GuiButton[]) ReflectionHelper.findField(GuiRecipe.class, "overlayButtons").get(guiRecipe);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-            if (overlayButtons != null && event.button.id >= OVERLAY_BUTTON_ID_START && event.button.id < OVERLAY_BUTTON_ID_START + overlayButtons.length) {
-                boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
-                boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
-                if (isCraftingTerm || isPatternTerm) {
-                    int recipesPerPage = -1;
-                    IRecipeHandler handler = null;
-                    try {
-                        recipesPerPage = (int) ReflectionHelper.findMethod(GuiRecipe.class, guiRecipe, new String[]{"getRecipesPerPage"}).invoke(guiRecipe);
-                        handler = (IRecipeHandler) ReflectionHelper.findField(GuiRecipe.class, "handler").get(guiRecipe);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                    if (recipesPerPage >= 0 && handler != null) {
-                        int recipe = guiRecipe.page * recipesPerPage + event.button.id - OVERLAY_BUTTON_ID_START;
-                        final IOverlayHandler overlayHandler = handler.getOverlayHandler(guiRecipe.firstGui, recipe);
-                        Minecraft.getMinecraft().displayGuiScreen(guiRecipe.firstGui);
-                        overlayHandler.overlayRecipe(guiRecipe.firstGui, guiRecipe.currenthandlers.get(guiRecipe.recipetype), recipe, NEIClientUtils.shiftKey());
-                        event.setCanceled(true);
+        if (NEEConfig.noShift) {
+            //make nei's transfer system doesn't require presses shift
+            if (event.gui instanceof GuiRecipe) {
+                GuiRecipe guiRecipe = (GuiRecipe) event.gui;
+                GuiButton[] overlayButtons = null;
+                final int OVERLAY_BUTTON_ID_START = 4;
+                try {
+                    overlayButtons = (GuiButton[]) ReflectionHelper.findField(GuiRecipe.class, "overlayButtons").get(guiRecipe);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (overlayButtons != null && event.button.id >= OVERLAY_BUTTON_ID_START && event.button.id < OVERLAY_BUTTON_ID_START + overlayButtons.length) {
+                    boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
+                    boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
+                    if (isCraftingTerm || isPatternTerm) {
+                        int recipesPerPage = -1;
+                        IRecipeHandler handler = null;
+                        try {
+                            recipesPerPage = (int) ReflectionHelper.findMethod(GuiRecipe.class, guiRecipe, new String[]{"getRecipesPerPage"}).invoke(guiRecipe);
+                            handler = (IRecipeHandler) ReflectionHelper.findField(GuiRecipe.class, "handler").get(guiRecipe);
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                        if (recipesPerPage >= 0 && handler != null) {
+                            int recipe = guiRecipe.page * recipesPerPage + event.button.id - OVERLAY_BUTTON_ID_START;
+                            final IOverlayHandler overlayHandler = handler.getOverlayHandler(guiRecipe.firstGui, recipe);
+                            Minecraft.getMinecraft().displayGuiScreen(guiRecipe.firstGui);
+                            overlayHandler.overlayRecipe(guiRecipe.firstGui, guiRecipe.currenthandlers.get(guiRecipe.recipetype), recipe, NEIClientUtils.shiftKey());
+                            event.setCanceled(true);
+                        }
                     }
                 }
             }
