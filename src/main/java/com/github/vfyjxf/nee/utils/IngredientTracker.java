@@ -123,6 +123,7 @@ public class IngredientTracker {
         return requireToCraftStacks;
     }
 
+    //TODO:make other stacks can be used,such as different woods
     public void addAvailableStack(ItemStack stack) {
         for (Ingredient ingredient : this.ingredients) {
             if (ingredient.requiresToCraft()) {

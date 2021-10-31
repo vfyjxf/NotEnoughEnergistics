@@ -69,46 +69,14 @@ public class PacketCraftingHelper implements IMessage, IMessageHandler<PacketCra
     public IMessage onMessage(PacketCraftingHelper message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         Container container = player.openContainer;
-        AEBaseContainer baseContainer = (AEBaseContainer) container;
-        Object target = baseContainer.getTarget();
-        if (container instanceof ContainerCraftingTerm) {
-            if (target instanceof IActionHost) {
-                IActionHost ah = (IActionHost) target;
-                IGridNode gn = ah.getActionableNode();
-                IGrid grid = gn.getGrid();
-                if (message.getRequireToCraftStack() != null && !message.getRequireToCraftStack().isEmpty()) {
-                    Future<ICraftingJob> futureJob = null;
-                    try {
-                        final ICraftingGrid cg = grid.getCache(ICraftingGrid.class);
-                        IAEItemStack result = AEItemStack.fromItemStack(message.getRequireToCraftStack());
-                        futureJob = cg.beginCraftingJob(player.world, grid, baseContainer.getActionSource(), result, null);
-
-                        final ContainerOpenContext context = baseContainer.getOpenContext();
-                        if (context != null) {
-                            final TileEntity te = context.getTile();
-                            Platform.openGUI(player, te, baseContainer.getOpenContext().getSide(), GuiBridge.GUI_CRAFTING_CONFIRM);
-                            if (player.openContainer instanceof ContainerCraftConfirm) {
-                                final ContainerCraftConfirm ccc = (ContainerCraftConfirm) player.openContainer;
-                                ccc.setAutoStart(message.isNoPreview());
-                                ccc.setJob(futureJob);
-                                ccc.detectAndSendChanges();
-                            }
-                        }
-                    } catch (final Throwable e) {
-                        if (futureJob != null) {
-                            futureJob.cancel(true);
-                        }
-                        AELog.debug(e);
-                    }
-                }
-            }
-        } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
-            if (target instanceof WTIActionHost) {
-                IWTContainer iwtContainer = (IWTContainer) container;
-                final WTIActionHost ah = (WTIActionHost) target;
-                final IGridNode gn = ah.getActionableNode(true);
-                if (gn != null) {
-                    final IGrid grid = gn.getGrid();
+        player.getServerWorld().addScheduledTask(() -> {
+            AEBaseContainer baseContainer = (AEBaseContainer) container;
+            Object target = baseContainer.getTarget();
+            if (container instanceof ContainerCraftingTerm) {
+                if (target instanceof IActionHost) {
+                    IActionHost ah = (IActionHost) target;
+                    IGridNode gn = ah.getActionableNode();
+                    IGrid grid = gn.getGrid();
                     if (message.getRequireToCraftStack() != null && !message.getRequireToCraftStack().isEmpty()) {
                         Future<ICraftingJob> futureJob = null;
                         try {
@@ -116,27 +84,61 @@ public class PacketCraftingHelper implements IMessage, IMessageHandler<PacketCra
                             IAEItemStack result = AEItemStack.fromItemStack(message.getRequireToCraftStack());
                             futureJob = cg.beginCraftingJob(player.world, grid, baseContainer.getActionSource(), result, null);
 
-                            int x = (int) player.posX;
-                            int y = (int) player.posY;
-                            int z = (int) player.posZ;
-
-                            ModGuiHandler.open(ModGuiHandler.GUI_CRAFT_CONFIRM, player, player.getEntityWorld(), new BlockPos(x, y, z), false, iwtContainer.isWTBauble(), iwtContainer.getWTSlot());
-
-                            if (player.openContainer instanceof p455w0rd.wct.container.ContainerCraftConfirm) {
-                                final p455w0rd.wct.container.ContainerCraftConfirm ccc = (p455w0rd.wct.container.ContainerCraftConfirm) player.openContainer;
-                                ccc.setAutoStart(message.isNoPreview());
-                                ccc.setJob(futureJob);
-                                ccc.detectAndSendChanges();
+                            final ContainerOpenContext context = baseContainer.getOpenContext();
+                            if (context != null) {
+                                final TileEntity te = context.getTile();
+                                Platform.openGUI(player, te, baseContainer.getOpenContext().getSide(), GuiBridge.GUI_CRAFTING_CONFIRM);
+                                if (player.openContainer instanceof ContainerCraftConfirm) {
+                                    final ContainerCraftConfirm ccc = (ContainerCraftConfirm) player.openContainer;
+                                    ccc.setAutoStart(message.isNoPreview());
+                                    ccc.setJob(futureJob);
+                                    ccc.detectAndSendChanges();
+                                }
                             }
-                        } catch (Throwable e) {
+                        } catch (final Throwable e) {
                             if (futureJob != null) {
                                 futureJob.cancel(true);
+                            }
+                            AELog.debug(e);
+                        }
+                    }
+                }
+            } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
+                if (target instanceof WTIActionHost) {
+                    IWTContainer iwtContainer = (IWTContainer) container;
+                    final WTIActionHost ah = (WTIActionHost) target;
+                    final IGridNode gn = ah.getActionableNode(true);
+                    if (gn != null) {
+                        final IGrid grid = gn.getGrid();
+                        if (message.getRequireToCraftStack() != null && !message.getRequireToCraftStack().isEmpty()) {
+                            Future<ICraftingJob> futureJob = null;
+                            try {
+                                final ICraftingGrid cg = grid.getCache(ICraftingGrid.class);
+                                IAEItemStack result = AEItemStack.fromItemStack(message.getRequireToCraftStack());
+                                futureJob = cg.beginCraftingJob(player.world, grid, baseContainer.getActionSource(), result, null);
+
+                                int x = (int) player.posX;
+                                int y = (int) player.posY;
+                                int z = (int) player.posZ;
+
+                                ModGuiHandler.open(ModGuiHandler.GUI_CRAFT_CONFIRM, player, player.getEntityWorld(), new BlockPos(x, y, z), false, iwtContainer.isWTBauble(), iwtContainer.getWTSlot());
+
+                                if (player.openContainer instanceof p455w0rd.wct.container.ContainerCraftConfirm) {
+                                    final p455w0rd.wct.container.ContainerCraftConfirm ccc = (p455w0rd.wct.container.ContainerCraftConfirm) player.openContainer;
+                                    ccc.setAutoStart(message.isNoPreview());
+                                    ccc.setJob(futureJob);
+                                    ccc.detectAndSendChanges();
+                                }
+                            } catch (Throwable e) {
+                                if (futureJob != null) {
+                                    futureJob.cancel(true);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
+        });
         return null;
     }
 }
