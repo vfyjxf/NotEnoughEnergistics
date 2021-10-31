@@ -21,7 +21,7 @@ public class NEEConfig {
     public static boolean allowPrintRecipeType = false;
 
     @Comment("If true, it will make all similar ingredient switch at the same time ")
-    public static boolean allowSynchronousSwitchIngredient = false;
+    public static boolean allowSynchronousSwitchIngredient = true;
 
     @Comment("If oredict has this mod's item, use it first.")
     public static String[] modPriorityList = new String[0];
@@ -35,8 +35,8 @@ public class NEEConfig {
     public static String[] itemPriorityList = new String[0];
 
     @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event){
-        if(NotEnoughEnergistics.MODID.equals(event.getModID())){
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (NotEnoughEnergistics.MODID.equals(event.getModID())) {
             ConfigManager.sync(NotEnoughEnergistics.MODID, Config.Type.INSTANCE);
         }
     }
