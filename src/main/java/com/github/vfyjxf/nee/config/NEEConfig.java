@@ -22,6 +22,7 @@ public class NEEConfig {
     public static boolean noShift = true;
     public static boolean matchOtherItems = true;
     public static boolean drawHighlight = true;
+    public static boolean allowSynchronousSwitchIngredient = true;
 
     public static void loadConfig(File configFile) {
         config = new Configuration(configFile);
@@ -46,6 +47,9 @@ public class NEEConfig {
         drawHighlight = config.get("client", "drawHighlight", true,
                 "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
 
+        allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
+                "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+
         if (config.hasChanged()) config.save();
     }
 
@@ -63,6 +67,10 @@ public class NEEConfig {
 
         matchOtherItems = config.get("client", "matchOnCraftableItems", false,
                 "If false, Crafting Helper will not match other items").getBoolean();
+
+        allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
+                "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+
         ItemUtils.reloadConfig();
     }
 

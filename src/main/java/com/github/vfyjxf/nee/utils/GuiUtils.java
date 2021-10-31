@@ -32,11 +32,14 @@ import java.util.List;
 public class GuiUtils {
 
     public static Slot getSlotUnderMouse(GuiContainer guiContainer, int mouseX, int mouseY) {
-        Method getSlotMethod = ReflectionHelper.findMethod(AEBaseGui.class, (AEBaseGui) guiContainer, new String[]{"getSlot"}, int.class, int.class);
-        try {
-            return (Slot) getSlotMethod.invoke(guiContainer, mouseX, mouseY);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+
+        if (guiContainer instanceof AEBaseGui) {
+            Method getSlotMethod = ReflectionHelper.findMethod(AEBaseGui.class, (AEBaseGui) guiContainer, new String[]{"getSlot"}, int.class, int.class);
+            try {
+                return (Slot) getSlotMethod.invoke(guiContainer, mouseX, mouseY);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
 
         return null;
@@ -62,12 +65,17 @@ public class GuiUtils {
 
     public static boolean isCraftingSlot(Slot slot) {
         Container container = Minecraft.getMinecraft().thePlayer.openContainer;
-        if (container instanceof ContainerPatternTerm || GuiUtils.isPatternTermExContainer(container)) {
-            IContainerCraftingPacket cct = (IContainerCraftingPacket) container;
-            IInventory craftMatrix = cct.getInventoryByName("crafting");
-            return slot.inventory.equals(craftMatrix);
+        if (slot != null) {
+            if (container instanceof ContainerPatternTerm || GuiUtils.isPatternTermExContainer(container)) {
+                IContainerCraftingPacket cct = (IContainerCraftingPacket) container;
+                IInventory craftMatrix = cct.getInventoryByName("crafting");
+                return craftMatrix.equals(slot.inventory);
+            } else {
+                return false;
+            }
+        } else {
+            return false;
         }
-        return false;
     }
 
     public static boolean isMouseOverButton(GuiButton button, int mouseX, int mouseY) {
@@ -104,29 +112,6 @@ public class GuiUtils {
         } catch (ClassNotFoundException e) {
             return false;
         }
-    }
-
-    public static void handleRecipeIngredientChange(Slot currentSlot, int dWheel) {
-
-        PositionedStack currentIngredients = NEECraftingHandler.ingredients.get("input" + currentSlot.getSlotIndex());
-        if (currentIngredients != null && currentIngredients.items.length > 1) {
-            int currentStackIndex = ItemUtils.getIngredientIndex(currentSlot.getStack(), currentIngredients);
-            if (currentStackIndex >= 0) {
-                int nextStackIndex = dWheel / 120;
-                for (int i = 0; i < Math.abs(nextStackIndex); i++) {
-                    currentStackIndex = nextStackIndex > 0 ? currentStackIndex + 1 : currentStackIndex - 1;
-                    if (currentStackIndex >= currentIngredients.items.length) {
-                        currentStackIndex = 0;
-                    } else if (currentStackIndex < 0) {
-                        currentStackIndex = currentIngredients.items.length - 1;
-                    }
-                    ItemStack currentStack = currentIngredients.items[currentStackIndex].copy();
-                    currentStack.stackSize = currentSlot.getStack().stackSize;
-                    NEENetworkHandler.getInstance().sendToServer(new PacketRecipeItemChange(currentStack.writeToNBT(new NBTTagCompound()), currentSlot.slotNumber));
-                }
-            }
-        }
-
     }
 
 }

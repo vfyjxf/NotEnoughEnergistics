@@ -7,6 +7,7 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.guihook.IContainerDrawHandler;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.Ingredient;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
@@ -73,7 +74,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     @Override
     public void renderSlotOverlay(GuiContainer gui, Slot slot) {
-        if (gui instanceof GuiRecipe) {
+        if (NEEConfig.drawHighlight && gui instanceof GuiRecipe) {
             Minecraft mc = Minecraft.getMinecraft();
             GuiRecipe guiRecipe = (GuiRecipe) gui;
             GuiContainer firstGui = guiRecipe.firstGui;

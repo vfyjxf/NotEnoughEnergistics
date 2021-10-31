@@ -12,51 +12,64 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author vfyjxf
  */
-public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketRecipeItemChange,IMessage> {
+public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketRecipeItemChange, IMessage> {
 
-    private NBTTagCompound stack;
-    private int slotNumber;
+    private ItemStack stack;
+    private List<Integer> craftingSlots;
 
-    public PacketRecipeItemChange(){
+    public PacketRecipeItemChange() {
 
     }
 
-    public PacketRecipeItemChange(NBTTagCompound stack, int slotNumber) {
+    public PacketRecipeItemChange(ItemStack stack, List<Integer> craftingSlots) {
         this.stack = stack;
-        this.slotNumber = slotNumber;
+        this.craftingSlots = craftingSlots;
     }
 
-    public NBTTagCompound getStack() {
+    public ItemStack getStack() {
         return stack;
     }
 
-    public int getSlotNumber() {
-        return slotNumber;
+    public List<Integer> getCraftingSlots() {
+        return craftingSlots;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.stack = ByteBufUtils.readTag(buf);
-        this.slotNumber = buf.readInt();
+        this.stack = ByteBufUtils.readItemStack(buf);
+        int craftingSlotsSize = buf.readInt();
+        this.craftingSlots = new ArrayList<>(craftingSlotsSize);
+        for (int i = 0; i < craftingSlotsSize; i++) {
+            int slotNumber = buf.readInt();
+            craftingSlots.add(slotNumber);
+        }
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeTag(buf,this.stack);
-        buf.writeInt(this.slotNumber);
+        ByteBufUtils.writeItemStack(buf, this.stack);
+        buf.writeInt(this.craftingSlots.size());
+        for (Integer craftingSlot : this.craftingSlots) {
+            buf.writeInt(craftingSlot);
+        }
     }
 
     @Override
     public IMessage onMessage(PacketRecipeItemChange message, MessageContext ctx) {
         Container container = ctx.getServerHandler().playerEntity.openContainer;
-        if(container instanceof ContainerPatternTerm || GuiUtils.isPatternTermExContainer(container)){
-            Slot currentSlot = container.getSlot(message.getSlotNumber());
-            ItemStack nextStack = ItemStack.loadItemStackFromNBT(message.getStack());
-            if(nextStack != null){
-                currentSlot.putStack(nextStack);
+        if (container instanceof ContainerPatternTerm || GuiUtils.isPatternTermExContainer(container)) {
+            ItemStack nextStack = message.getStack();
+            if (nextStack != null) {
+                for (Integer craftingSlot : message.getCraftingSlots()) {
+                    Slot currentSlot = container.getSlot(craftingSlot);
+                    currentSlot.putStack(nextStack);
+                }
             }
         }
         return null;
