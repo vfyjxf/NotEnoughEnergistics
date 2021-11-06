@@ -35,21 +35,14 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     public static NEEContainerDrawHandler instance = new NEEContainerDrawHandler();
 
-    private final Field overlayButtonsField;
-    private final Field handlerField;
+    private Field overlayButtonsField;
+    private Field handlerField;
     private Method recipesPerPageMethod;
     private boolean drawRequestTooltip;
     private boolean drawCraftableTooltip;
 
     public NEEContainerDrawHandler() {
-        this.overlayButtonsField = ReflectionHelper.findField(GuiRecipe.class, "overlayButtons");
-        this.handlerField = ReflectionHelper.findField(GuiRecipe.class, "handler");
-        try {
-            this.recipesPerPageMethod = GuiRecipe.class.getDeclaredMethod("getRecipesPerPage");
-            recipesPerPageMethod.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
+
     }
 
     @Override
@@ -74,11 +67,25 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     @Override
     public void renderSlotOverlay(GuiContainer gui, Slot slot) {
+
+        if (this.overlayButtonsField == null || this.handlerField == null || this.recipesPerPageMethod == null) {
+            this.overlayButtonsField = ReflectionHelper.findField(GuiRecipe.class, "overlayButtons");
+            this.handlerField = ReflectionHelper.findField(GuiRecipe.class, "handler");
+            try {
+                this.recipesPerPageMethod = GuiRecipe.class.getDeclaredMethod("getRecipesPerPage");
+                recipesPerPageMethod.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+        }
+
         if (NEEConfig.drawHighlight && gui instanceof GuiRecipe) {
             Minecraft mc = Minecraft.getMinecraft();
             GuiRecipe guiRecipe = (GuiRecipe) gui;
             GuiContainer firstGui = guiRecipe.firstGui;
-            if (firstGui instanceof GuiPatternTerm || firstGui instanceof GuiCraftingTerm || GuiUtils.isPatternTermExGui(firstGui) || GuiUtils.isGuiWirelessCrafting(firstGui)) {
+            boolean isGuiPatternTerm = firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui);
+            boolean isCraftingTerm = firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui);
+            if (isGuiPatternTerm || isCraftingTerm) {
                 final ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
                 int i = scaledresolution.getScaledWidth();
                 int j = scaledresolution.getScaledHeight();

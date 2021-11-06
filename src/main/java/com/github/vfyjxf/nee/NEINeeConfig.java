@@ -13,7 +13,6 @@ import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
 import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.Optional;
 import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal;
 import org.lwjgl.input.Keyboard;
 import thaumicenergistics.client.gui.GuiKnowledgeInscriber;

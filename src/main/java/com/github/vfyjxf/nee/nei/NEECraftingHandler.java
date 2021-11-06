@@ -68,14 +68,15 @@ public class NEECraftingHandler implements IOverlayHandler {
                     ItemStack currentStack = positionedStack.items[0];
                     boolean find = false;
                     for (PositionedStack storedStack : tInputs) {
-                        ItemStack StoredStack = storedStack.items[0];
-                        if (StoredStack.isItemEqual(currentStack) && (StoredStack.stackSize + currentStack.stackSize) <= StoredStack.getMaxStackSize()) {
+                        ItemStack firstStack = storedStack.items[0];
+                        boolean areItemStackEqual = firstStack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(firstStack, currentStack);
+                        if (areItemStackEqual && (firstStack.stackSize + currentStack.stackSize) <= firstStack.getMaxStackSize()) {
                             find = true;
-                            storedStack.items[0].stackSize = StoredStack.stackSize + currentStack.stackSize;
+                            storedStack.items[0].stackSize = firstStack.stackSize + currentStack.stackSize;
                         }
                     }
                     if (!find) {
-                        tInputs.add(positionedStack);
+                        tInputs.add(positionedStack.copy());
                     }
                 }
                 for (PositionedStack positionedStack : tInputs) {
