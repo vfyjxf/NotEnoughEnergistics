@@ -1,6 +1,6 @@
 package com.github.vfyjxf.nee.network.packet;
 
-import appeng.container.implementations.ContainerPatternTerm;
+import appeng.container.AEBaseContainer;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -17,12 +17,12 @@ import java.util.List;
 /**
  * @author vfyjxf
  */
-public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketRecipeItemChange, IMessage> {
+public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSlotStackChange, IMessage> {
 
     private ItemStack stack;
-    private List<Integer> craftingSlots;
+    private List<Integer> slots;
 
-    public PacketRecipeItemChange() {
+    public PacketSlotStackChange() {
 
     }
 
@@ -30,44 +30,44 @@ public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketR
         return stack;
     }
 
-    public List<Integer> getCraftingSlots() {
-        return craftingSlots;
+    public List<Integer> getSlots() {
+        return slots;
     }
 
-    public PacketRecipeItemChange(ItemStack stack, List<Integer> craftingSlots) {
+    public PacketSlotStackChange(ItemStack stack, List<Integer> craftingSlots) {
         this.stack = stack;
-        this.craftingSlots = craftingSlots;
+        this.slots = craftingSlots;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.stack = ByteBufUtils.readItemStack(buf);
         int craftingSlotsSize = buf.readInt();
-        this.craftingSlots = new ArrayList<>(craftingSlotsSize);
+        this.slots = new ArrayList<>(craftingSlotsSize);
         for (int i = 0; i < craftingSlotsSize; i++) {
             int slotNumber = buf.readInt();
-            this.craftingSlots.add(slotNumber);
+            this.slots.add(slotNumber);
         }
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         ByteBufUtils.writeItemStack(buf, this.stack);
-        buf.writeInt(this.craftingSlots.size());
-        for (Integer craftingSlot : this.craftingSlots) {
+        buf.writeInt(this.slots.size());
+        for (Integer craftingSlot : this.slots) {
             buf.writeInt(craftingSlot);
         }
     }
 
     @Override
-    public IMessage onMessage(PacketRecipeItemChange message, MessageContext ctx) {
+    public IMessage onMessage(PacketSlotStackChange message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         Container container = player.openContainer;
         player.getServerWorld().addScheduledTask(() -> {
-            if (container instanceof ContainerPatternTerm) {
+            if (container instanceof AEBaseContainer) {
                 ItemStack nextStack = message.getStack();
                 if (nextStack != null) {
-                    for (Integer craftingSlot : message.getCraftingSlots()) {
+                    for (Integer craftingSlot : message.getSlots()) {
                         Slot currentSlot = container.getSlot(craftingSlot);
                         currentSlot.putStack(nextStack);
                     }

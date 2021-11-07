@@ -1,11 +1,13 @@
 package com.github.vfyjxf.nee.network.packet;
 
+import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -52,13 +54,20 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
         EntityPlayerMP player = ctx.getServerHandler().player;
         Container container = player.openContainer;
         player.getServerWorld().addScheduledTask(() -> {
-            if (container instanceof ContainerPatternTerm && !((ContainerPatternTerm) container).isCraftingMode()) {
+            if (container instanceof AEBaseContainer) {
+
+                if (container instanceof ContainerPatternTerm && ((ContainerPatternTerm) container).isCraftingMode()) {
+                    return;
+                }
+
                 Slot currentSlot = container.getSlot(message.getSlotIndex());
                 if (currentSlot instanceof SlotFake) {
                     for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
                         int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().getCount() + 1 : currentSlot.getStack().getCount() - 1;
                         if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
-                            currentSlot.getStack().setCount(currentStackSize);
+                            ItemStack nextStack = currentSlot.getStack().copy();
+                            nextStack.setCount(currentStackSize);
+                            currentSlot.putStack(nextStack);
                         } else {
                             break;
                         }

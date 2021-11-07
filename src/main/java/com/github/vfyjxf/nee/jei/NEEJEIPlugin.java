@@ -3,6 +3,7 @@
  */
 package com.github.vfyjxf.nee.jei;
 
+import appeng.client.gui.AEBaseGui;
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
@@ -63,6 +64,9 @@ public class NEEJEIPlugin implements IModPlugin {
         }
 
         ObfuscationReflectionHelper.setPrivateValue(RecipeTransferRegistry.class, (RecipeTransferRegistry) registry.getRecipeTransferRegistry(), newRegistry, "recipeTransferHandlers");
+
+        registry.addGhostIngredientHandler(AEBaseGui.class, new NEEGhostIngredientHandler());
+
     }
 
     private boolean addWirelessCraftingHandler(Table<Class<?>, String, IRecipeTransferHandler> newRegistry) {

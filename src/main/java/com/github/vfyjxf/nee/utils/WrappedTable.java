@@ -71,7 +71,7 @@ public class WrappedTable<R, C, V> extends Table<R, C, V> {
             wirelessCraftingContainer = Class.forName("p455w0rd.wct.container.ContainerWCT");
         } catch (ClassNotFoundException ignored) {
         }
-        if (wirelessCraftingContainer != null && row == wirelessCraftingContainer) {
+        if (wirelessCraftingContainer != null && row == ContainerWCT.class) {
             value = (V) new CraftingHelperTransferHandler<>(ContainerWCT.class);
             NotEnoughEnergistics.logger.info("Wireless Crafting Terminal RecipeTransfeHandler Replaced Successfully");
         }

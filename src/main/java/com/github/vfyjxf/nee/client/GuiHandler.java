@@ -34,8 +34,10 @@ public class GuiHandler {
                 NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(stackIndex), noPreview));
                 stackIndex++;
             }
+        } else if (!isCraftingGui && isCraftConfirmGui && tracker != null) {
+            //Prevent opening the gui during normal use
+            tracker = null;
         }
-
     }
 
     //TODO:add some buttons to change settings
