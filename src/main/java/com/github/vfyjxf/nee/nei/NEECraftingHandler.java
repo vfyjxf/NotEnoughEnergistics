@@ -17,6 +17,7 @@ import com.github.vfyjxf.nee.utils.ItemUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,6 +99,12 @@ public class NEECraftingHandler implements IOverlayHandler {
                     if (ItemUtils.isInBlackList(currentStack, recipeProcessorId, identifier)) {
                         continue;
                     }
+
+                    //Fix ItemStack with wrong meta
+                    if (currentStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                        currentStack.setItemDamage(0);
+                    }
+
                     recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
                     NEECraftingHandler.ingredients.put("input" + inputIndex, positionedStack);
                     inputIndex++;
@@ -107,7 +114,14 @@ public class NEECraftingHandler implements IOverlayHandler {
                     if (outputIndex >= 4 || positionedStack == null || positionedStack.item == null) {
                         continue;
                     }
-                    recipeOutputs.setTag(OUTPUT_KEY + outputIndex, positionedStack.item.writeToNBT(new NBTTagCompound()));
+
+                    ItemStack outputStack = positionedStack.item.copy();
+                    //Fix ItemStack with wrong meta(maybe ?)
+                    if (outputStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                        outputStack.setItemDamage(0);
+                    }
+
+                    recipeOutputs.setTag(OUTPUT_KEY + outputIndex, outputStack.writeToNBT(new NBTTagCompound()));
                     outputIndex++;
                 }
             }
@@ -135,6 +149,11 @@ public class NEECraftingHandler implements IOverlayHandler {
                     if (Platform.isRecipePrioritized(currentStack) || ItemUtils.isPreferItems(currentStack)) {
                         stack = currentStack.copy();
                     }
+                }
+
+                //Fix ItemStack with wrong meta
+                if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                    stack.setItemDamage(0);
                 }
 
                 recipeInputs.setTag("#" + slotIndex, stack.writeToNBT(new NBTTagCompound()));

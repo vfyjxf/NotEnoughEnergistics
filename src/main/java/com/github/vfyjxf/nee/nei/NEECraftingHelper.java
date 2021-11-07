@@ -39,7 +39,10 @@ import org.lwjgl.input.Keyboard;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,7 +101,7 @@ public class NEECraftingHelper implements IOverlayHandler {
                 }
                 if (packetSize >= 0) {
                     NetworkHandler.instance.sendToServer(packet);
-                }else {
+                } else {
                     NotEnoughEnergistics.logger.error("Can't get packet size!");
                 }
             } else if (GuiUtils.isGuiWirelessCrafting(firstGui)) {
@@ -199,24 +202,31 @@ public class NEECraftingHelper implements IOverlayHandler {
             //make nei's transfer system doesn't require presses shift
             if (event.gui instanceof GuiRecipe) {
                 GuiRecipe guiRecipe = (GuiRecipe) event.gui;
-                GuiButton[] overlayButtons = null;
+                List<GuiButton> overlayButtons = null;
                 final int OVERLAY_BUTTON_ID_START = 4;
+                boolean isGtnhNei = true;
                 try {
-                    overlayButtons = (GuiButton[]) ReflectionHelper.findField(GuiRecipe.class, "overlayButtons").get(guiRecipe);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    Field overlayButtonsField = GuiRecipe.class.getDeclaredField("overlayButtons");
+                    overlayButtonsField.setAccessible(true);
+                    overlayButtons = new ArrayList<>(Arrays.asList((GuiButton[]) overlayButtonsField.get(guiRecipe)));
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    isGtnhNei = false;
                 }
-                if (overlayButtons != null && event.button.id >= OVERLAY_BUTTON_ID_START && event.button.id < OVERLAY_BUTTON_ID_START + overlayButtons.length) {
+                if (!isGtnhNei) {
+                    overlayButtons = new ArrayList<>(Arrays.asList(guiRecipe.overlay1, guiRecipe.overlay2));
+                }
+                if (event.button.id >= OVERLAY_BUTTON_ID_START && event.button.id < OVERLAY_BUTTON_ID_START + overlayButtons.size()) {
                     boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
                     boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
                     if (isCraftingTerm || isPatternTerm) {
-                        int recipesPerPage = -1;
-                        IRecipeHandler handler = null;
-                        try {
-                            recipesPerPage = (int) ReflectionHelper.findMethod(GuiRecipe.class, guiRecipe, new String[]{"getRecipesPerPage"}).invoke(guiRecipe);
-                            handler = (IRecipeHandler) ReflectionHelper.findField(GuiRecipe.class, "handler").get(guiRecipe);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
+                        int recipesPerPage = 2;
+                        IRecipeHandler handler = guiRecipe.currenthandlers.get(guiRecipe.recipetype);
+                        if (isGtnhNei) {
+                            try {
+                                recipesPerPage = (int) ReflectionHelper.findMethod(GuiRecipe.class, guiRecipe, new String[]{"getRecipesPerPage"}).invoke(guiRecipe);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
                         }
                         if (recipesPerPage >= 0 && handler != null) {
                             int recipe = guiRecipe.page * recipesPerPage + event.button.id - OVERLAY_BUTTON_ID_START;

@@ -65,6 +65,9 @@ public class GuiHandler {
                 NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(stackIndex), noPreview));
                 stackIndex++;
             }
+        } else if (!isGuiCraftingTerm && isGuiCraftConfirm && tracker != null) {
+            //Prevent opening the gui during normal use
+            tracker = null;
         }
     }
 

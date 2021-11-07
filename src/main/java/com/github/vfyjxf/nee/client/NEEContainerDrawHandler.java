@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class NEEContainerDrawHandler implements IContainerDrawHandler {
@@ -36,7 +37,6 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
     public static NEEContainerDrawHandler instance = new NEEContainerDrawHandler();
 
     private Field overlayButtonsField;
-    private Field handlerField;
     private Method recipesPerPageMethod;
     private boolean drawRequestTooltip;
     private boolean drawCraftableTooltip;
@@ -65,21 +65,24 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     }
 
+    @SuppressWarnings("ALL")
     @Override
     public void renderSlotOverlay(GuiContainer gui, Slot slot) {
 
-        if (this.overlayButtonsField == null || this.handlerField == null || this.recipesPerPageMethod == null) {
-            this.overlayButtonsField = ReflectionHelper.findField(GuiRecipe.class, "overlayButtons");
-            this.handlerField = ReflectionHelper.findField(GuiRecipe.class, "handler");
-            try {
-                this.recipesPerPageMethod = GuiRecipe.class.getDeclaredMethod("getRecipesPerPage");
-                recipesPerPageMethod.setAccessible(true);
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-        }
-
         if (NEEConfig.drawHighlight && gui instanceof GuiRecipe) {
+            //gtnh nei support
+            boolean isGtnhNei = true;
+            if (this.overlayButtonsField == null || this.recipesPerPageMethod == null) {
+                try {
+                    this.overlayButtonsField = GuiRecipe.class.getDeclaredField("overlayButtons");
+                    this.recipesPerPageMethod = GuiRecipe.class.getDeclaredMethod("getRecipesPerPage");
+                    this.overlayButtonsField.setAccessible(true);
+                    recipesPerPageMethod.setAccessible(true);
+                } catch (NoSuchMethodException | NoSuchFieldException e) {
+                    isGtnhNei = false;
+                }
+            }
+
             Minecraft mc = Minecraft.getMinecraft();
             GuiRecipe guiRecipe = (GuiRecipe) gui;
             GuiContainer firstGui = guiRecipe.firstGui;
@@ -91,23 +94,31 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                 int j = scaledresolution.getScaledHeight();
                 final int mouseX = Mouse.getX() * i / mc.displayWidth;
                 final int mouseY = j - Mouse.getY() * j / mc.displayHeight - 1;
-                GuiButton[] overlayButtons = null;
-                try {
-                    overlayButtons = (GuiButton[]) this.overlayButtonsField.get(guiRecipe);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+
+
+                List<GuiButton> overlayButtons = null;
+                if (isGtnhNei) {
+                    try {
+                        overlayButtons = new ArrayList<>(Arrays.asList((GuiButton[]) this.overlayButtonsField.get(guiRecipe)));
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    overlayButtons = new ArrayList<>(Arrays.asList(guiRecipe.overlay1, guiRecipe.overlay2));
                 }
+
                 if (overlayButtons != null) {
                     for (GuiButton button : overlayButtons) {
                         if (button.visible && button.enabled && GuiUtils.isMouseOverButton(button, mouseX, mouseY)) {
                             final int OVERLAY_BUTTON_ID_START = 4;
-                            IRecipeHandler handler = null;
-                            int recipesPerPage = -1;
-                            try {
-                                recipesPerPage = (int) this.recipesPerPageMethod.invoke(guiRecipe);
-                                handler = (IRecipeHandler) this.handlerField.get(guiRecipe);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                e.printStackTrace();
+                            IRecipeHandler handler = guiRecipe.currenthandlers.get(guiRecipe.recipetype);
+                            int recipesPerPage = 2;
+                            if (isGtnhNei) {
+                                try {
+                                    recipesPerPage = (int) this.recipesPerPageMethod.invoke(guiRecipe);
+                                } catch (IllegalAccessException | InvocationTargetException e) {
+                                    e.printStackTrace();
+                                }
                             }
                             if (recipesPerPage >= 0 && handler != null) {
                                 int recipeIndex = guiRecipe.page * recipesPerPage + button.id - OVERLAY_BUTTON_ID_START;
