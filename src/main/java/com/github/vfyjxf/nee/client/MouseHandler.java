@@ -1,11 +1,13 @@
 package com.github.vfyjxf.nee.client;
 
+import appeng.client.gui.AEBaseGui;
+import appeng.client.gui.implementations.GuiInterface;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.slot.SlotFake;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
+import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
@@ -34,17 +36,20 @@ public class MouseHandler {
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Post event) {
         Minecraft mc = Minecraft.getMinecraft();
         int i = Mouse.getEventDWheel();
-        if (i != 0 && mc.currentScreen instanceof GuiPatternTerm) {
-            GuiPatternTerm guiPatternTerm = (GuiPatternTerm) mc.currentScreen;
-            int x = Mouse.getEventX() * guiPatternTerm.width / mc.displayWidth;
-            int y = guiPatternTerm.height - Mouse.getEventY() * guiPatternTerm.height / mc.displayHeight - 1;
-            Slot currentSlot = GuiUtils.getSlotUnderMouse(guiPatternTerm, x, y);
-            if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
-                if (Keyboard.isKeyDown(recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
-                    handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, i);
-                } else if (Keyboard.isKeyDown(stackCountChange.getKeyCode())) {
-                    int changeCount = i / 120;
-                    NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+        boolean isSupportedGui = mc.currentScreen instanceof GuiPatternTerm || mc.currentScreen instanceof GuiInterface;
+        if (i != 0 && isSupportedGui) {
+            AEBaseGui aeBaseGui = (AEBaseGui) mc.currentScreen;
+            int x = Mouse.getEventX() * aeBaseGui.width / mc.displayWidth;
+            int y = aeBaseGui.height - Mouse.getEventY() * aeBaseGui.height / mc.displayHeight - 1;
+            Slot currentSlot = GuiUtils.getSlotUnderMouse(aeBaseGui, x, y);
+            if (currentSlot != null && currentSlot.getHasStack()) {
+                if (currentSlot instanceof SlotFake) {
+                    if (Keyboard.isKeyDown(recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
+                        handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, i);
+                    } else if (Keyboard.isKeyDown(stackCountChange.getKeyCode())) {
+                        int changeCount = i / 120;
+                        NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                    }
                 }
             }
         }
@@ -88,7 +93,7 @@ public class MouseHandler {
                         craftingSlots.add(currentSlot.slotNumber);
                     }
 
-                    NEENetworkHandler.getInstance().sendToServer(new PacketRecipeItemChange(currentIngredientStack, craftingSlots));
+                    NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(currentIngredientStack, craftingSlots));
                 }
             }
         }
