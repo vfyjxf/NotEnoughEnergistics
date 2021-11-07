@@ -5,6 +5,7 @@ import appeng.client.gui.implementations.GuiPatternTerm;
 import codechicken.nei.NEIClientConfig;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.guihook.IContainerDrawHandler;
+import codechicken.nei.guihook.IContainerTooltipHandler;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
@@ -40,6 +41,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
     private Method recipesPerPageMethod;
     private boolean drawRequestTooltip;
     private boolean drawCraftableTooltip;
+    private boolean isGtnhNei;
 
     public NEEContainerDrawHandler() {
 
@@ -71,7 +73,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
         if (NEEConfig.drawHighlight && gui instanceof GuiRecipe) {
             //gtnh nei support
-            boolean isGtnhNei = true;
+            this.isGtnhNei = true;
             if (this.overlayButtonsField == null || this.recipesPerPageMethod == null) {
                 try {
                     this.overlayButtonsField = GuiRecipe.class.getDeclaredField("overlayButtons");
@@ -79,7 +81,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                     this.overlayButtonsField.setAccessible(true);
                     recipesPerPageMethod.setAccessible(true);
                 } catch (NoSuchMethodException | NoSuchFieldException e) {
-                    isGtnhNei = false;
+                    this.isGtnhNei = false;
                 }
             }
 
@@ -159,11 +161,15 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         if (this.drawCraftableTooltip || this.drawRequestTooltip) {
             if (event.gui instanceof GuiRecipe) {
                 GuiRecipe guiRecipe = (GuiRecipe) event.gui;
-                GuiButton[] overlayButtons = null;
-                try {
-                    overlayButtons = (GuiButton[]) ReflectionHelper.findField(GuiRecipe.class, "overlayButtons").get(guiRecipe);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                List<GuiButton> overlayButtons = null;
+                if (this.isGtnhNei) {
+                    try {
+                        overlayButtons = new ArrayList<>(Arrays.asList((GuiButton[]) this.overlayButtonsField.get(guiRecipe)));
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    overlayButtons = new ArrayList<>(Arrays.asList(guiRecipe.overlay1, guiRecipe.overlay2));
                 }
                 if (overlayButtons != null) {
                     for (GuiButton button : overlayButtons) {
