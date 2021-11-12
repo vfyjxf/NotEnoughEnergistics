@@ -1,11 +1,15 @@
 package com.github.vfyjxf.nee;
 
 import appeng.client.gui.implementations.GuiCraftingTerm;
+import appeng.client.gui.implementations.GuiInterface;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.gui.implementations.GuiPatternTermEx;
+import codechicken.nei.NEIController;
 import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
 import codechicken.nei.guihook.GuiContainerManager;
+import codechicken.nei.guihook.IContainerInputHandler;
+import com.github.vfyjxf.nee.client.GuiHandler;
 import com.github.vfyjxf.nee.client.NEEContainerDrawHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
@@ -13,17 +17,20 @@ import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.processor.IRecipeProcessor;
 import com.github.vfyjxf.nee.processor.RecipeProcessor;
 import cpw.mods.fml.common.Loader;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal;
 import org.lwjgl.input.Keyboard;
 import thaumicenergistics.client.gui.GuiKnowledgeInscriber;
 import wanion.avaritiaddons.block.extremeautocrafter.GuiExtremeAutoCrafter;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 public class NEINeeConfig implements IConfigureNEI {
+
+    private static final List<Class<?>> transferBlacklist = new ArrayList<>(Arrays.asList(
+            GuiInterface.class, GuiPatternTerm.class
+    ));
 
     @Override
     public void loadConfig() {
@@ -31,6 +38,8 @@ public class NEINeeConfig implements IConfigureNEI {
         RecipeProcessor.init();
 
         registerKeyBindings();
+
+        registerGuiHandler();
 
         if (NEEConfig.drawHighlight) {
             GuiContainerManager.addDrawHandler(NEEContainerDrawHandler.instance);
@@ -76,6 +85,35 @@ public class NEINeeConfig implements IConfigureNEI {
         API.addKeyBind("nee.ingredient", Keyboard.KEY_LSHIFT);
         API.addKeyBind("nee.preview", Keyboard.KEY_LCONTROL);
         API.addKeyBind("nee.nopreview", Keyboard.KEY_LMENU);
+    }
+
+    private void registerGuiHandler() {
+        API.registerNEIGuiHandler(GuiHandler.instance);
+        //disable MouseScrollTransfer in some gui
+        replaceNEIController();
+    }
+
+    private void replaceNEIController() {
+        int controllerIndex = -1;
+        for (IContainerInputHandler inputHandler : GuiContainerManager.inputHandlers) {
+            if (inputHandler instanceof NEIController) {
+                controllerIndex = GuiContainerManager.inputHandlers.indexOf(inputHandler);
+                break;
+            }
+        }
+        if (controllerIndex > 0) {
+            GuiContainerManager.inputHandlers.remove(controllerIndex);
+            GuiContainerManager.inputHandlers.add(controllerIndex, new NEIController() {
+                @Override
+                public boolean mouseScrolled(GuiContainer gui, int mouseX, int mouseY, int scrolled) {
+                    if (transferBlacklist.contains(gui.getClass())) {
+                        return false;
+                    }
+                    return super.mouseScrolled(gui, mouseX, mouseY, scrolled);
+                }
+            });
+            NotEnoughEnergistics.logger.info("NEIController replaced success");
+        }
     }
 
     private void installCraftingTermSupport() {

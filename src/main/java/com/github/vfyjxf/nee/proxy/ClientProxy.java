@@ -15,12 +15,12 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         ClientCommandHandler.instance.registerCommand(new NEECommands());
-        FMLCommonHandler.instance().bus().register(new GuiHandler());
-        MinecraftForge.EVENT_BUS.register(new GuiHandler());
+        FMLCommonHandler.instance().bus().register(GuiHandler.instance);
+        MinecraftForge.EVENT_BUS.register(GuiHandler.instance);
         if (NEEConfig.noShift) {
             MinecraftForge.EVENT_BUS.register(NEECraftingHelper.INSTANCE);
         }
-        if(NEEConfig.drawHighlight){
+        if (NEEConfig.drawHighlight) {
             MinecraftForge.EVENT_BUS.register(NEEContainerDrawHandler.instance);
         }
     }

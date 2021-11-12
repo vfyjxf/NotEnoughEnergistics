@@ -5,7 +5,6 @@ import appeng.client.gui.implementations.GuiPatternTerm;
 import codechicken.nei.NEIClientConfig;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.guihook.IContainerDrawHandler;
-import codechicken.nei.guihook.IContainerTooltipHandler;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;

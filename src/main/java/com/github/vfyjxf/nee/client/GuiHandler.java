@@ -1,16 +1,21 @@
 package com.github.vfyjxf.nee.client;
 
+import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.client.gui.implementations.GuiCraftingTerm;
+import appeng.client.gui.implementations.GuiInterface;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.slot.SlotFake;
 import codechicken.nei.NEIClientConfig;
 import codechicken.nei.PositionedStack;
+import codechicken.nei.VisiblityData;
+import codechicken.nei.api.INEIGuiHandler;
+import codechicken.nei.api.TaggedInventoryArea;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingHelper;
-import com.github.vfyjxf.nee.network.packet.PacketRecipeItemChange;
+import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
@@ -28,9 +33,13 @@ import org.lwjgl.input.Mouse;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.vfyjxf.nee.config.NEEConfig.draggedStackDefaultSize;
+import static com.github.vfyjxf.nee.config.NEEConfig.useStackSizeFromNEI;
 import static com.github.vfyjxf.nee.nei.NEECraftingHelper.*;
 
-public class GuiHandler {
+public class GuiHandler implements INEIGuiHandler {
+
+    public static GuiHandler instance = new GuiHandler();
 
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {
@@ -38,7 +47,8 @@ public class GuiHandler {
             Minecraft mc = Minecraft.getMinecraft();
             int dWheel = Mouse.getDWheel();
             boolean isPatternTerm = mc.currentScreen instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(mc.currentScreen);
-            if (dWheel != 0 && isPatternTerm) {
+            boolean isInterface = mc.currentScreen instanceof GuiInterface;
+            if (dWheel != 0 && (isPatternTerm || isInterface)) {
                 int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
                 int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
                 Slot currentSlot = GuiUtils.getSlotUnderMouse((GuiContainer) mc.currentScreen, x, y);
@@ -110,7 +120,7 @@ public class GuiHandler {
                     } else {
                         craftingSlots.add(currentSlot.slotNumber);
                     }
-                    NEENetworkHandler.getInstance().sendToServer(new PacketRecipeItemChange(currentStack, craftingSlots));
+                    NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(currentStack, craftingSlots));
                 }
             }
         }
@@ -128,4 +138,41 @@ public class GuiHandler {
         return craftingSlots;
     }
 
+    @Override
+    public VisiblityData modifyVisiblity(GuiContainer gui, VisiblityData currentVisibility) {
+        return null;
+    }
+
+    @Override
+    public Iterable<Integer> getItemSpawnSlots(GuiContainer gui, ItemStack item) {
+        return null;
+    }
+
+    @Override
+    public List<TaggedInventoryArea> getInventoryAreas(GuiContainer gui) {
+        return null;
+    }
+
+    @Override
+    public boolean handleDragNDrop(GuiContainer gui, int mouseX, int mouseY, ItemStack draggedStack, int button) {
+        if (gui instanceof AEBaseGui) {
+            if (button != 2) {
+                Slot currentSlot = GuiUtils.getSlotUnderMouse(gui, mouseX, mouseY);
+                if (currentSlot instanceof SlotFake && ((SlotFake) currentSlot).isEnabled()) {
+                    List<Integer> slots = new ArrayList<>();
+                    slots.add(currentSlot.slotNumber);
+                    ItemStack copyStack = draggedStack.copy();
+                    copyStack.stackSize = useStackSizeFromNEI ? draggedStack.stackSize : draggedStackDefaultSize;
+                    NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, slots));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hideItemPanelSlot(GuiContainer gui, int x, int y, int w, int h) {
+        return false;
+    }
 }

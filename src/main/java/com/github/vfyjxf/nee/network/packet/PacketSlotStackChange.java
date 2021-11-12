@@ -1,7 +1,5 @@
 package com.github.vfyjxf.nee.network.packet;
 
-import appeng.container.implementations.ContainerPatternTerm;
-import com.github.vfyjxf.nee.utils.GuiUtils;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -17,16 +15,16 @@ import java.util.List;
 /**
  * @author vfyjxf
  */
-public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketRecipeItemChange, IMessage> {
+public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSlotStackChange, IMessage> {
 
     private ItemStack stack;
     private List<Integer> craftingSlots;
 
-    public PacketRecipeItemChange() {
+    public PacketSlotStackChange() {
 
     }
 
-    public PacketRecipeItemChange(ItemStack stack, List<Integer> craftingSlots) {
+    public PacketSlotStackChange(ItemStack stack, List<Integer> craftingSlots) {
         this.stack = stack;
         this.craftingSlots = craftingSlots;
     }
@@ -60,13 +58,13 @@ public class PacketRecipeItemChange implements IMessage, IMessageHandler<PacketR
     }
 
     @Override
-    public IMessage onMessage(PacketRecipeItemChange message, MessageContext ctx) {
+    public IMessage onMessage(PacketSlotStackChange message, MessageContext ctx) {
         Container container = ctx.getServerHandler().playerEntity.openContainer;
-        if (container instanceof ContainerPatternTerm || GuiUtils.isPatternTermExContainer(container)) {
-            ItemStack nextStack = message.getStack();
-            if (nextStack != null) {
-                for (Integer craftingSlot : message.getCraftingSlots()) {
-                    Slot currentSlot = container.getSlot(craftingSlot);
+        ItemStack nextStack = message.getStack();
+        if (nextStack != null) {
+            for (Integer craftingSlot : message.getCraftingSlots()) {
+                Slot currentSlot = container.getSlot(craftingSlot);
+                if (currentSlot != null) {
                     currentSlot.putStack(nextStack);
                 }
             }

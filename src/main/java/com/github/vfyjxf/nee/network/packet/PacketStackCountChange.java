@@ -1,7 +1,7 @@
 package com.github.vfyjxf.nee.network.packet;
 
+import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerPatternTerm;
-import com.github.vfyjxf.nee.utils.GuiUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 
 /**
  * @author vfyjxf
@@ -51,17 +52,28 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
     public IMessage onMessage(PacketStackCountChange message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().playerEntity;
         Container container = player.openContainer;
-        if ((container instanceof ContainerPatternTerm && !((ContainerPatternTerm) container).isCraftingMode()) || GuiUtils.isPatternTermExContainer(container)) {
-            Slot currentSlot = container.getSlot(message.getSlotIndex());
-            for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
-                int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().stackSize + 1 : currentSlot.getStack().stackSize - 1;
-                if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
-                    currentSlot.getStack().stackSize = currentStackSize;
-                } else {
-                    break;
-                }
-            }
+        if (container instanceof AEBaseContainer) {
+            handleMessage(message, container);
         }
         return null;
+    }
+
+    private void handleMessage(PacketStackCountChange message, Container container) {
+
+        if (container instanceof ContainerPatternTerm && ((ContainerPatternTerm) container).isCraftingMode()) {
+            return;
+        }
+
+        Slot currentSlot = container.getSlot(message.getSlotIndex());
+        for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
+            int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().stackSize + 1 : currentSlot.getStack().stackSize - 1;
+            if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
+                ItemStack nextStack = currentSlot.getStack().copy();
+                nextStack.stackSize = currentStackSize;
+                currentSlot.putStack(nextStack);
+            } else {
+                break;
+            }
+        }
     }
 }

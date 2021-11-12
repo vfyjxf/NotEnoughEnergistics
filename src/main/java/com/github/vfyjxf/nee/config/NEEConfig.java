@@ -23,6 +23,9 @@ public class NEEConfig {
     public static boolean matchOtherItems = true;
     public static boolean drawHighlight = true;
     public static boolean allowSynchronousSwitchIngredient = true;
+    public static boolean useStackSizeFromNEI = false;
+
+    public static int draggedStackDefaultSize = 1;
 
     public static void loadConfig(File configFile) {
         config = new Configuration(configFile);
@@ -50,6 +53,12 @@ public class NEEConfig {
         allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
                 "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
 
+        useStackSizeFromNEI = config.get("client","useStackSizeFromNEI",false,
+                "Use the StackSize set by NEI").getBoolean();
+
+        draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
+                "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
+
         if (config.hasChanged()) config.save();
     }
 
@@ -70,6 +79,12 @@ public class NEEConfig {
 
         allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
                 "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+
+        useStackSizeFromNEI = config.get("client","useStackSizeFromNEI",false,
+                "Use the StackSize set by NEI").getBoolean();
+
+        draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
+                "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
 
         ItemUtils.reloadConfig();
     }
