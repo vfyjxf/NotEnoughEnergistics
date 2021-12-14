@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import static com.github.vfyjxf.nee.config.NEEConfig.CLIENT_CONFIG;
 
 public class IngredientTracker {

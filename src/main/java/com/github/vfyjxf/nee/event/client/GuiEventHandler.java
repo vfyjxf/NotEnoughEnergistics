@@ -8,7 +8,6 @@ import appeng.client.gui.me.items.PatternTermScreen;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.FakeSlot;
 import appeng.helpers.IContainerCraftingPacket;
-import com.github.vfyjxf.nee.client.KeyBindings;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packets.PacketCraftingRequest;
@@ -32,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.vfyjxf.nee.client.KeyBindings.*;
-import static com.github.vfyjxf.nee.client.KeyBindings.recipeIngredientChange;
-import static com.github.vfyjxf.nee.client.KeyBindings.stackCountChange;
 import static com.github.vfyjxf.nee.config.NEEConfig.CLIENT_CONFIG;
 import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.*;
 import static net.minecraftforge.client.event.GuiScreenEvent.MouseInputEvent.MouseScrollEvent;
