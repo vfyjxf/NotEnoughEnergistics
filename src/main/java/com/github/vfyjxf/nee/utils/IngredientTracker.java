@@ -1,97 +1,49 @@
 package com.github.vfyjxf.nee.utils;
 
 import appeng.api.storage.data.IAEItemStack;
-import appeng.api.storage.data.IItemList;
-import appeng.client.gui.implementations.GuiMEMonitorable;
-import appeng.client.me.ItemRepo;
-import codechicken.nei.PositionedStack;
-import codechicken.nei.recipe.IRecipeHandler;
-import com.github.vfyjxf.nee.config.NEEConfig;
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import net.minecraft.client.gui.inventory.GuiContainer;
+import appeng.client.gui.me.common.MEMonitorableScreen;
+import appeng.client.gui.me.common.Repo;
+import appeng.client.gui.me.items.CraftingTermScreen;
+import appeng.client.gui.me.items.ItemRepo;
+import appeng.client.gui.me.items.PatternTermScreen;
+import appeng.container.me.common.GridInventoryEntry;
+import com.google.common.collect.BiMap;
+import mezz.jei.api.gui.IRecipeLayout;
+import mezz.jei.api.gui.ingredient.IGuiIngredient;
+import mezz.jei.gui.recipes.RecipesGui;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.ItemStack;
-import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTerminal;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import static com.github.vfyjxf.nee.config.NEEConfig.CLIENT_CONFIG;
 
 public class IngredientTracker {
 
     private final List<Ingredient> ingredients = new ArrayList<>();
 
-    public IngredientTracker(GuiContainer gui, IRecipeHandler recipe, int recipeIndex) {
-        List<IAEItemStack> craftableStacks = getCraftableStacks(gui);
-        List<PositionedStack> requiredIngredients = new ArrayList<>();
-        for (PositionedStack positionedStack : recipe.getIngredientStacks(recipeIndex)) {
-            boolean find = false;
-            for (PositionedStack currentIngredient : requiredIngredients) {
-                boolean areItemStackEquals = currentIngredient.items[0].isItemEqual(positionedStack.items[0]) && ItemStack.areItemStackTagsEqual(currentIngredient.items[0], positionedStack.items[0]);
-                if (areItemStackEquals) {
-                    currentIngredient.items[0].stackSize += positionedStack.items[0].stackSize;
-                    find = true;
-                }
-            }
-
-            if (!find) {
-                requiredIngredients.add(positionedStack);
-            }
-
-        }
-        for (PositionedStack requiredIngredient : requiredIngredients) {
-            Ingredient ingredient = new Ingredient(requiredIngredient);
-            ingredients.add(ingredient);
-
-            for (IAEItemStack stack : NEEConfig.matchOtherItems ? this.getStorageStacks(gui) : craftableStacks) {
-                if (requiredIngredient.contains(stack.getItemStack())) {
-                    if (stack.isCraftable()) {
-                        ingredient.setCraftableIngredient(stack.getItemStack());
-                    }
-                    ingredient.addCurrentCount(stack.getItemStack().stackSize);
-                }
+    public IngredientTracker(IRecipeLayout recipeLayout) {
+        for (IGuiIngredient<ItemStack> guiIngredient : recipeLayout.getItemStacks().getGuiIngredients().values()) {
+            if (guiIngredient.isInput() && !guiIngredient.getAllIngredients().isEmpty()) {
+                ingredients.add(new Ingredient(guiIngredient));
             }
         }
-    }
 
-    public IngredientTracker(GuiContainer gui, List<PositionedStack> requiredIngredients) {
-
-        for (PositionedStack positionedStack : requiredIngredients) {
-            this.ingredients.add(new Ingredient(positionedStack));
-        }
-
-        List<IAEItemStack> craftableStacks = this.getCraftableStacks(gui);
-
-        //set craftable stack
         for (Ingredient ingredient : this.ingredients) {
-            for (IAEItemStack stack : craftableStacks) {
-                if (ingredient.getIngredients().contains(stack.getItemStack())) {
-                    if (!ingredient.isCraftable()) {
-                        ingredient.setCraftableIngredient(stack.getItemStack());
+            List<IAEItemStack> stacks = CLIENT_CONFIG.getMatchOtherItems() ? getStorageStacks() : getCraftableStacks();
+            for (IAEItemStack stack : stacks) {
+                if (ItemUtils.getIngredientIndex(stack.asItemStackRepresentation(), ingredient.getIngredient().getAllIngredients()) >= 0) {
+                    if (ingredient.getCraftableIngredient().isEmpty() && stack.isCraftable()) {
+                        ingredient.setCraftableIngredient(stack.asItemStackRepresentation());
                     }
                     if (stack.getStackSize() > 0) {
-                        int missingCount = (int) ingredient.getMissingCount();
-                        ingredient.addCurrentCount(stack.getStackSize());
+                        ingredient.addCount(stack.getStackSize());
                         if (ingredient.requiresToCraft()) {
                             stack.setStackSize(0);
                         } else {
-                            stack.setStackSize(stack.getStackSize() - missingCount);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (NEEConfig.matchOtherItems) {
-            List<IAEItemStack> otherStacks = this.getStorageStacks(gui);
-            otherStacks.removeAll(craftableStacks);
-            for (Ingredient ingredient : this.ingredients) {
-                for (IAEItemStack stack : otherStacks) {
-                    if (ingredient.requiresToCraft() && ingredient.getIngredients().contains(stack.getItemStack())) {
-                        int missingCount = (int) ingredient.getMissingCount();
-                        ingredient.addCurrentCount(stack.getStackSize());
-                        if (ingredient.requiresToCraft()) {
-                            stack.setStackSize(0);
-                        } else {
-                            stack.setStackSize(stack.getStackSize() - missingCount);
+                            stack.setStackSize(stack.getStackSize() - ingredient.getRequireCount());
                         }
                     }
                 }
@@ -100,54 +52,48 @@ public class IngredientTracker {
 
     }
 
-    @SuppressWarnings("unchecked")
-    private List<IAEItemStack> getCraftableStacks(GuiContainer gui) {
-        List<IAEItemStack> craftableStacks = new ArrayList<>();
-        IItemList<IAEItemStack> list = null;
-        try {
-            if (!GuiUtils.isGuiWirelessCrafting(gui)) {
-                ItemRepo repo = (ItemRepo) ReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(gui);
-                list = (IItemList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "list").get(repo);
-            } else {
-                //wireless crafting terminal support
-                net.p455w0rd.wirelesscraftingterminal.client.me.ItemRepo repo = (net.p455w0rd.wirelesscraftingterminal.client.me.ItemRepo) ReflectionHelper.findField(GuiWirelessCraftingTerminal.class, "repo").get(gui);
-                list = (IItemList<IAEItemStack>) ReflectionHelper.findField(net.p455w0rd.wirelesscraftingterminal.client.me.ItemRepo.class,
-                        "list").get(repo);
+    private List<IAEItemStack> getStorageStacks() {
+        List<IAEItemStack> list = new ArrayList<>();
+        if (Minecraft.getInstance().screen instanceof RecipesGui) {
+            RecipesGui recipesGui = (RecipesGui) Minecraft.getInstance().screen;
+            Screen parentScreen = ObfuscationReflectionHelper.getPrivateValue(RecipesGui.class, recipesGui, "parentScreen");
+            ItemRepo repo = null;
+            if (parentScreen instanceof CraftingTermScreen || parentScreen instanceof PatternTermScreen) {
+                repo = ObfuscationReflectionHelper.getPrivateValue(MEMonitorableScreen.class, (MEMonitorableScreen) parentScreen, "repo");
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            if (repo != null) {
+                BiMap<Long, GridInventoryEntry<IAEItemStack>> entries = ObfuscationReflectionHelper.getPrivateValue(Repo.class, repo, "entries");
+                if (entries != null) {
+                    for (GridInventoryEntry<IAEItemStack> entry : entries.values()) {
+                        list.add(entry.getStack().copy());
+                    }
+                }
+            }
         }
-        if (list != null) {
-            for (IAEItemStack stack : list) {
-                if (stack.isCraftable()) {
-                    craftableStacks.add(stack.copy());
+        return list;
+    }
+
+    public List<IAEItemStack> getCraftableStacks() {
+        List<IAEItemStack> craftableStacks = new ArrayList<>();
+        if (Minecraft.getInstance().screen instanceof RecipesGui) {
+            RecipesGui recipesGui = (RecipesGui) Minecraft.getInstance().screen;
+            Screen parentScreen = ObfuscationReflectionHelper.getPrivateValue(RecipesGui.class, recipesGui, "parentScreen");
+            ItemRepo repo = null;
+            if (parentScreen instanceof CraftingTermScreen || parentScreen instanceof PatternTermScreen) {
+                repo = ObfuscationReflectionHelper.getPrivateValue(MEMonitorableScreen.class, (MEMonitorableScreen) parentScreen, "repo");
+            }
+            if (repo != null) {
+                BiMap<Long, GridInventoryEntry<IAEItemStack>> entries = ObfuscationReflectionHelper.getPrivateValue(Repo.class, repo, "entries");
+                if (entries != null) {
+                    for (GridInventoryEntry<IAEItemStack> entry : entries.values()) {
+                        if (entry.isCraftable()) {
+                            craftableStacks.add(entry.getStack().copy());
+                        }
+                    }
                 }
             }
         }
         return craftableStacks;
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<IAEItemStack> getStorageStacks(GuiContainer gui) {
-        List<IAEItemStack> list = new ArrayList<>();
-        try {
-            if (!GuiUtils.isGuiWirelessCrafting(gui)) {
-                ItemRepo repo = (ItemRepo) ReflectionHelper.findField(GuiMEMonitorable.class, "repo").get(gui);
-                for (IAEItemStack stack : (IItemList<IAEItemStack>) ReflectionHelper.findField(ItemRepo.class, "list").get(repo)) {
-                    list.add(stack.copy());
-                }
-            } else {
-                //wireless crafting terminal support
-                net.p455w0rd.wirelesscraftingterminal.client.me.ItemRepo repo = (net.p455w0rd.wirelesscraftingterminal.client.me.ItemRepo) ReflectionHelper.findField(GuiWirelessCraftingTerminal.class, "repo").get(gui);
-                for (IAEItemStack stack : (IItemList<IAEItemStack>) ReflectionHelper.findField(net.p455w0rd.wirelesscraftingterminal.client.me.ItemRepo.class,
-                        "list").get(repo)) {
-                    list.add(stack.copy());
-                }
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return list;
     }
 
     public List<Ingredient> getIngredients() {
@@ -156,12 +102,23 @@ public class IngredientTracker {
 
     public List<ItemStack> getRequireToCraftStacks() {
         List<ItemStack> requireToCraftStacks = new ArrayList<>();
-        for (Ingredient ingredient : this.ingredients) {
-            ItemStack craftableStack = ingredient.getCraftableIngredient();
-            if (craftableStack != null && ingredient.requiresToCraft()) {
-                ItemStack requireStack = craftableStack.copy();
-                requireStack.stackSize = (int) ingredient.getMissingCount();
-                requireToCraftStacks.add(requireStack);
+        for (Ingredient ingredient : this.getIngredients()) {
+            boolean find = false;
+            if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
+                for (ItemStack stack : requireToCraftStacks) {
+                    boolean areStackEqual = stack.sameItem(ingredient.getCraftableIngredient()) && ItemStack.isSame(stack, ingredient.getCraftableIngredient());
+                    if (areStackEqual) {
+                        stack.setCount((int) (stack.getCount() + ingredient.getMissingCount()));
+                        find = true;
+                    }
+
+                }
+
+                if (!find) {
+                    ItemStack requireStack = ingredient.getCraftableIngredient().copy();
+                    requireStack.setCount((int) ingredient.getMissingCount());
+                    requireToCraftStacks.add(requireStack);
+                }
             }
         }
         return requireToCraftStacks;
@@ -170,26 +127,27 @@ public class IngredientTracker {
     public void addAvailableStack(ItemStack stack) {
         for (Ingredient ingredient : this.ingredients) {
             if (ingredient.requiresToCraft()) {
-                if (NEEConfig.matchOtherItems) {
-                    if (stack.stackSize > 0 && ingredient.getIngredients().contains(stack)) {
+                if (CLIENT_CONFIG.getMatchOtherItems()) {
+                    boolean canUse = stack.getCount() > 0 && ItemUtils.getIngredientIndex(stack, ingredient.getIngredient().getAllIngredients()) >= 0;
+                    if (canUse) {
                         int missingCount = (int) ingredient.getMissingCount();
-                        ingredient.addCurrentCount(stack.stackSize);
+                        ingredient.addCount(stack.getCount());
                         if (ingredient.requiresToCraft()) {
-                            stack.stackSize = 0;
+                            stack.setCount(0);
                         } else {
-                            stack.stackSize -= missingCount;
+                            stack.setCount(stack.getCount() - missingCount);
                         }
                         break;
                     }
                 } else {
                     ItemStack craftableStack = ingredient.getCraftableIngredient();
-                    if (craftableStack != null && craftableStack.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(craftableStack, stack) && stack.stackSize > 0) {
+                    if (!craftableStack.isEmpty() && craftableStack.sameItem(stack) && ItemStack.isSame(craftableStack, stack)) {
                         int missingCount = (int) ingredient.getMissingCount();
-                        ingredient.addCurrentCount(stack.stackSize);
+                        ingredient.addCount(stack.getCount());
                         if (ingredient.requiresToCraft()) {
-                            stack.stackSize = 0;
+                            stack.setCount(0);
                         } else {
-                            stack.stackSize -= missingCount;
+                            stack.setCount(stack.getCount() - missingCount);
                         }
                         break;
                     }

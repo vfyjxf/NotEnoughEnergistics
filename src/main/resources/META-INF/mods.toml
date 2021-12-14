@@ -1,0 +1,39 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="MIT"
+[[mods]]
+modId="neenergistics"
+version="${version}"
+displayName="Not Enough Energistics"
+logoFile="logo.png" #optional
+credits="Thanks TheRealp455w0rd" #optional
+authors="vfyjxf" #optional
+description=""
+
+[[dependencies.neenergistics]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.neenergistics]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.neenergistics]]
+    modId="jei"
+    mandatory=true
+    versionRange="${jei_version}"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.neenergistics]]
+    modId="appliedenergistics2"
+    mandatory=true
+    versionRange="${appeng_version}"
+    ordering="AFTER"
+    side="BOTH"

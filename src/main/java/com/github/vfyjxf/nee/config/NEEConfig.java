@@ -1,100 +1,162 @@
 package com.github.vfyjxf.nee.config;
 
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
-import com.github.vfyjxf.nee.utils.ItemUtils;
-import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.common.config.Configuration;
+import com.google.common.base.Strings;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
-/**
- * @author vfyjxf
- */
-public class NEEConfig {
 
-    public static Configuration config;
+@Mod.EventBusSubscriber(modid = NotEnoughEnergistics.MODID, bus = Bus.FORGE)
+public final class NEEConfig {
 
-    public static String[] transformBlacklist = new String[0];
-    public static String[] transformPriorityList = new String[0];
-    public static String[] transformPriorityModList = new String[0];
+    public static final ForgeConfigSpec CLIENT_SPEC;
+    public static final ClientConfig CLIENT_CONFIG;
 
-    public static boolean noShift = true;
-    public static boolean matchOtherItems = true;
-    public static boolean drawHighlight = true;
-    public static boolean allowSynchronousSwitchIngredient = true;
-    public static boolean useStackSizeFromNEI = false;
-
-    public static int draggedStackDefaultSize = 1;
-
-    public static void loadConfig(File configFile) {
-        config = new Configuration(configFile);
-        config.load();
-
-        transformBlacklist = config.get("client", "transformItemBlacklist", new String[0],
-                "If item in the blacklist, it will not be transferred.\n" +
-                        "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n" +
-                        "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
-        transformPriorityList = config.get("client", "transformItemPriorityList", new String[0],
-                "If item in the priority list, it will be transferred first.").getStringList();
-
-        transformPriorityModList = config.get("client", "transformPriorityModList", new String[0],
-                "if oredict has this mod's item, use it first").getStringList();
-
-        noShift = config.get("client", "noShift", true,
-                "if true, you don't need to press shift to use NEI's transfer system in CratingTerminal and PatternTerminal").getBoolean();
-
-        matchOtherItems = config.get("client", "matchOnCraftableItems", true,
-                "If true, Crafting Helper will match other items even they can't auto-crafting").getBoolean();
-
-        drawHighlight = config.get("client", "drawHighlight", true,
-                "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
-
-        allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
-                "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
-
-        useStackSizeFromNEI = config.get("client","useStackSizeFromNEI",false,
-                "Use the StackSize set by NEI").getBoolean();
-
-        draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
-                "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
-
-        if (config.hasChanged()) config.save();
+    static {
+        Pair<ClientConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+        CLIENT_SPEC = specPair.getRight();
+        CLIENT_CONFIG = specPair.getLeft();
     }
 
-    public static void reload() {
-        config.load();
-        transformBlacklist = config.get("client", "transformItemBlacklist", new String[0],
-                "If item in the blacklist, it will not be transferred.\n" +
-                        "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n" +
-                        "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
-        transformPriorityList = config.get("client", "transformItemPriorityList", new String[0],
-                "If item in the priority list, it will be transferred first.").getStringList();
+    public final static class ClientConfig {
 
-        transformPriorityModList = config.get("client", "transformPriorityModList", new String[0],
-                "if oredict has this mod's item, use it first").getStringList();
+        private final ForgeConfigSpec.BooleanValue allowPrintRecipeType;
+        private final ForgeConfigSpec.BooleanValue allowSynchronousSwitchIngredient;
+        private final ForgeConfigSpec.BooleanValue matchOtherItems;
+        private final ForgeConfigSpec.BooleanValue useDisplayedIngredient;
+        private final ForgeConfigSpec.ConfigValue<List<? extends String>> listModPreference;
+        private final ForgeConfigSpec.ConfigValue<List<? extends String>> itemBlacklist;
+        private final ForgeConfigSpec.ConfigValue<List<? extends String>> listItemPreference;
 
-        matchOtherItems = config.get("client", "matchOnCraftableItems", false,
-                "If false, Crafting Helper will not match other items").getBoolean();
+        public ClientConfig(ForgeConfigSpec.Builder builder) {
 
-        allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
-                "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+            builder.push("transfer");
 
-        useStackSizeFromNEI = config.get("client","useStackSizeFromNEI",false,
-                "Use the StackSize set by NEI").getBoolean();
+            allowPrintRecipeType = builder.comment("If true, print current recipe type in log.Default:false")
+                    .define("PrintRecipeType", true);
 
-        draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
-                "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
+            useDisplayedIngredient = builder.comment("If true, the ingredient currently displayed by JEI will be transferred")
+                    .define("UseDisplayedIngredient", true);
 
-        ItemUtils.reloadConfig();
-    }
+            listModPreference = builder.comment("If tag has this mod's item, use it first.")
+                    .define("ModPreference", Collections.emptyList());
 
-    @SubscribeEvent
-    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (NotEnoughEnergistics.MODID.equals(event.modID)) {
-            config.save();
-            NEEConfig.reload();
+            itemBlacklist = builder.comment("If item in the blacklist, it will not be transferred.")
+                    .comment("example:{\\\"itemName\\\" : \\\"minecraft:apple\\\", \\\"nbt\\\": \\\"{}\\\"}")
+                    .defineList("ItemBlacklist",
+                            Collections.emptyList(),
+                            obj -> obj instanceof String && isCorrectItemJson((String) obj));
+
+            listItemPreference = builder.comment("If item in the blacklist, it will not be transferred.")
+                    .comment("example:{\\\"itemName\\\" : \\\"minecraft:apple\\\", \\\"nbt\\\": \\\"{}\\\"}")
+                    .defineList("ListItemPreference",
+                            Collections.emptyList(),
+                            obj -> obj instanceof String && isCorrectItemJson((String) obj));
+            builder.pop();
+
+            builder.push("crafting-help");
+
+            matchOtherItems = builder.comment("If true, Crafting Helper will match other items even they can't auto-crafting")
+                    .define("MatchOtherItems", true);
+
+            allowSynchronousSwitchIngredient = builder.comment("If true, it will make all similar ingredient switch at the same time ")
+                    .define("AllowSynchronousSwitchIngredient", true);
+
+            builder.pop();
+
         }
+
+        public boolean allowPrintRecipeType() {
+            return allowPrintRecipeType.get();
+        }
+
+        public boolean allowSynchronousSwitchIngredient() {
+            return allowSynchronousSwitchIngredient.get();
+        }
+
+        public boolean getMatchOtherItems() {
+            return matchOtherItems.get();
+        }
+
+        public boolean useDisplayedIngredient() {
+            return useDisplayedIngredient.get();
+        }
+
+        public List<? extends String> getListModPreference() {
+            return listModPreference.get();
+        }
+
+        public List<? extends String> getItemBlacklist() {
+            return itemBlacklist.get();
+        }
+
+        public List<? extends String> getListItemPreference() {
+            return listItemPreference.get();
+        }
+
+        public void setListModPreference(List<? extends String> list) {
+            if (CLIENT_SPEC.isLoaded()) {
+                listModPreference.set(list);
+                listModPreference.save();
+            }
+        }
+
+        public void setItemBlacklist(List<? extends String> blacklist) {
+            if (CLIENT_SPEC.isLoaded()) {
+                itemBlacklist.set(blacklist);
+                listModPreference.save();
+            }
+        }
+
+        public void setListItemPreference(List<? extends String> list) {
+            if (CLIENT_SPEC.isLoaded()) {
+                listItemPreference.set(list);
+                listModPreference.save();
+            }
+        }
+
+        private boolean isCorrectItemJson(String itemJsonString) {
+            JsonObject jsonObject;
+            try {
+                jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            } catch (JsonSyntaxException e) {
+                NotEnoughEnergistics.logger.error("Found a error nbt json in item json: " + itemJsonString);
+                return false;
+            }
+            if (jsonObject != null) {
+                String itemName = jsonObject.get("itemName").getAsString();
+                if (Strings.isNullOrEmpty(itemName)) {
+                    return false;
+                }
+                String nbtJsonString = itemJsonString.contains("nbt") ? jsonObject.get("nbt").getAsString() : "";
+                if (!nbtJsonString.isEmpty()) {
+                    try {
+                        new JsonParser().parse(nbtJsonString);
+                    } catch (JsonSyntaxException e) {
+                        NotEnoughEnergistics.logger.error("Found a error nbt json in item json: " + itemJsonString);
+                        return false;
+                    }
+                    String recipeType = itemJsonString.contains("recipeType") ? jsonObject.get("recipeType").getAsString() : "";
+                    if (!recipeType.isEmpty() && ResourceLocation.isValidResourceLocation(recipeType)) {
+                        NotEnoughEnergistics.logger.error("Can't find recipeType : " + recipeType);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
     }
 
 }
+

@@ -1,48 +1,32 @@
 package com.github.vfyjxf.nee;
 
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.proxy.CommonProxy;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import net.minecraft.launchwrapper.Launch;
+import com.github.vfyjxf.nee.setup.CommonSetup;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 
-
-@Mod(modid = NotEnoughEnergistics.MODID,
-        version = NotEnoughEnergistics.VERSION,
-        name = NotEnoughEnergistics.NAME,
-        dependencies = NotEnoughEnergistics.DEPENDENCIES,
-        guiFactory = NotEnoughEnergistics.GUI_FACTORY,
-        useMetadata = true)
+@Mod(NotEnoughEnergistics.MODID)
 public class NotEnoughEnergistics {
+
     public static final String MODID = "neenergistics";
-    public static final String NAME = "NotEnoughEnergistics";
-    public static final String VERSION = "@VERSION@";
-    public static final String DEPENDENCIES = "required-after:NotEnoughItems;required-after:appliedenergistics2;after:ae2wct";
-    public static final String GUI_FACTORY = "com.github.vfyjxf.nee.config.NEEConfigGuiFactory";
-    public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
+    public static final String MOD_NAME = "NotEnoughEnergistics";
+    public static Logger logger = LogManager.getLogger(MOD_NAME);
 
-    @SidedProxy(clientSide = "com.github.vfyjxf.nee.proxy.ClientProxy", serverSide = "com.github.vfyjxf.nee.proxy.ServerProxy")
-    public static CommonProxy proxy;
+    public NotEnoughEnergistics() {
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent e) {
-        NEENetworkHandler.init();
-        NEEConfig.loadConfig(new File(Launch.minecraftHome, "config/NotEnoughEnergistics.cfg"));
-        FMLCommonHandler.instance().bus().register(new NEEConfig());
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, NEEConfig.CLIENT_SPEC);
+
+        CommonSetup commonSetup = new CommonSetup();
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(commonSetup::onCommonSetup);
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> NEECommands::register);
     }
 
-    @EventHandler
-    public void init(FMLInitializationEvent event) {
-        proxy.init(event);
-    }
 
 }

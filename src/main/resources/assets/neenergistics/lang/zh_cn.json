@@ -1,0 +1,9 @@
+{
+  "jei.tooltip.nee.helper.crafting" : "点击以请求缺失的物品",
+  "jei.tooltip.nee.helper.pattern": "自动合成已可用",
+  "key.neenergistics.crafting.helper.preview" :"合成帮助",
+  "key.neenergistics.crafting.helper.noPreview" :"合成帮助(无预览)",
+  "key.neenergistics.recipe.ingredient.change" :"更改材料",
+  "key.neenergistics.stack.count.change" :"更改物品数量",
+  "neenergistics.NotEnoughEnergistics" :"Not Enough Energistics"
+}
