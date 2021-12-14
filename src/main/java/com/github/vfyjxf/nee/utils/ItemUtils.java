@@ -18,11 +18,19 @@ import java.util.List;
 
 import static com.github.vfyjxf.nee.config.NEEConfig.CLIENT_CONFIG;
 
+
 /**
  * @author vfyjxf
  */
 public final class ItemUtils {
 
+    public static List<StackProcessor> transformItemBlacklist = getTransformItemBlacklist();
+    public static List<StackProcessor> transformItemPreferenceList = getTransformItemPreferenceList();
+
+    public static void reloadList() {
+        transformItemBlacklist = getTransformItemBlacklist();
+        transformItemPreferenceList = getTransformItemPreferenceList();
+    }
 
     private static ItemStack makeItemStack(String itemName, int stackSize, String nbtString) {
 
@@ -98,7 +106,7 @@ public final class ItemUtils {
     public static boolean isPreferItems(ItemStack itemStack, ResourceLocation recipeType) {
         ItemStack stack = itemStack.copy();
         stack.setCount(1);
-        for (StackProcessor stackProcessor : getTransformItemPreferenceList()) {
+        for (StackProcessor stackProcessor : transformItemPreferenceList) {
             if (ItemStack.matches(stack, stackProcessor.getCurrentStack())) {
                 ResourceLocation currentRecipeType = new ResourceLocation(stackProcessor.getRecipeType());
                 if (stackProcessor.getRecipeType() == null || stackProcessor.getRecipeType().isEmpty()) {
@@ -114,7 +122,7 @@ public final class ItemUtils {
     public static boolean isInBlackList(ItemStack itemStack, ResourceLocation recipeType) {
         ItemStack stack = itemStack.copy();
         stack.setCount(1);
-        for (StackProcessor stackProcessor : getTransformItemBlacklist()) {
+        for (StackProcessor stackProcessor : transformItemBlacklist) {
             if (ItemStack.isSame(stack, stackProcessor.getCurrentStack())) {
                 ResourceLocation currentRecipeType = new ResourceLocation(stackProcessor.getRecipeType());
                 if (stackProcessor.getRecipeType() == null || stackProcessor.getRecipeType().isEmpty()) {
@@ -166,15 +174,6 @@ public final class ItemUtils {
         String nbtString = currentStack.hasTag() ? ",\"nbt\":" + "\"" + currentStack.getTag().toString() + "\"" : "";
         ResourceLocation registryName = currentStack.getItem().getRegistryName();
         return "{" + "\"itemName\":" + "\"" + registryName.toString() + "\"" + nbtString + "}";
-    }
-
-    public static boolean hasModId(String modid) {
-        for (String currentId : CLIENT_CONFIG.getListModPreference()) {
-            if (currentId.equals(modid)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

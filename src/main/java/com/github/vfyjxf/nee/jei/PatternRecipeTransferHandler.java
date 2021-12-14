@@ -105,7 +105,7 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Patt
                     currentStack.setCount(currentIngredient.getStackSize());
                 }
                 for (ItemStack stack : currentIngredient.getIngredient().getAllIngredients()) {
-                    if (ItemUtils.isPreferItems(stack, recipeType) && !currentStack.isEmpty()) {
+                    if (!currentStack.isEmpty() && ItemUtils.isPreferItems(stack, recipeType)) {
                         currentStack = stack.copy();
                         currentStack.setCount(currentIngredient.getStackSize());
                     }

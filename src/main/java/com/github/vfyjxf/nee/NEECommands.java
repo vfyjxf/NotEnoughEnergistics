@@ -1,6 +1,5 @@
 package com.github.vfyjxf.nee;
 
-import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -46,7 +45,6 @@ public class NEECommands {
     private static CommandDispatcher<ISuggestionProvider> dispatcher;
     private static LiteralArgumentBuilder<ISuggestionProvider> builder;
 
-
     public static void register() {
         builder = literal("nee")
                 .requires(commandSource -> commandSource.hasPermission(0))
@@ -88,101 +86,90 @@ public class NEECommands {
     }
 
     private static int addOrRemoveModPreference(String modid, boolean doAdd) {
-        if(NEEConfig.CLIENT_SPEC.isLoaded()) {
-            List<String> modPreferences = new ArrayList<>(CLIENT_CONFIG.getListModPreference());
-            if (doAdd) {
-                if (!modPreferences.contains(modid)) {
-                    modPreferences.add(modid);
-                }
-            } else {
-                modPreferences.remove(modid);
+        List<String> modPreferences = new ArrayList<>(CLIENT_CONFIG.getListModPreference());
+        if (doAdd) {
+            if (!modPreferences.contains(modid)) {
+                modPreferences.add(modid);
             }
-            CLIENT_CONFIG.setListModPreference(modPreferences);
+        } else {
+            modPreferences.remove(modid);
         }
+        CLIENT_CONFIG.setListModPreference(modPreferences);
         return 1;
     }
 
     private static int addOrRemoveItemPreference(boolean doAdd) {
-        if(NEEConfig.CLIENT_SPEC.isLoaded()) {
-            List<String> itemPreferences = new ArrayList<>(CLIENT_CONFIG.getListItemPreference());
-            ItemStack currentStack = getPlayer().getMainHandItem();
-            if (!currentStack.isEmpty()) {
-                String itemJsonString = ItemUtils.toItemJsonString(currentStack);
-                if (doAdd) {
-                    if (!itemPreferences.contains(itemJsonString)) {
-                        itemPreferences.add(itemJsonString);
+        List<String> itemPreferences = new ArrayList<>(CLIENT_CONFIG.getListItemPreference());
+        ItemStack currentStack = getPlayer().getMainHandItem();
+        if (!currentStack.isEmpty()) {
+            String itemJsonString = ItemUtils.toItemJsonString(currentStack);
+            if (doAdd) {
+                if (!itemPreferences.contains(itemJsonString)) {
+                    itemPreferences.add(itemJsonString);
 
-                    }
-                } else {
-                    itemPreferences.remove(itemJsonString);
                 }
-                CLIENT_CONFIG.setListItemPreference(itemPreferences);
+            } else {
+                itemPreferences.remove(itemJsonString);
             }
+            CLIENT_CONFIG.setListItemPreference(itemPreferences);
         }
         return 1;
     }
 
     private static int addOrRemoveItemPreference(String recipeType, boolean doAdd) {
-        if(NEEConfig.CLIENT_SPEC.isLoaded()) {
-            List<String> itemPreferences = new ArrayList<>(CLIENT_CONFIG.getListItemPreference());
-            ItemStack currentStack = getPlayer().getMainHandItem();
-            if (!currentStack.isEmpty()) {
-                JsonObject itemJsonObject = new JsonParser().parse(ItemUtils.toItemJsonString(currentStack)).getAsJsonObject();
-                itemJsonObject.addProperty("recipeType", recipeType);
-                String itemJsonString = new Gson().toJson(itemJsonObject);
-                if (doAdd) {
-                    if (!itemPreferences.contains(itemJsonString)) {
-                        itemPreferences.add(itemJsonString);
-                    }
-                } else {
-                    itemPreferences.remove(itemJsonString);
+        List<String> itemPreferences = new ArrayList<>(CLIENT_CONFIG.getListItemPreference());
+        ItemStack currentStack = getPlayer().getMainHandItem();
+        if (!currentStack.isEmpty()) {
+            JsonObject itemJsonObject = new JsonParser().parse(ItemUtils.toItemJsonString(currentStack)).getAsJsonObject();
+            itemJsonObject.addProperty("recipeType", recipeType);
+            String itemJsonString = new Gson().toJson(itemJsonObject);
+            if (doAdd) {
+                if (!itemPreferences.contains(itemJsonString)) {
+                    itemPreferences.add(itemJsonString);
                 }
-                CLIENT_CONFIG.setListItemPreference(itemPreferences);
+            } else {
+                itemPreferences.remove(itemJsonString);
             }
+            CLIENT_CONFIG.setListItemPreference(itemPreferences);
         }
         return 1;
     }
 
     private static int addOrRemoveBlacklist(boolean doAdd) {
-        if(NEEConfig.CLIENT_SPEC.isLoaded()) {
-            List<String> blacklist = new ArrayList<>(CLIENT_CONFIG.getItemBlacklist());
-            ItemStack currentStack = getPlayer().getMainHandItem();
-            if (!currentStack.isEmpty()) {
-                String itemJsonString = ItemUtils.toItemJsonString(currentStack);
-                if (doAdd) {
-                    if (!blacklist.contains(itemJsonString)) {
-                        blacklist.add(ItemUtils.toItemJsonString(currentStack));
-                    }
-                } else {
-                    blacklist.remove(itemJsonString);
+        List<String> blacklist = new ArrayList<>(CLIENT_CONFIG.getItemBlacklist());
+        ItemStack currentStack = getPlayer().getMainHandItem();
+        if (!currentStack.isEmpty()) {
+            String itemJsonString = ItemUtils.toItemJsonString(currentStack);
+            if (doAdd) {
+                if (!blacklist.contains(itemJsonString)) {
+                    blacklist.add(ItemUtils.toItemJsonString(currentStack));
                 }
-                CLIENT_CONFIG.setItemBlacklist(blacklist);
+            } else {
+                blacklist.remove(itemJsonString);
             }
+            CLIENT_CONFIG.setItemBlacklist(blacklist);
         }
         return 1;
     }
 
     private static int addOrRemoveBlacklist(String recipeType, boolean doAdd) {
-        if(NEEConfig.CLIENT_SPEC.isLoaded()) {
-            List<String> blacklist = new ArrayList<>(CLIENT_CONFIG.getListItemPreference());
-            ItemStack currentStack = getPlayer().getMainHandItem();
-            if (!currentStack.isEmpty()) {
-                JsonObject itemJsonObject = new JsonParser().parse(ItemUtils.toItemJsonString(currentStack)).getAsJsonObject();
-                itemJsonObject.addProperty("recipeType", recipeType);
-                String itemJsonString = new Gson().toJson(itemJsonObject);
-                if (doAdd) {
-                    if (!blacklist.contains(itemJsonString)) {
-                        blacklist.add(itemJsonString);
-                    }
-                } else {
-                    blacklist.remove(itemJsonString);
+        List<String> blacklist = new ArrayList<>(CLIENT_CONFIG.getListItemPreference());
+        ItemStack currentStack = getPlayer().getMainHandItem();
+        if (!currentStack.isEmpty()) {
+            JsonObject itemJsonObject = new JsonParser().parse(ItemUtils.toItemJsonString(currentStack)).getAsJsonObject();
+            itemJsonObject.addProperty("recipeType", recipeType);
+            String itemJsonString = new Gson().toJson(itemJsonObject);
+            if (doAdd) {
+                if (!blacklist.contains(itemJsonString)) {
+                    blacklist.add(itemJsonString);
                 }
-                CLIENT_CONFIG.setItemBlacklist(blacklist);
+            } else {
+                blacklist.remove(itemJsonString);
             }
+            CLIENT_CONFIG.setItemBlacklist(blacklist);
         }
         return 1;
     }
-
 
     /**
      * copied and modified from JustEnoughCharacters
@@ -196,7 +183,6 @@ public class NEECommands {
             }
         }
     }
-
 
     /**
      * copied and modified from JustEnoughCharacters
