@@ -9,6 +9,7 @@ import gregapi.data.FL;
 import gregapi.recipes.Recipe;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import java.util.Set;
  * @author vfyjxf
  */
 public class GregTech6RecipeProcessor implements IRecipeProcessor {
+    @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
         Set<String> identifiers = new HashSet<>();
@@ -30,54 +32,55 @@ public class GregTech6RecipeProcessor implements IRecipeProcessor {
         return identifiers;
     }
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "GregTech6";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for (String ident : getAllOverlayIdentifier()) {
-            if (ident.equals(identifier)) {
-                List<PositionedStack> recipeInputs = new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
-                //remove fluid
-                recipeInputs.removeIf(positionedStack -> FL.getFluid(positionedStack.item, true) != null || positionedStack.item.stackSize == 0);
-                //try to remove machine
-                if (recipe instanceof NEI_RecipeMap) {
-                    Field mRecipeMapField = ReflectionHelper.findField(NEI_RecipeMap.class, "mRecipeMap");
-                    Recipe.RecipeMap mRecipeMap = null;
-                    try {
-                        mRecipeMap = (Recipe.RecipeMap) mRecipeMapField.get(recipe);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                    if (mRecipeMap != null) {
-                        ItemStack lastItem = (recipeInputs.get(recipeInputs.size() - 1)).items[0];
-                        for (ItemStack stack : mRecipeMap.mRecipeMachineList) {
-                            if (ItemStack.areItemStackTagsEqual(lastItem, stack)) {
-                                recipeInputs.remove(recipeInputs.size() - 1);
-                                break;
-                            }
+        List<PositionedStack> recipeInputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeInputs.addAll(recipe.getIngredientStacks(recipeIndex));
+            //remove fluid
+            recipeInputs.removeIf(positionedStack -> FL.getFluid(positionedStack.item, true) != null || positionedStack.item.stackSize == 0);
+            //try to remove machine
+            if (recipe instanceof NEI_RecipeMap) {
+                Field mRecipeMapField = ReflectionHelper.findField(NEI_RecipeMap.class, "mRecipeMap");
+                Recipe.RecipeMap mRecipeMap = null;
+                try {
+                    mRecipeMap = (Recipe.RecipeMap) mRecipeMapField.get(recipe);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                if (mRecipeMap != null) {
+                    ItemStack lastItem = (recipeInputs.get(recipeInputs.size() - 1)).items[0];
+                    for (ItemStack stack : mRecipeMap.mRecipeMachineList) {
+                        if (ItemStack.areItemStackTagsEqual(lastItem, stack)) {
+                            recipeInputs.remove(recipeInputs.size() - 1);
+                            break;
                         }
                     }
                 }
-                return recipeInputs;
             }
+            return recipeInputs;
         }
-        return null;
+        return recipeInputs;
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for (String ident : getAllOverlayIdentifier()) {
-            if (ident.equals(identifier)) {
-                List<PositionedStack> recipeOutput = new ArrayList<>(recipe.getOtherStacks(recipeIndex));
-                recipeOutput.removeIf(positionedStack -> FL.getFluid(positionedStack.item, true) != null || positionedStack.item.stackSize == 0);
-                //try to remove item output if it's chance != 100%
-                recipeOutput.removeIf(positionedStack -> positionedStack instanceof FixedPositionedStack && ((FixedPositionedStack) positionedStack).mChance > 0 && ((FixedPositionedStack) positionedStack).mChance != ((FixedPositionedStack) positionedStack).mMaxChance);
-                return recipeOutput;
-            }
+        List<PositionedStack> recipeOutput = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeOutput.addAll(recipe.getOtherStacks(recipeIndex));
+            recipeOutput.removeIf(positionedStack -> FL.getFluid(positionedStack.item, true) != null || positionedStack.item.stackSize == 0);
+            //try to remove item output if it's chance != 100%
+            recipeOutput.removeIf(positionedStack -> positionedStack instanceof FixedPositionedStack && ((FixedPositionedStack) positionedStack).mChance > 0 && ((FixedPositionedStack) positionedStack).mChance != ((FixedPositionedStack) positionedStack).mMaxChance);
+            return recipeOutput;
         }
-        return null;
+        return recipeOutput;
     }
 }

@@ -4,12 +4,14 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
 import gregtech.api.util.GTPP_Recipe;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
  * @author vfyjxf
  */
 public class GTPPRecipeProcessor implements IRecipeProcessor {
+    @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
         HashSet<String> identifiers = new HashSet<>(Collections.singletonList("GTPP_Decayables"));
@@ -23,32 +25,33 @@ public class GTPPRecipeProcessor implements IRecipeProcessor {
         return identifiers;
     }
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "GT++";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for (String ident : getAllOverlayIdentifier()) {
-            if (ident.equals(identifier)) {
-                List<PositionedStack> recipeInputs = new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
-                recipeInputs.removeIf(positionedStack -> GregTech5RecipeProcessor.getFluidFromDisplayStack(positionedStack.items[0]) != null || positionedStack.item.stackSize == 0);
-                return recipeInputs;
-            }
+        List<PositionedStack> recipeInputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeInputs.addAll(recipe.getIngredientStacks(recipeIndex));
+            recipeInputs.removeIf(positionedStack -> GregTech5RecipeProcessor.getFluidFromDisplayStack(positionedStack.items[0]) != null || positionedStack.item.stackSize == 0);
+            return recipeInputs;
         }
-        return null;
+        return recipeInputs;
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for (String ident : getAllOverlayIdentifier()) {
-            if (ident.equals(identifier)) {
-                List<PositionedStack> recipeOutputs = new ArrayList<>(recipe.getOtherStacks(recipeIndex));
-                recipeOutputs.removeIf(positionedStack -> GregTech5RecipeProcessor.getFluidFromDisplayStack(positionedStack.items[0]) != null);
-                return recipeOutputs;
-            }
+        List<PositionedStack> recipeOutputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeOutputs.addAll(recipe.getOtherStacks(recipeIndex));
+            recipeOutputs.removeIf(positionedStack -> GregTech5RecipeProcessor.getFluidFromDisplayStack(positionedStack.items[0]) != null);
+            return recipeOutputs;
         }
-        return null;
+        return recipeOutputs;
     }
 }

@@ -1,38 +1,18 @@
 package com.github.vfyjxf.nee.utils;
 
-import appeng.client.gui.AEBaseGui;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.helpers.IContainerCraftingPacket;
-import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * @author vfyjxf
  */
 public class GuiUtils {
-
-    public static Slot getSlotUnderMouse(GuiContainer guiContainer, int mouseX, int mouseY) {
-
-        if (guiContainer instanceof AEBaseGui) {
-            Method getSlotMethod = ReflectionHelper.findMethod(AEBaseGui.class, (AEBaseGui) guiContainer, new String[]{"getSlot"}, int.class, int.class);
-            try {
-                return (Slot) getSlotMethod.invoke(guiContainer, mouseX, mouseY);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
 
     public static boolean isPatternTermExGui(GuiScreen container) {
         try {

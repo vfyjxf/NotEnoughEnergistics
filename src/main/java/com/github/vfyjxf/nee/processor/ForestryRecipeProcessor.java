@@ -4,17 +4,20 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
 import forestry.factory.recipes.nei.*;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ForestryRecipeProcessor implements IRecipeProcessor {
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "Forestry";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         if (recipe instanceof NEIHandlerBottler) {
@@ -42,9 +45,10 @@ public class ForestryRecipeProcessor implements IRecipeProcessor {
             return squeezerHandler((NEIHandlerSqueezer) recipe, recipeIndex, true);
 
         }
-        return null;
+        return new ArrayList<>();
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         if (recipe instanceof NEIHandlerBottler) {
@@ -72,7 +76,7 @@ public class ForestryRecipeProcessor implements IRecipeProcessor {
             return squeezerHandler((NEIHandlerSqueezer) recipe, recipeIndex, false);
 
         }
-        return null;
+        return new ArrayList<>();
     }
 
     private List<PositionedStack> bottlerHandler(NEIHandlerBottler base, int recipeIndex, boolean getInput) {
@@ -93,7 +97,7 @@ public class ForestryRecipeProcessor implements IRecipeProcessor {
         return getInput ? recipeInput : Collections.singletonList(base.getResultStack(recipeIndex));
     }
 
-    //Fermenter doesn't support, because it doesn't has a item output
+    //Fermenter doesn't support, because it doesn't have an item output
 
     private List<PositionedStack> moistenerHandler(NEIHandlerMoistener base, int recipeIndex, boolean getInput) {
         List<PositionedStack> recipeInput = new ArrayList<>(base.getIngredientStacks(recipeIndex));

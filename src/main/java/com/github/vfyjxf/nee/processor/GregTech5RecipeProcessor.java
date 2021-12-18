@@ -10,6 +10,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,7 @@ public class GregTech5RecipeProcessor implements IRecipeProcessor {
         gtAssLineClz = gtAL;
     }
 
+    @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
 
@@ -48,16 +50,18 @@ public class GregTech5RecipeProcessor implements IRecipeProcessor {
         return identifiers;
     }
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "GregTech5";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-
+        List<PositionedStack> recipeInputs = new ArrayList<>();
         if (gtDefaultClz.isInstance(recipe) || gtAssLineClz.isInstance(recipe)) {
-            List<PositionedStack> recipeInputs = new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
+            recipeInputs.addAll(recipe.getIngredientStacks(recipeIndex));
             recipeInputs.removeIf(positionedStack -> getFluidFromDisplayStack(positionedStack.items[0]) != null || positionedStack.item.stackSize == 0);
             if (!recipeInputs.isEmpty()) {
                 ItemStack specialItem = recipeInputs.get(recipeInputs.size() - 1).items[0];
@@ -66,20 +70,22 @@ public class GregTech5RecipeProcessor implements IRecipeProcessor {
             }
             return recipeInputs;
         }
-        return null;
+        return recipeInputs;
 
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
+        List<PositionedStack> recipeOutputs = new ArrayList<>();
         if (gtDefaultClz.isInstance(recipe) || gtAssLineClz.isInstance(recipe)) {
-            List<PositionedStack> recipeOutputs = new ArrayList<>(recipe.getOtherStacks(recipeIndex));
+            recipeOutputs.addAll(recipe.getOtherStacks(recipeIndex));
             recipeOutputs.removeIf(positionedStack -> getFluidFromDisplayStack(positionedStack.items[0]) != null);
             //remove output if it's chance != 10000
             recipeOutputs.removeIf(stack -> stack instanceof FixedPositionedStack && !(((FixedPositionedStack) stack).mChance == 10000 || ((FixedPositionedStack) stack).mChance <= 0));
             return recipeOutputs;
         }
-        return null;
+        return recipeOutputs;
     }
 
     /**
@@ -95,6 +101,7 @@ public class GregTech5RecipeProcessor implements IRecipeProcessor {
         Fluid tFluid = FluidRegistry.getFluid(ItemList.Display_Fluid.getItem().getDamage(aDisplayStack));
         return new FluidStack(tFluid, (int) aDisplayStack.getTagCompound().getLong("mFluidDisplayAmount"));
     }
+
     public static boolean isStackValid(Object aStack) {
         return (aStack instanceof ItemStack) && ((ItemStack) aStack).getItem() != null && ((ItemStack) aStack).stackSize >= 0;
     }

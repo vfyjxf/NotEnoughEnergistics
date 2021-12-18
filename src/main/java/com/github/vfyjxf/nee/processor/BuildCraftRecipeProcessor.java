@@ -5,6 +5,8 @@ import buildcraft.compat.nei.RecipeHandlerIntegrationTable;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
 
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,11 +15,13 @@ import java.util.List;
  */
 public class BuildCraftRecipeProcessor implements IRecipeProcessor {
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "BuildCraft";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         if (recipe instanceof RecipeHandlerAssemblyTable) {
@@ -25,9 +29,10 @@ public class BuildCraftRecipeProcessor implements IRecipeProcessor {
         } else if (recipe instanceof RecipeHandlerIntegrationTable) {
             return handlerIntegrationTableRecipe((RecipeHandlerIntegrationTable) recipe, recipeIndex, true);
         }
-        return null;
+        return new ArrayList<>();
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
         if (recipe instanceof RecipeHandlerAssemblyTable) {
@@ -35,7 +40,7 @@ public class BuildCraftRecipeProcessor implements IRecipeProcessor {
         } else if (recipe instanceof RecipeHandlerIntegrationTable) {
             return handlerIntegrationTableRecipe((RecipeHandlerIntegrationTable) recipe, recipeIndex, false);
         }
-        return null;
+        return new ArrayList<>();
     }
 
     private List<PositionedStack> handlerAssemblyTableRecipe(RecipeHandlerAssemblyTable recipe, int recipeIndex, boolean getInput) {

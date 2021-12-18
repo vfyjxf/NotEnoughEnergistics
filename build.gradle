@@ -16,7 +16,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-1.4.4-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-1.4.5-SNAPSHOT'
     }
 }
 
@@ -88,6 +88,9 @@ task sourcesJar(type: Jar) {
 }
 
 jar {
+    manifest.attributes(
+            'FMLAT': 'neenergistics_at.cfg'
+    )
     appendix project.minecraft.version
 }
 

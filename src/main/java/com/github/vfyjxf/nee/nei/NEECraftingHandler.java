@@ -58,71 +58,74 @@ public class NEECraftingHandler implements IOverlayHandler {
         int outputIndex = 0;
         //get all recipe inputs and other stacks,use first item
         for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
-            List<PositionedStack> inputs = processor.getRecipeInput(recipe, recipeIndex, identifier);
-            List<PositionedStack> outputs = processor.getRecipeOutput(recipe, recipeIndex, identifier);
-            String recipeProcessorId = processor.getRecipeProcessorId();
-            List<PositionedStack> tInputs = new ArrayList<>();
+            if (processor.getAllOverlayIdentifier().contains(identifier)) {
+                List<PositionedStack> inputs = processor.getRecipeInput(recipe, recipeIndex, identifier);
+                List<PositionedStack> outputs = processor.getRecipeOutput(recipe, recipeIndex, identifier);
+                String recipeProcessorId = processor.getRecipeProcessorId();
+                List<PositionedStack> tInputs = new ArrayList<>();
 
-            if (inputs != null && outputs != null) {
+                if (!inputs.isEmpty() && !outputs.isEmpty()) {
 
-                for (PositionedStack positionedStack : inputs) {
-                    ItemStack currentStack = positionedStack.items[0];
-                    boolean find = false;
-                    for (PositionedStack storedStack : tInputs) {
-                        ItemStack firstStack = storedStack.items[0];
-                        boolean areItemStackEqual = firstStack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(firstStack, currentStack);
-                        if (areItemStackEqual && (firstStack.stackSize + currentStack.stackSize) <= firstStack.getMaxStackSize()) {
-                            find = true;
-                            storedStack.items[0].stackSize = firstStack.stackSize + currentStack.stackSize;
+                    for (PositionedStack positionedStack : inputs) {
+                        ItemStack currentStack = positionedStack.items[0];
+                        boolean find = false;
+                        for (PositionedStack storedStack : tInputs) {
+                            ItemStack firstStack = storedStack.items[0];
+                            boolean areItemStackEqual = firstStack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(firstStack, currentStack);
+                            if (areItemStackEqual && (firstStack.stackSize + currentStack.stackSize) <= firstStack.getMaxStackSize()) {
+                                find = true;
+                                storedStack.items[0].stackSize = firstStack.stackSize + currentStack.stackSize;
+                            }
+                        }
+                        if (!find) {
+                            tInputs.add(positionedStack.copy());
                         }
                     }
-                    if (!find) {
-                        tInputs.add(positionedStack.copy());
-                    }
-                }
-                for (PositionedStack positionedStack : tInputs) {
-                    ItemStack currentStack = positionedStack.items[0];
-                    ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
+                    for (PositionedStack positionedStack : tInputs) {
+                        ItemStack currentStack = positionedStack.items[0];
+                        ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
 
-                    if (preferModItem != null) {
-                        currentStack = preferModItem;
-                        currentStack.stackSize = positionedStack.items[0].stackSize;
-                    }
-
-                    for (ItemStack stack : positionedStack.items) {
-                        if (Platform.isRecipePrioritized(stack) || ItemUtils.isPreferItems(stack, recipeProcessorId, identifier)) {
-                            currentStack = stack.copy();
+                        if (preferModItem != null) {
+                            currentStack = preferModItem;
                             currentStack.stackSize = positionedStack.items[0].stackSize;
-                            break;
                         }
-                    }
-                    if (ItemUtils.isInBlackList(currentStack, recipeProcessorId, identifier)) {
-                        continue;
-                    }
 
-                    //Fix ItemStack with wrong meta
-                    if (currentStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-                        currentStack.setItemDamage(0);
-                    }
+                        for (ItemStack stack : positionedStack.items) {
+                            if (Platform.isRecipePrioritized(stack) || ItemUtils.isPreferItems(stack, recipeProcessorId, identifier)) {
+                                currentStack = stack.copy();
+                                currentStack.stackSize = positionedStack.items[0].stackSize;
+                                break;
+                            }
+                        }
+                        if (ItemUtils.isInBlackList(currentStack, recipeProcessorId, identifier)) {
+                            continue;
+                        }
 
-                    recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-                    NEECraftingHandler.ingredients.put("input" + inputIndex, positionedStack);
-                    inputIndex++;
-                }
+                        //Fix ItemStack with wrong meta
+                        if (currentStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                            currentStack.setItemDamage(0);
+                        }
 
-                for (PositionedStack positionedStack : outputs) {
-                    if (outputIndex >= 4 || positionedStack == null || positionedStack.item == null) {
-                        continue;
-                    }
-
-                    ItemStack outputStack = positionedStack.item.copy();
-                    //Fix ItemStack with wrong meta(maybe ?)
-                    if (outputStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-                        outputStack.setItemDamage(0);
+                        recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
+                        NEECraftingHandler.ingredients.put("input" + inputIndex, positionedStack);
+                        inputIndex++;
                     }
 
-                    recipeOutputs.setTag(OUTPUT_KEY + outputIndex, outputStack.writeToNBT(new NBTTagCompound()));
-                    outputIndex++;
+                    for (PositionedStack positionedStack : outputs) {
+                        if (outputIndex >= 4 || positionedStack == null || positionedStack.item == null) {
+                            continue;
+                        }
+
+                        ItemStack outputStack = positionedStack.item.copy();
+                        //Fix ItemStack with wrong meta(maybe ?)
+                        if (outputStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                            outputStack.setItemDamage(0);
+                        }
+
+                        recipeOutputs.setTag(OUTPUT_KEY + outputIndex, outputStack.writeToNBT(new NBTTagCompound()));
+                        outputIndex++;
+                    }
+                    break;
                 }
             }
         }

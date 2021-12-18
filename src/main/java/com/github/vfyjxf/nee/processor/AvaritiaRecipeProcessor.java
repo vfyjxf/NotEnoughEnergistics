@@ -3,9 +3,11 @@ package com.github.vfyjxf.nee.processor;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 public class AvaritiaRecipeProcessor implements IRecipeProcessor {
+    @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
         return new HashSet<>(Arrays.asList(
@@ -13,30 +15,31 @@ public class AvaritiaRecipeProcessor implements IRecipeProcessor {
         ));
     }
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "Avaritia";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for (String ident : getAllOverlayIdentifier()) {
-            if (ident.equals(identifier)) {
-                return new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
-            }
+        List<PositionedStack> recipeInputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeInputs.addAll(recipe.getIngredientStacks(recipeIndex));
+            return recipeInputs;
         }
-        return null;
+        return recipeInputs;
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for (String ident : getAllOverlayIdentifier()) {
-            if (ident.equals(identifier)) {
-                List<PositionedStack> recipeOutput = new ArrayList<>();
-                recipeOutput.add(recipe.getResultStack(recipeIndex));
-                return recipeOutput;
-            }
+        List<PositionedStack> recipeOutput = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeOutput.add(recipe.getResultStack(recipeIndex));
+            return recipeOutput;
         }
-        return null;
+        return recipeOutput;
     }
 }

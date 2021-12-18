@@ -46,23 +46,23 @@ public class RecipeProcessor {
             NotEnoughEnergistics.logger.info("Found ThermalExpansion, install ThermalExpansion support");
             recipeProcessors.add(new ThermalExpansionRecipeProcessor());
         }
-        if(Loader.isModLoaded("ImmersiveEngineering")){
+        if (Loader.isModLoaded("ImmersiveEngineering")) {
             NotEnoughEnergistics.logger.info("Found ImmersiveEngineering, install ImmersiveEngineering support");
             recipeProcessors.add(new ImmersiveEngineeringRecipeProcessor());
         }
-        if(Loader.isModLoaded("Mekanism")){
+        if (Loader.isModLoaded("Mekanism")) {
             NotEnoughEnergistics.logger.info("Found Mekanism, install Mekanism support");
             recipeProcessors.add(new MekanismRecipeProcessor());
         }
-        if(Loader.isModLoaded("AWWayofTime")){
+        if (Loader.isModLoaded("AWWayofTime")) {
             NotEnoughEnergistics.logger.info("Found BloodMagic, install BloodMagic support");
             recipeProcessors.add(new BloodMagicRecipeProcessor());
         }
-        if(Loader.isModLoaded("BuildCraft|Compat")){
+        if (Loader.isModLoaded("BuildCraft|Compat")) {
             NotEnoughEnergistics.logger.info("Found BuildCraft-Compat, install BuildCraft-Compat support");
             recipeProcessors.add(new BuildCraftRecipeProcessor());
         }
-        if(Loader.isModLoaded("miscutils")){
+        if (Loader.isModLoaded("miscutils")) {
             NotEnoughEnergistics.logger.info("Found GT++, install GT++ support");
             recipeProcessors.add(new GTPPRecipeProcessor());
         }

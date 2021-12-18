@@ -14,7 +14,9 @@ import com.github.vfyjxf.nee.utils.IngredientTracker;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
@@ -32,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Please note the difference between the GTNH NEI and the official NEI
+ */
 public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     public static NEEContainerDrawHandler instance = new NEEContainerDrawHandler();
@@ -39,6 +44,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
     private Field overlayButtonsField;
     private Method recipesPerPageMethod;
     private boolean drawRequestTooltip;
+    private boolean drawMissingTooltip;
     private boolean drawCraftableTooltip;
     private boolean isGtnhNei;
 
@@ -105,7 +111,11 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                         e.printStackTrace();
                     }
                 } else {
-                    overlayButtons = new ArrayList<>(Arrays.asList(guiRecipe.overlay1, guiRecipe.overlay2));
+                    overlayButtons = new ArrayList<>();
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    overlayButtons.add(overlay1);
+                    overlayButtons.add(overlay2);
                 }
 
                 if (overlayButtons != null) {
@@ -144,6 +154,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                                             Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
                                                     slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
                                                     new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
+                                            this.drawMissingTooltip = true;
                                         }
                                     }
                                 }
@@ -168,7 +179,11 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                         e.printStackTrace();
                     }
                 } else {
-                    overlayButtons = new ArrayList<>(Arrays.asList(guiRecipe.overlay1, guiRecipe.overlay2));
+                    overlayButtons = new ArrayList<>();
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    overlayButtons.add(overlay1);
+                    overlayButtons.add(overlay2);
                 }
                 if (overlayButtons != null) {
                     for (GuiButton button : overlayButtons) {
@@ -176,6 +191,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                             drawCraftingHelperTooltip(guiRecipe, event.mouseX, event.mouseY);
                             this.drawCraftableTooltip = false;
                             this.drawRequestTooltip = false;
+                            this.drawMissingTooltip = false;
                         }
                     }
                 }
@@ -186,25 +202,22 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
     private void drawCraftingHelperTooltip(GuiRecipe guiRecipe, int mouseX, int mouseY) {
         List<String> tooltips = new ArrayList<>();
         boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
-        if (this.drawRequestTooltip && isCraftingTerm) {
-            tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
-                            EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
-                    EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
+        if (isCraftingTerm) {
+            if(this.drawRequestTooltip) {
+                tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
+                                EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
+                        EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
+            }
+            if(this.drawMissingTooltip){
+                tooltips.add(EnumChatFormatting.RED + I18n.format("neenergistics.gui.tooltip.missing"));
+            }
         }
         boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
         if (this.drawCraftableTooltip && isPatternTerm) {
             tooltips.add(EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.pattern"));
         }
-        try {
-            ReflectionHelper.findMethod(GuiScreen.class, guiRecipe,
-                    new String[]{"drawHoveringText"},
-                    List.class,
-                    int.class,
-                    int.class,
-                    FontRenderer.class).invoke(guiRecipe, tooltips, mouseX, mouseY, Minecraft.getMinecraft().fontRenderer);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+        //drawHoveringText
+        guiRecipe.func_146283_a(tooltips, mouseX, mouseY);
     }
 
     @SuppressWarnings("unchecked")
@@ -214,7 +227,11 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         //check stacks in player's inventory and crafting grid
         List<ItemStack> inventoryStacks = new ArrayList<>();
         for (Slot slot : (List<Slot>) firstGui.inventorySlots.inventorySlots) {
-            boolean canGetStack = slot != null && slot.getHasStack() && slot.getStack().stackSize > 0 && slot.isItemValid(slot.getStack()) && slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
+            boolean canGetStack = slot != null &&
+                    slot.getHasStack() &&
+                    slot.getStack().stackSize > 0 &&
+                    slot.isItemValid(slot.getStack()) &&
+                    slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
             if (canGetStack) {
                 inventoryStacks.add(slot.getStack().copy());
             }

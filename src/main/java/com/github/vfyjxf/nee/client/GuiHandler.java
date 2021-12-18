@@ -51,7 +51,7 @@ public class GuiHandler implements INEIGuiHandler {
             if (dWheel != 0 && (isPatternTerm || isInterface)) {
                 int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
                 int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
-                Slot currentSlot = GuiUtils.getSlotUnderMouse((GuiContainer) mc.currentScreen, x, y);
+                Slot currentSlot = ((GuiContainer) mc.currentScreen).getSlotAtPosition(x, y);
                 if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
                     //try to change current itemstack to next ingredient;
                     if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.ingredient")) && GuiUtils.isCraftingSlot(currentSlot)) {
@@ -156,14 +156,15 @@ public class GuiHandler implements INEIGuiHandler {
     @Override
     public boolean handleDragNDrop(GuiContainer gui, int mouseX, int mouseY, ItemStack draggedStack, int button) {
         if (gui instanceof AEBaseGui) {
-            if (button != 2) {
-                Slot currentSlot = GuiUtils.getSlotUnderMouse(gui, mouseX, mouseY);
+            if (button != 2 && draggedStack != null) {
+                Slot currentSlot = gui.getSlotAtPosition(mouseX, mouseY);
                 if (currentSlot instanceof SlotFake && ((SlotFake) currentSlot).isEnabled()) {
                     List<Integer> slots = new ArrayList<>();
                     slots.add(currentSlot.slotNumber);
                     ItemStack copyStack = draggedStack.copy();
                     copyStack.stackSize = useStackSizeFromNEI ? draggedStack.stackSize : draggedStackDefaultSize;
                     NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, slots));
+                    draggedStack.stackSize = 0;
                     return true;
                 }
             }

@@ -50,9 +50,10 @@ public class NEINeeConfig implements IConfigureNEI {
         );
         Set<String> identifiers = new HashSet<>(defaultIdentifiers);
 
-        for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
-            identifiers.addAll(processor.getAllOverlayIdentifier());
-        }
+        RecipeProcessor.recipeProcessors
+                .stream()
+                .map(IRecipeProcessor::getAllOverlayIdentifier)
+                .forEach(identifiers::addAll);
 
         for (String ident : identifiers) {
             API.registerGuiOverlay(GuiPatternTerm.class, ident);
@@ -103,15 +104,16 @@ public class NEINeeConfig implements IConfigureNEI {
         }
         if (controllerIndex > 0) {
             GuiContainerManager.inputHandlers.remove(controllerIndex);
-            GuiContainerManager.inputHandlers.add(controllerIndex, new NEIController() {
-                @Override
-                public boolean mouseScrolled(GuiContainer gui, int mouseX, int mouseY, int scrolled) {
-                    if (transferBlacklist.contains(gui.getClass())) {
-                        return false;
-                    }
-                    return super.mouseScrolled(gui, mouseX, mouseY, scrolled);
-                }
-            });
+            GuiContainerManager.inputHandlers.add(controllerIndex,
+                    new NEIController() {
+                        @Override
+                        public boolean mouseScrolled(GuiContainer gui, int mouseX, int mouseY, int scrolled) {
+                            if (transferBlacklist.contains(gui.getClass())) {
+                                return false;
+                            }
+                            return super.mouseScrolled(gui, mouseX, mouseY, scrolled);
+                        }
+                    });
             NotEnoughEnergistics.logger.info("NEIController replaced success");
         }
     }

@@ -4,47 +4,49 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
 import com.djgiannuzz.thaumcraftneiplugin.items.ItemAspect;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
  * @author vfyjxf
  */
-public class TCNEIPluginRecipeProcessor implements IRecipeProcessor{
+public class TCNEIPluginRecipeProcessor implements IRecipeProcessor {
 
+    @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
         return new HashSet<>(Arrays.asList(
-                "arcaneshapedrecipes","arcaneshapelessrecipes","aspectsRecipe",
-                "cruciblerecipe","infusionCrafting"
+                "arcaneshapedrecipes", "arcaneshapelessrecipes", "aspectsRecipe",
+                "cruciblerecipe", "infusionCrafting"
         ));
     }
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "TCNEIPlugin";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for(String ident : getAllOverlayIdentifier()){
-            if(ident.equals(identifier)){
-                List<PositionedStack> recipeInputs = new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
-                recipeInputs.removeIf(positionedStack -> positionedStack.item.getItem() instanceof ItemAspect);
-                return recipeInputs;
-            }
+        List<PositionedStack> recipeInputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeInputs.addAll(recipe.getIngredientStacks(recipeIndex));
+            recipeInputs.removeIf(positionedStack -> positionedStack.item.getItem() instanceof ItemAspect);
+            return recipeInputs;
         }
-        return null;
+        return recipeInputs;
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        for(String ident : getAllOverlayIdentifier()){
-            if(ident.equals(identifier)){
-                List<PositionedStack> recipeOutputs = new ArrayList<>();
-                recipeOutputs.add(recipe.getResultStack(recipeIndex));
-                return recipeOutputs;
-            }
+        List<PositionedStack> recipeOutputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeOutputs.add(recipe.getResultStack(recipeIndex));
+            return recipeOutputs;
         }
-        return null;
+        return recipeOutputs;
     }
 }

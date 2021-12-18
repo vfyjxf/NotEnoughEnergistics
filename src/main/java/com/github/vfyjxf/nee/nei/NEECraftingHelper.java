@@ -213,7 +213,11 @@ public class NEECraftingHelper implements IOverlayHandler {
                     isGtnhNei = false;
                 }
                 if (!isGtnhNei) {
-                    overlayButtons = new ArrayList<>(Arrays.asList(guiRecipe.overlay1, guiRecipe.overlay2));
+                    overlayButtons = new ArrayList<>();
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    overlayButtons.add(overlay1);
+                    overlayButtons.add(overlay2);
                 }
                 if (event.button.id >= OVERLAY_BUTTON_ID_START && event.button.id < OVERLAY_BUTTON_ID_START + overlayButtons.size()) {
                     boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);

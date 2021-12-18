@@ -4,9 +4,11 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.IRecipeHandler;
 import crazypants.enderio.nei.SagMillRecipeHandler;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 public class EnderIORecipeProcessor implements IRecipeProcessor {
+    @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
         return new HashSet<>(Arrays.asList(
@@ -15,38 +17,40 @@ public class EnderIORecipeProcessor implements IRecipeProcessor {
         ));
     }
 
+    @Nonnull
     @Override
     public String getRecipeProcessorId() {
         return "EnderIO";
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeInput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-            for (String ident : getAllOverlayIdentifier()) {
-                if (ident.equals(identifier)) {
-                    return new ArrayList<>(recipe.getIngredientStacks(recipeIndex));
-                }
-            }
-        return null;
+        List<PositionedStack> recipeInputs = new ArrayList<>();
+        if (this.getAllOverlayIdentifier().contains(identifier)) {
+            recipeInputs.addAll(recipe.getIngredientStacks(recipeIndex));
+            return recipeInputs;
+        }
+        return recipeInputs;
     }
 
+    @Nonnull
     @Override
     public List<PositionedStack> getRecipeOutput(IRecipeHandler recipe, int recipeIndex, String identifier) {
-        if(identifier!=null) {
-            for (String ident : getAllOverlayIdentifier()) {
-                if (ident.equals(identifier)) {
-                    List<PositionedStack> recipeOutputs = new ArrayList<>();
-                    recipeOutputs.add(recipe.getResultStack(recipeIndex));
-                    recipeOutputs.addAll(recipe.getOtherStacks(recipeIndex));
-                    //remove output if it's chance != 1
-                    if(recipe instanceof SagMillRecipeHandler){
-                        SagMillRecipeHandler.MillRecipe millRecipe = (SagMillRecipeHandler.MillRecipe) ((SagMillRecipeHandler) recipe).arecipes.get(recipeIndex);
-                        recipeOutputs.removeIf(positionedStack -> millRecipe.getChanceForOutput(positionedStack.item) != 1.0F);
-                    }
-                    return recipeOutputs;
+        List<PositionedStack> recipeOutputs = new ArrayList<>();
+        if (identifier != null) {
+            if (this.getAllOverlayIdentifier().contains(identifier)) {
+                recipeOutputs.add(recipe.getResultStack(recipeIndex));
+                recipeOutputs.addAll(recipe.getOtherStacks(recipeIndex));
+                //remove output if it's chance != 1
+                if (recipe instanceof SagMillRecipeHandler) {
+                    SagMillRecipeHandler.MillRecipe millRecipe = (SagMillRecipeHandler.MillRecipe) ((SagMillRecipeHandler) recipe).arecipes.get(recipeIndex);
+                    recipeOutputs.removeIf(positionedStack -> millRecipe.getChanceForOutput(positionedStack.item) != 1.0F);
                 }
+                return recipeOutputs;
             }
         }
-        return null;
+
+        return recipeOutputs;
     }
 }
