@@ -48,11 +48,10 @@ import java.util.List;
 
 
 public class NEECraftingHelper implements IOverlayHandler {
+    public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
     public static IngredientTracker tracker = null;
     public static int stackIndex = 1;
     public static boolean noPreview = false;
-
-    public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
@@ -214,8 +213,8 @@ public class NEECraftingHelper implements IOverlayHandler {
                 }
                 if (!isGtnhNei) {
                     overlayButtons = new ArrayList<>();
-                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
-                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay2");
                     overlayButtons.add(overlay1);
                     overlayButtons.add(overlay2);
                 }

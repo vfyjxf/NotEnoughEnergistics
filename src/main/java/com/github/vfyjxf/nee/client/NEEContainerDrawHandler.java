@@ -112,8 +112,8 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                     }
                 } else {
                     overlayButtons = new ArrayList<>();
-                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
-                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay2");
                     overlayButtons.add(overlay1);
                     overlayButtons.add(overlay2);
                 }
@@ -180,8 +180,8 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                     }
                 } else {
                     overlayButtons = new ArrayList<>();
-                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
-                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay2");
                     overlayButtons.add(overlay1);
                     overlayButtons.add(overlay2);
                 }
@@ -203,12 +203,12 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         List<String> tooltips = new ArrayList<>();
         boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
         if (isCraftingTerm) {
-            if(this.drawRequestTooltip) {
+            if (this.drawRequestTooltip) {
                 tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
                                 EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
                         EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
             }
-            if(this.drawMissingTooltip){
+            if (this.drawMissingTooltip) {
                 tooltips.add(EnumChatFormatting.RED + I18n.format("neenergistics.gui.tooltip.missing"));
             }
         }
