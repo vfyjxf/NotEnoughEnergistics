@@ -36,6 +36,24 @@ public class GregTech5RecipeProcessor implements IRecipeProcessor {
         gtAssLineClz = gtAL;
     }
 
+    /**
+     * For resolving NoSuchMethodError
+     * Copied from GTNewHorizons/GT5-Unofficial.
+     */
+    public static FluidStack getFluidFromDisplayStack(ItemStack aDisplayStack) {
+        if (!isStackValid(aDisplayStack) ||
+                aDisplayStack.getItem() != ItemList.Display_Fluid.getItem() ||
+                !aDisplayStack.hasTagCompound()) {
+            return null;
+        }
+        Fluid tFluid = FluidRegistry.getFluid(ItemList.Display_Fluid.getItem().getDamage(aDisplayStack));
+        return new FluidStack(tFluid, (int) aDisplayStack.getTagCompound().getLong("mFluidDisplayAmount"));
+    }
+
+    public static boolean isStackValid(Object aStack) {
+        return (aStack instanceof ItemStack) && ((ItemStack) aStack).getItem() != null && ((ItemStack) aStack).stackSize >= 0;
+    }
+
     @Nonnull
     @Override
     public Set<String> getAllOverlayIdentifier() {
@@ -86,24 +104,6 @@ public class GregTech5RecipeProcessor implements IRecipeProcessor {
             return recipeOutputs;
         }
         return recipeOutputs;
-    }
-
-    /**
-     * For resolving NoSuchMethodError
-     * Copied from GTNewHorizons/GT5-Unofficial.
-     */
-    public static FluidStack getFluidFromDisplayStack(ItemStack aDisplayStack) {
-        if (!isStackValid(aDisplayStack) ||
-                aDisplayStack.getItem() != ItemList.Display_Fluid.getItem() ||
-                !aDisplayStack.hasTagCompound()) {
-            return null;
-        }
-        Fluid tFluid = FluidRegistry.getFluid(ItemList.Display_Fluid.getItem().getDamage(aDisplayStack));
-        return new FluidStack(tFluid, (int) aDisplayStack.getTagCompound().getLong("mFluidDisplayAmount"));
-    }
-
-    public static boolean isStackValid(Object aStack) {
-        return (aStack instanceof ItemStack) && ((ItemStack) aStack).getItem() != null && ((ItemStack) aStack).stackSize >= 0;
     }
 
 }

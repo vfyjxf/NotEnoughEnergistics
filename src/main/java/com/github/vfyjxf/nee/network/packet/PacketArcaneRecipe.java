@@ -22,7 +22,8 @@ public class PacketArcaneRecipe implements IMessage, IMessageHandler<PacketArcan
 
     NBTTagCompound input;
 
-    public PacketArcaneRecipe() {}
+    public PacketArcaneRecipe() {
+    }
 
     public PacketArcaneRecipe(NBTTagCompound input) {
         this.input = input;

@@ -19,14 +19,6 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
     private int slotIndex;
     private int changeCount;
 
-    public int getSlotIndex() {
-        return slotIndex;
-    }
-
-    public int getChangeCount() {
-        return changeCount;
-    }
-
     public PacketStackCountChange() {
 
     }
@@ -34,6 +26,14 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
     public PacketStackCountChange(int slotIndex, int changeCount) {
         this.slotIndex = slotIndex;
         this.changeCount = changeCount;
+    }
+
+    public int getSlotIndex() {
+        return slotIndex;
+    }
+
+    public int getChangeCount() {
+        return changeCount;
     }
 
     @Override
