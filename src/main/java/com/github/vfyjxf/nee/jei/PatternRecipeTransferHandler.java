@@ -13,6 +13,8 @@ import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.VanillaRecipeCategoryUid;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.gui.recipes.RecipesGui;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -32,6 +34,7 @@ import static com.github.vfyjxf.nee.jei.NEEJEIPlugin.registry;
 public class PatternRecipeTransferHandler implements IRecipeTransferHandler<ContainerPatternTerm> {
 
     public static final String OUTPUT_KEY = "Outputs";
+    public static final String INPUT_KEY = "input";
     public static Map<String, IGuiIngredient<ItemStack>> ingredients = new HashMap<>();
 
     public PatternRecipeTransferHandler() {
@@ -66,26 +69,31 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
             for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : ingredients.entrySet()) {
                 final IGuiIngredient<ItemStack> ingredient = entry.getValue();
                 if (ingredient != null) {
-                    ItemStack currentStack = ingredient.getDisplayedIngredient() == null ? ItemStack.EMPTY : ingredient.getDisplayedIngredient().copy();
+                    //get itemstack from ingredient
+                    ItemStack displayedIngredient = ingredient.getDisplayedIngredient() == null ? ItemStack.EMPTY : ingredient.getDisplayedIngredient().copy();
+                    ItemStack firstIngredient = ingredient.getAllIngredients().isEmpty() ? ItemStack.EMPTY : ingredient.getAllIngredients().get(0).copy();
+                    ItemStack currentStack = NEEConfig.useDisplayedIngredient ? displayedIngredient : firstIngredient;
+
                     if (ingredient.isInput()) {
                         if (isCraftingRecipe) {
-                            tInputs.add(new StackProcessor(ingredient, currentStack.getCount()));
+                            tInputs.add(new StackProcessor(ingredient, currentStack, currentStack.getCount()));
                         } else {
+                            //Combine like stacks
                             boolean find = false;
                             if (currentStack.isEmpty()) {
                                 continue;
                             }
                             for (StackProcessor storedIngredient : tInputs) {
-                                ItemStack storedStack = storedIngredient.ingredient.getDisplayedIngredient();
+                                ItemStack storedStack = storedIngredient.getIngredient().getDisplayedIngredient();
                                 if (storedStack != null && currentStack.isItemEqual(storedStack) && ItemStack.areItemStackTagsEqual(currentStack, storedStack)) {
-                                    if (currentStack.getCount() + storedIngredient.stackSize <= storedStack.getMaxStackSize()) {
+                                    if (currentStack.getCount() + storedIngredient.getStackSize() <= storedStack.getMaxStackSize()) {
                                         find = true;
-                                        storedIngredient.stackSize = currentStack.getCount() + storedIngredient.stackSize;
+                                        storedIngredient.setStackSize(currentStack.getCount() + storedIngredient.getStackSize());
                                     }
                                 }
                             }
                             if (!find) {
-                                tInputs.add(new StackProcessor(ingredient, currentStack.getCount()));
+                                tInputs.add(new StackProcessor(ingredient, currentStack, currentStack.getCount()));
                             }
                         }
                     } else {
@@ -100,28 +108,28 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
             }
 
             for (StackProcessor currentIngredient : tInputs) {
-                ItemStack currentStack = currentIngredient.ingredient.getDisplayedIngredient() == null ? ItemStack.EMPTY : currentIngredient.ingredient.getDisplayedIngredient().copy();
-                ItemStack preferModItem = ItemUtils.isPreferModItem(currentStack) ? currentStack : ItemUtils.getPreferModItem(currentIngredient.ingredient);
+                ItemStack currentStack = currentIngredient.getCurrentStack();
+                ItemStack preferModItem = ItemUtils.isPreferModItem(currentStack) ? currentStack : ItemUtils.getPreferModItem(currentIngredient.getIngredient());
 
                 if (!currentStack.isEmpty()) {
-                    currentStack.setCount(currentIngredient.stackSize);
+                    currentStack.setCount(currentIngredient.getStackSize());
                 }
 
                 if (!currentStack.isEmpty() && preferModItem != null && !preferModItem.isEmpty()) {
                     currentStack = preferModItem.copy();
-                    currentStack.setCount(currentIngredient.stackSize);
+                    currentStack.setCount(currentIngredient.getStackSize());
                 }
-                for (ItemStack stack : currentIngredient.ingredient.getAllIngredients()) {
+                for (ItemStack stack : currentIngredient.getIngredient().getAllIngredients()) {
                     if (ItemUtils.isPreferItems(stack, recipeType) && !currentStack.isEmpty()) {
                         currentStack = stack.copy();
-                        currentStack.setCount(currentIngredient.stackSize);
+                        currentStack.setCount(currentIngredient.getStackSize());
                     }
                 }
                 if (!currentStack.isEmpty() && ItemUtils.isInBlackList(currentStack, recipeType) && !isCraftingRecipe) {
                     continue;
                 }
                 recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-                PatternRecipeTransferHandler.ingredients.put("input" + inputIndex, currentIngredient.ingredient);
+                PatternRecipeTransferHandler.ingredients.put(INPUT_KEY + inputIndex, currentIngredient.getIngredient());
                 inputIndex++;
             }
             NEENetworkHandler.getInstance().sendToServer(new PacketRecipeTransfer(recipeInputs, recipeOutputs, isCraftingRecipe));
@@ -129,7 +137,7 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                 NotEnoughEnergistics.logger.info(recipeType);
             }
         } else {
-            return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout), false);
+            return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout, (RecipesGui) Minecraft.getMinecraft().currentScreen), false);
         }
 
         return null;

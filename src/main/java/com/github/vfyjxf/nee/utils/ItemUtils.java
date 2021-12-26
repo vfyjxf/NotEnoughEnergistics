@@ -1,7 +1,9 @@
 package com.github.vfyjxf.nee.utils;
 
+import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -20,7 +22,13 @@ public final class ItemUtils {
     private static List<StackProcessor> getTransformItemBlacklist() {
         List<StackProcessor> transformItemBlacklist = new ArrayList<>();
         for (String itemJsonString : itemBlacklist) {
-            JsonObject jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            JsonObject jsonObject;
+            try {
+                jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            } catch (JsonSyntaxException e) {
+                NotEnoughEnergistics.logger.error("Found a error item json in transform blacklist : " + itemJsonString);
+                continue;
+            }
             if (jsonObject != null) {
                 String itemName = jsonObject.get("itemName").getAsString();
                 if (itemName == null || itemName.isEmpty()) {
@@ -39,7 +47,13 @@ public final class ItemUtils {
     private static List<StackProcessor> getTransformItemPriorityList() {
         List<StackProcessor> transformItemPriorityList = new ArrayList<>();
         for (String itemJsonString : itemPriorityList) {
-            JsonObject jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            JsonObject jsonObject;
+            try {
+                jsonObject = new JsonParser().parse(itemJsonString).getAsJsonObject();
+            } catch (JsonSyntaxException e) {
+                NotEnoughEnergistics.logger.error("Found a error item json in item priority list: " + itemJsonString);
+                continue;
+            }
             if (jsonObject != null) {
                 String itemName = jsonObject.get("itemName").getAsString();
                 if (itemName == null || itemName.isEmpty()) {
@@ -59,8 +73,8 @@ public final class ItemUtils {
         ItemStack stack = itemStack.copy();
         stack.setCount(1);
         for (StackProcessor stackProcessor : getTransformItemPriorityList()) {
-            if (ItemStack.areItemStacksEqual(stack, stackProcessor.itemStack)) {
-                String currentRecipeType = stackProcessor.recipeType;
+            if (ItemStack.areItemStacksEqual(stack, stackProcessor.getCurrentStack())) {
+                String currentRecipeType = stackProcessor.getRecipeType();
                 if (currentRecipeType == null || currentRecipeType.isEmpty()) {
                     return true;
                 } else if (recipeType.equals(currentRecipeType)) {
@@ -75,7 +89,7 @@ public final class ItemUtils {
         ItemStack stack = itemStack.copy();
         stack.setCount(1);
         for (StackProcessor stackProcessor : getTransformItemPriorityList()) {
-            if (ItemStack.areItemStacksEqual(stack, stackProcessor.itemStack)) {
+            if (ItemStack.areItemStacksEqual(stack, stackProcessor.getCurrentStack())) {
                 return true;
             }
         }
@@ -86,8 +100,8 @@ public final class ItemUtils {
         ItemStack stack = itemStack.copy();
         stack.setCount(1);
         for (StackProcessor stackProcessor : getTransformItemBlacklist()) {
-            if (ItemStack.areItemStacksEqual(stack, stackProcessor.itemStack)) {
-                String currentRecipeType = stackProcessor.recipeType;
+            if (ItemStack.areItemStacksEqual(stack, stackProcessor.getCurrentStack())) {
+                String currentRecipeType = stackProcessor.getRecipeType();
                 if (currentRecipeType == null || currentRecipeType.isEmpty()) {
                     return true;
                 } else if (recipeType.equals(currentRecipeType)) {

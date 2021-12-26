@@ -10,13 +10,15 @@ import appeng.core.sync.packets.PacketJEIRecipe;
 import appeng.helpers.IContainerCraftingPacket;
 import appeng.util.Platform;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.PacketCraftingHelper;
+import com.github.vfyjxf.nee.network.packet.PacketOpenCraftAmount;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
+import mezz.jei.gui.recipes.RecipesGui;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -34,16 +36,18 @@ import java.util.Map;
 
 import static com.github.vfyjxf.nee.client.MouseHandler.craftingHelperNoPreview;
 import static com.github.vfyjxf.nee.client.MouseHandler.craftingHelperPreview;
+import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.INPUT_KEY;
 
 public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements IRecipeTransferHandler<C> {
 
     public static IngredientTracker tracker = null;
     public static int stackIndex = 1;
     public static boolean noPreview = false;
-    private Class<C> containerClass;
+    private final Class<C> containerClass;
+
+    public static final String RESULT_KEY = "result";
 
     public CraftingHelperTransferHandler(Class<C> containerClass) {
-
         this.containerClass = containerClass;
     }
 
@@ -56,32 +60,35 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
     @Override
     public IRecipeTransferError transferRecipe(C container, IRecipeLayout recipeLayout, EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         if (container instanceof IContainerCraftingPacket) {
-            tracker = crateTracker(container, recipeLayout, player);
-            if (doTransfer) {
-                tracker = crateTracker(container, recipeLayout, player);
-                boolean doCraftingHelp = Keyboard.isKeyDown(craftingHelperPreview.getKeyCode()) || Keyboard.isKeyDown(craftingHelperNoPreview.getKeyCode());
-                noPreview = Keyboard.isKeyDown(craftingHelperNoPreview.getKeyCode());
-                if (doCraftingHelp && !tracker.getRequireToCraftStacks().isEmpty()) {
-                    for (ItemStack requireToCraftStack : tracker.getRequireToCraftStacks()) {
-                        if (!requireToCraftStack.isEmpty()) {
-                            NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(requireToCraftStack, noPreview));
-                            stackIndex = 1;
-                            break;
+            if (Minecraft.getMinecraft().currentScreen instanceof RecipesGui) {
+                RecipesGui recipesGui = (RecipesGui) Minecraft.getMinecraft().currentScreen;
+                tracker = new IngredientTracker(container, recipeLayout, player, recipesGui);
+                if (doTransfer) {
+                    tracker = new IngredientTracker(container, recipeLayout, player, recipesGui);
+                    boolean doCraftingHelp = Keyboard.isKeyDown(craftingHelperPreview.getKeyCode()) || Keyboard.isKeyDown(craftingHelperNoPreview.getKeyCode());
+                    noPreview = Keyboard.isKeyDown(craftingHelperNoPreview.getKeyCode());
+                    if (doCraftingHelp && !tracker.getRequireToCraftStacks().isEmpty()) {
+                        for (ItemStack requireToCraftStack : tracker.getRequireToCraftStacks()) {
+                            if (!requireToCraftStack.isEmpty()) {
+                                NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(packRecipe(recipeLayout, tracker)));
+                                stackIndex = 1;
+                                break;
+                            }
                         }
-                    }
 
+                    } else {
+                        moveItems(container, recipeLayout);
+                    }
                 } else {
-                    moveItems(container, recipeLayout);
+                    return new CraftingHelperTooltipError(tracker, true);
                 }
-            } else {
-                return new CraftingHelperTooltipError(tracker, true);
             }
         }
         return null;
     }
 
-    private IngredientTracker crateTracker(AEBaseContainer container, IRecipeLayout recipeLayout, EntityPlayer player) {
-        IngredientTracker tracker = new IngredientTracker(recipeLayout);
+    private IngredientTracker crateTracker(AEBaseContainer container, IRecipeLayout recipeLayout, EntityPlayer player, RecipesGui recipesGui) {
+        IngredientTracker tracker = new IngredientTracker(container, recipeLayout, player, recipesGui);
         //check stacks in player's inventory
         List<ItemStack> inventoryStacks = new ArrayList<>();
         for (int slotIndex = 0; slotIndex < player.inventory.getSizeInventory(); slotIndex++) {
@@ -167,6 +174,25 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
             AELog.debug(e);
         }
 
+    }
+
+    private NBTTagCompound packRecipe(IRecipeLayout recipeLayout, IngredientTracker tracker) {
+        NBTTagCompound recipe = new NBTTagCompound();
+        for (IGuiIngredient<ItemStack> guiIngredient : recipeLayout.getItemStacks().getGuiIngredients().values()) {
+            if (!guiIngredient.isInput() && guiIngredient.getDisplayedIngredient() != null && !guiIngredient.getDisplayedIngredient().isEmpty()) {
+                recipe.setTag(RESULT_KEY, guiIngredient.getDisplayedIngredient().writeToNBT(new NBTTagCompound()));
+            }
+        }
+
+        for (ItemStack stack : tracker.getRequireToCraftStacks()) {
+            if (!stack.isEmpty()) {
+                recipe.setTag(INPUT_KEY, stack.writeToNBT(new NBTTagCompound()));
+                break;
+            }
+        }
+
+
+        return recipe;
     }
 
 }

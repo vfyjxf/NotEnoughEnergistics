@@ -31,6 +31,9 @@ minecraft {
     runDir = "run"
 
     replace '@VERSION@', project.version
+
+    clientJvmArgs += "-Dfml.coreMods.load=com.github.vfyjxf.nee.asm.NEELoadingPlugin"
+    serverJvmArgs += "-Dfml.coreMods.load=com.github.vfyjxf.nee.asm.NEELoadingPlugin"
 }
 
 processResources {
@@ -97,6 +100,10 @@ task sourcesJar(type: Jar) {
 
 jar {
     appendix project.minecraft.version
+    manifest.attributes(
+            'FMLCorePlugin': 'com.github.vfyjxf.nee.asm.NEELoadingPlugin',
+            'FMLCorePluginContainsFMLMod': 'true'
+    )
 }
 
 artifacts {

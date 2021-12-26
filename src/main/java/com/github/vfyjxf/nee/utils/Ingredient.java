@@ -48,11 +48,16 @@ public class Ingredient {
         this.currentCount += count;
     }
 
-    public void addRequireCount(long count) {
-        this.requireCount += count;
+    public void setRequireCount(long requireCount) {
+        this.requireCount = requireCount;
+    }
+
+    public void setCurrentCount(long currentCount) {
+        this.currentCount = currentCount;
     }
 
     public void setCraftableIngredient(ItemStack craftableIngredient) {
         this.craftableIngredient = craftableIngredient;
     }
+
 }

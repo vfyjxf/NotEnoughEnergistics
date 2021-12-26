@@ -61,7 +61,7 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
                 }
 
                 Slot currentSlot = container.getSlot(message.getSlotIndex());
-                if (currentSlot instanceof SlotFake) {
+                if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
                     for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
                         int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().getCount() + 1 : currentSlot.getStack().getCount() - 1;
                         if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {

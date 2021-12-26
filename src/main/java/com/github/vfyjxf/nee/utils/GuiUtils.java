@@ -4,34 +4,14 @@ import appeng.container.slot.AppEngSlot;
 import appeng.helpers.IContainerCraftingPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.items.IItemHandler;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * @author vfyjxf
  */
 public class GuiUtils {
-    public static Slot getSlotUnderMouse(GuiContainer container, int mouseX, int mouseY) {
-        Method isPointInRegion = ObfuscationReflectionHelper.findMethod(GuiContainer.class,
-                "func_146978_c", boolean.class,
-                int.class, int.class, int.class, int.class, int.class, int.class);
-        for (Slot slot : container.inventorySlots.inventorySlots) {
-            try {
-                if ((boolean) isPointInRegion.invoke(container, slot.xPos, slot.yPos, 16, 16, mouseX, mouseY)) {
-                    return slot;
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
 
     public static boolean isCraftingSlot(Slot slot) {
         Container container = Minecraft.getMinecraft().player.openContainer;

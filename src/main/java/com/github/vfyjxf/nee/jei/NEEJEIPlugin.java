@@ -31,7 +31,7 @@ public class NEEJEIPlugin implements IModPlugin {
     @Override
     public void register(IModRegistry registry) {
         NEEJEIPlugin.registry = registry;
-        Table<Class<?>, String, IRecipeTransferHandler> newRegistry = Table.hashBasedTable();
+        Table<Class<?>, String, IRecipeTransferHandler<?>> newRegistry = Table.hashBasedTable();
         boolean patternHandlerFound = false;
         boolean craftingHandlerFound = false;
         boolean wirelessCraftingHandlerFound = false;
@@ -69,7 +69,7 @@ public class NEEJEIPlugin implements IModPlugin {
 
     }
 
-    private boolean addWirelessCraftingHandler(Table<Class<?>, String, IRecipeTransferHandler> newRegistry) {
+    private boolean addWirelessCraftingHandler(Table<Class<?>, String, IRecipeTransferHandler<?>> newRegistry) {
         try {
             Class.forName("p455w0rd.wct.container.ContainerWCT");
         } catch (ClassNotFoundException e) {

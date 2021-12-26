@@ -20,6 +20,12 @@ public class NEEConfig {
     @Comment("If true, print current recipe type in log.Default:false")
     public static boolean allowPrintRecipeType = false;
 
+    @Comment("If true, the ingredient currently displayed by JEI will be transferred.Default:false")
+    public static boolean useDisplayedIngredient = false;
+
+    @Comment("If true, Crafting Helper will match other items even they can't auto-crafting")
+    public static boolean matchOtherItems = true;
+
     @Comment("If true, it will make all similar ingredient switch at the same time ")
     public static boolean allowSynchronousSwitchIngredient = true;
 
