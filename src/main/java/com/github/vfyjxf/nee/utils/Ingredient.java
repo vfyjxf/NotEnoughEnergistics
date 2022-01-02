@@ -5,18 +5,20 @@ import net.minecraft.item.ItemStack;
 
 public class Ingredient {
 
-    private final long requireCount;
-    private final PositionedStack ingredients;
+    private long requireCount;
+    private final long defaultRequireCount;
+    private final PositionedStack ingredient;
     private ItemStack craftableIngredient;
     private long currentCount = 0;
 
     public Ingredient(PositionedStack ingredients) {
-        this.ingredients = ingredients;
+        this.ingredient = ingredients;
         this.requireCount = ingredients.items[0].stackSize;
+        this.defaultRequireCount = ingredients.items[0].stackSize;
     }
 
-    public PositionedStack getIngredients() {
-        return ingredients;
+    public PositionedStack getIngredient() {
+        return ingredient;
     }
 
     public ItemStack getCraftableIngredient() {
@@ -31,8 +33,20 @@ public class Ingredient {
         return requireCount - currentCount;
     }
 
+    public long getDefaultRequireCount() {
+        return defaultRequireCount;
+    }
+
     public long getRequireCount() {
         return requireCount;
+    }
+
+    public void setRequireCount(long requireCount) {
+        this.requireCount = requireCount;
+    }
+
+    public void setCurrentCount(long currentCount) {
+        this.currentCount = currentCount;
     }
 
     public boolean isCraftable() {
@@ -43,8 +57,12 @@ public class Ingredient {
         return this.getMissingCount() > 0;
     }
 
-    public void addCurrentCount(long count) {
-        currentCount += count;
+    public void addCount(long count) {
+        if (currentCount + count < requireCount) {
+            currentCount += count;
+        } else {
+            currentCount = requireCount;
+        }
     }
 
 }

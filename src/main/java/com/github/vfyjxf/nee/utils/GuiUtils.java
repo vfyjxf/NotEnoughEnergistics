@@ -83,4 +83,13 @@ public class GuiUtils {
         }
     }
 
+    public static boolean isWirelessTerminalGuiObject(Object guiObj) {
+        try {
+            Class<?> wirelessTerminalGuiObjClass = Class.forName("net.p455w0rd.wirelesscraftingterminal.helpers.WirelessTerminalGuiObject");
+            return wirelessTerminalGuiObjClass.isInstance(guiObj);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
 }

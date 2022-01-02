@@ -28,8 +28,11 @@ import java.util.Map;
  */
 public class NEECraftingHandler implements IOverlayHandler {
 
+    public static final String INPUT_KEY = "input";
     public static final String OUTPUT_KEY = "Outputs";
     public static Map<String, PositionedStack> ingredients = new HashMap<>();
+
+    public static final NEECraftingHandler INSTANCE = new NEECraftingHandler();
 
     public static boolean isCraftingTableRecipe(IRecipeHandler recipe) {
         TemplateRecipeHandler templateRecipeHandler = (TemplateRecipeHandler) recipe;
@@ -112,7 +115,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                         }
 
                         recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-                        NEECraftingHandler.ingredients.put("input" + inputIndex, positionedStack);
+                        NEECraftingHandler.ingredients.put(INPUT_KEY + inputIndex, positionedStack);
                         inputIndex++;
                     }
 
@@ -165,7 +168,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 recipeInputs.setTag("#" + slotIndex, stack.writeToNBT(new NBTTagCompound()));
-                NEECraftingHandler.ingredients.put("input" + slotIndex, positionedStack);
+                NEECraftingHandler.ingredients.put(INPUT_KEY + slotIndex, positionedStack);
             }
         }
         return new PacketNEIPatternRecipe(recipeInputs, null);

@@ -14,6 +14,12 @@ public class RecipeProcessor {
         NotEnoughEnergistics.logger.info("Install Vanilla Support");
         recipeProcessors.add(new VanillaRecipeProcessor());
 
+
+        if (Loader.isModLoaded("appliedenergistics2")) {
+            NotEnoughEnergistics.logger.info("Found Applied Energistics 2,install Applied Energistics 2 support");
+            recipeProcessors.add(new AppengRecipeProcessor());
+        }
+
         if (Loader.isModLoaded("gregtech") && !Loader.isModLoaded("gregapi")) {
             NotEnoughEnergistics.logger.info("Found GregTech5,install GregTech5 support");
             recipeProcessors.add(new GregTech5RecipeProcessor());
@@ -67,9 +73,6 @@ public class RecipeProcessor {
             recipeProcessors.add(new GTPPRecipeProcessor());
         }
 
-        if (Loader.isModLoaded("appliedenergistics2")) {
-            NotEnoughEnergistics.logger.info("Applied Energistics 2 will not be supported");
-        }
         NotEnoughEnergistics.logger.info("-----Not Enough Energistics Init  Finished-----");
     }
 

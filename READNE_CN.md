@@ -24,7 +24,7 @@ NotEnoughEnergistics 是[Just Enough Energistics](https://www.curseforge.com/min
 
 ## 当前支持的Mod列表：
 
-- [ ]  AppliedEnergistics2(我们将不会支持AE2，因为AE2没有注册对应的OverlayHandler)
+- [x]  AppliedEnergistics2
 - [x]  Vanilla
 - [x]  GregTech5
 - [x]  GregTech6

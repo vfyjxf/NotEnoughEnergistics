@@ -20,7 +20,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.input.Keyboard;
@@ -84,7 +83,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                     this.overlayButtonsField = GuiRecipe.class.getDeclaredField("overlayButtons");
                     this.recipesPerPageMethod = GuiRecipe.class.getDeclaredMethod("getRecipesPerPage");
                     this.overlayButtonsField.setAccessible(true);
-                    recipesPerPageMethod.setAccessible(true);
+                    this.recipesPerPageMethod.setAccessible(true);
                 } catch (NoSuchMethodException | NoSuchFieldException e) {
                     this.isGtnhNei = false;
                 }
@@ -134,27 +133,43 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                             if (recipesPerPage >= 0 && handler != null) {
                                 int recipeIndex = guiRecipe.page * recipesPerPage + button.id - OVERLAY_BUTTON_ID_START;
                                 List<PositionedStack> ingredients = handler.getIngredientStacks(recipeIndex);
-                                IngredientTracker tracker = createTracker(guiRecipe.firstGui, ingredients);
+                                IngredientTracker tracker = new IngredientTracker(guiRecipe.firstGui, handler, recipeIndex);
 
                                 for (int var1 = 0; var1 < ingredients.size(); var1++) {
                                     PositionedStack stack = ingredients.get(var1);
                                     Ingredient ingredient = tracker.getIngredients().get(var1);
                                     Slot stackSlot = guiRecipe.slotcontainer.getSlotWithStack(stack, guiRecipe.getRecipePosition(recipeIndex).x, guiRecipe.getRecipePosition(recipeIndex).y);
                                     if (stackSlot.equals(slot)) {
-                                        boolean renderAutoAbleItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && ingredient.isCraftable() && ingredient.requiresToCraft();
-                                        boolean renderCraftableItems = (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) && ingredient.isCraftable();
-                                        boolean renderMissingItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && !ingredient.isCraftable() && ingredient.requiresToCraft();
-                                        if (renderAutoAbleItems || renderCraftableItems) {
-                                            Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                    slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                    new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
-                                            this.drawCraftableTooltip = renderCraftableItems;
-                                            this.drawRequestTooltip = renderAutoAbleItems;
-                                        } else if (renderMissingItems) {
-                                            Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                    slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                    new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
-                                            this.drawMissingTooltip = true;
+                                        if (!NEEConfig.enableCraftAmountSettingGui) {
+                                            boolean renderAutoAbleItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && ingredient.isCraftable() && ingredient.requiresToCraft();
+                                            boolean renderCraftableItems = (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) && ingredient.isCraftable();
+                                            boolean renderMissingItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && !ingredient.isCraftable() && ingredient.requiresToCraft();
+                                            if (renderAutoAbleItems || renderCraftableItems) {
+                                                Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                                        slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                                        new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
+                                                this.drawCraftableTooltip = renderCraftableItems;
+                                                this.drawRequestTooltip = renderAutoAbleItems;
+                                            }
+                                            if (renderMissingItems) {
+                                                Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                                        slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                                        new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
+                                                this.drawMissingTooltip = true;
+                                            }
+                                        } else {
+
+                                            if (ingredient.isCraftable()) {
+                                                Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                                        slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                                        new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
+                                                this.drawRequestTooltip = true;
+                                            } else {
+                                                Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                                        slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                                        new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
+                                                this.drawMissingTooltip = true;
+                                            }
                                         }
                                     }
                                 }
@@ -168,7 +183,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     @SubscribeEvent
     public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (this.drawCraftableTooltip || this.drawRequestTooltip) {
+        if (this.drawCraftableTooltip || this.drawRequestTooltip || this.drawMissingTooltip) {
             if (event.gui instanceof GuiRecipe) {
                 GuiRecipe guiRecipe = (GuiRecipe) event.gui;
                 List<GuiButton> overlayButtons = null;
@@ -219,31 +234,4 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         //drawHoveringText
         guiRecipe.func_146283_a(tooltips, mouseX, mouseY);
     }
-
-    @SuppressWarnings("unchecked")
-    private IngredientTracker createTracker(GuiContainer firstGui, List<PositionedStack> ingredients) {
-        IngredientTracker tracker = new IngredientTracker(firstGui, ingredients);
-
-        //check stacks in player's inventory and crafting grid
-        List<ItemStack> inventoryStacks = new ArrayList<>();
-        for (Slot slot : (List<Slot>) firstGui.inventorySlots.inventorySlots) {
-            boolean canGetStack = slot != null &&
-                    slot.getHasStack() &&
-                    slot.getStack().stackSize > 0 &&
-                    slot.isItemValid(slot.getStack()) &&
-                    slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
-            if (canGetStack) {
-                inventoryStacks.add(slot.getStack().copy());
-            }
-        }
-
-        for (int i = 0; i < tracker.getIngredients().size(); i++) {
-            for (ItemStack stack : inventoryStacks) {
-                tracker.addAvailableStack(stack);
-            }
-        }
-
-        return tracker;
-    }
-
 }
