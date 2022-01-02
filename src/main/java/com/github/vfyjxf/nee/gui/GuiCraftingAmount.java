@@ -4,6 +4,7 @@ import appeng.api.AEApi;
 import appeng.api.definitions.IDefinitions;
 import appeng.api.definitions.IParts;
 import appeng.api.storage.ITerminalHost;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.GuiNumberBox;
 import appeng.client.gui.widgets.GuiTabButton;
@@ -15,16 +16,27 @@ import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.helpers.Reflected;
 import appeng.parts.reporting.PartCraftingTerminal;
+import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
+import com.github.vfyjxf.nee.utils.GuiUtils;
+import com.github.vfyjxf.nee.utils.ModIds;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
+import p455w0rd.wct.container.ContainerWCT;
+import p455w0rd.wct.init.ModGuiHandler;
+import p455w0rd.wct.init.ModItems;
+import p455w0rd.wct.init.ModNetworking;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 
-import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.tracker;
+import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.*;
 
 public class GuiCraftingAmount extends AEBaseGui {
     private GuiNumberBox amountToCraft;
@@ -43,9 +55,22 @@ public class GuiCraftingAmount extends AEBaseGui {
 
     private GuiBridge originalGui;
 
+    @Nullable
+    private Object wctObj;
+    private boolean isWirelessCrafting;
+
     @Reflected
     public GuiCraftingAmount(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         super(new ContainerCraftingAmount(inventoryPlayer, te));
+    }
+
+    /**
+     * For wireless crafting terminal
+     */
+    @Reflected
+    public GuiCraftingAmount(final InventoryPlayer inventoryPlayer, final ITerminalHost te, @Nonnull ContainerWCT wct) {
+        super(new ContainerCraftingAmount(inventoryPlayer, te));
+        this.wctObj = wct;
     }
 
 
@@ -81,7 +106,20 @@ public class GuiCraftingAmount extends AEBaseGui {
             this.originalGui = GuiBridge.GUI_CRAFTING_TERMINAL;
         }
 
+        if (Loader.isModLoaded(ModIds.WCT) && GuiUtils.isWirelessTerminalGuiObject(target) && this.wctObj instanceof ContainerWCT) {
+            ContainerWCT wct = (ContainerWCT) this.wctObj;
+            if (wct.getWirelessTerminal() != null) {
+                myIcon = new ItemStack(wct.getWirelessTerminal().getItem());
+            } else {
+                myIcon = new ItemStack(ModItems.WCT);
+            }
+            this.isWirelessCrafting = true;
+        }
+
         if (this.originalGui != null && myIcon != null && !myIcon.isEmpty()) {
+            this.buttonList.add(this.originalGuiBtn = new GuiTabButton(this.guiLeft + 154, this.guiTop, myIcon, myIcon.getDisplayName(), this.itemRender));
+        }
+        if (this.isWirelessCrafting && myIcon != null) {
             this.buttonList.add(this.originalGuiBtn = new GuiTabButton(this.guiLeft + 154, this.guiTop, myIcon, myIcon.getDisplayName(), this.itemRender));
         }
 
@@ -155,20 +193,29 @@ public class GuiCraftingAmount extends AEBaseGui {
     }
 
     @Override
-    protected void actionPerformed(final GuiButton btn) throws IOException {
+    protected void actionPerformed(@Nonnull final GuiButton btn) throws IOException {
         super.actionPerformed(btn);
 
         try {
 
             if (btn == this.originalGuiBtn) {
-                NetworkHandler.instance().sendToServer(new PacketSwitchGuis(this.originalGui));
+                if (!this.isWirelessCrafting) {
+                    NetworkHandler.instance().sendToServer(new PacketSwitchGuis(this.originalGui));
+                } else if (Loader.isModLoaded(ModIds.WCT)) {
+                    openWirelessTerminalGui();
+                }
             }
 
             if (btn == this.start) {
                 int craftingAmount = Integer.parseInt(amountToCraft.getText());
                 tracker.setCraftingAmount(craftingAmount);
                 tracker.calculateIngredients();
-                NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(craftingAmount, isShiftKeyDown()));
+                if (!tracker.getRequireStacks().isEmpty()) {
+                    IAEItemStack stack = AEItemStack.fromItemStack(tracker.getRequiredStack(0));
+                    noPreview = isShiftKeyDown();
+                    NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
+                    stackIndex = 1;
+                }
             }
         } catch (final NumberFormatException e) {
             // nope..
@@ -223,4 +270,10 @@ public class GuiCraftingAmount extends AEBaseGui {
     protected String getBackground() {
         return "guis/craftAmt.png";
     }
+
+    @Optional.Method(modid = ModIds.WCT)
+    private void openWirelessTerminalGui() {
+        ModNetworking.instance().sendToServer(new p455w0rd.wct.sync.packets.PacketSwitchGuis(ModGuiHandler.GUI_WCT));
+    }
+
 }

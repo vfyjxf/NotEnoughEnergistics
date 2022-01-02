@@ -17,7 +17,8 @@ public class ContainerCraftingAmount extends AEBaseContainer {
 
     private final Slot resultSlot;
     private ItemStack resultStack;
-    private ItemStack firstInputStack;
+    private boolean isBauble;
+    private int wctSlot = -1;
 
     public ContainerCraftingAmount(InventoryPlayer ip, Object anchor) {
         super(ip, anchor);
@@ -56,15 +57,24 @@ public class ContainerCraftingAmount extends AEBaseContainer {
         return resultStack;
     }
 
-    public ItemStack getFirstInputStack() {
-        if (firstInputStack == null) {
-            return ItemStack.EMPTY;
-        }
-        return firstInputStack;
+    public boolean isBauble() {
+        return isBauble;
     }
 
-    public void setFirstInputStack(ItemStack firstInputStack) {
-        this.firstInputStack = firstInputStack;
+    public int getWctSlot() {
+        return wctSlot;
+    }
+
+    public void setBauble(boolean bauble) {
+        isBauble = bauble;
+    }
+
+    public void setWctSlot(int wctSlot) {
+        this.wctSlot = wctSlot;
+    }
+
+    public boolean isWirelessTerm() {
+        return this.wctSlot >= 0;
     }
 
     public void setResultStack(ItemStack resultStack) {

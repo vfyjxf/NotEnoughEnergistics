@@ -26,9 +26,10 @@ public class IngredientTracker {
 
     private final List<Ingredient> ingredients = new ArrayList<>();
     private int craftingAmount = 1;
-    private AEBaseContainer craftingTermContainer;
+    private AEBaseContainer termContainer;
     private final GuiScreen parentScreen;
     private EntityPlayer player;
+    private List<ItemStack> requireStacks;
 
 
     /**
@@ -57,8 +58,8 @@ public class IngredientTracker {
     /**
      * For CraftingHelperTransferHandler
      */
-    public IngredientTracker(AEBaseContainer craftingTermContainer, IRecipeLayout recipeLayout, EntityPlayer player, RecipesGui recipesGui) {
-        this.craftingTermContainer = craftingTermContainer;
+    public IngredientTracker(AEBaseContainer termContainer, IRecipeLayout recipeLayout, EntityPlayer player, RecipesGui recipesGui) {
+        this.termContainer = termContainer;
         this.player = player;
         this.parentScreen = recipesGui.getParentScreen();
 
@@ -122,26 +123,66 @@ public class IngredientTracker {
 
     public List<ItemStack> getRequireToCraftStacks() {
         List<ItemStack> requireToCraftStacks = new ArrayList<>();
-        for (Ingredient ingredient : this.getIngredients()) {
-            boolean find = false;
-            if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
-                for (ItemStack stack : requireToCraftStacks) {
-                    boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
-                    if (areStackEqual) {
-                        stack.setCount((int) (stack.getCount() + ingredient.getMissingCount()));
-                        find = true;
+        if (NEEConfig.enableCraftAmountSettingGui) {
+            for (Ingredient ingredient : this.getIngredients()) {
+                boolean find = false;
+                if (ingredient.isCraftable()) {
+                    for (ItemStack stack : requireToCraftStacks) {
+                        boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
+                        if (areStackEqual) {
+                            stack.setCount((int) (stack.getCount() + ingredient.getRequireCount()));
+                            find = true;
+                            break;
+                        }
                     }
 
+                    if (!find) {
+                        ItemStack requireStack = ingredient.getCraftableIngredient().copy();
+                        requireStack.setCount((int) ingredient.getRequireCount());
+                        requireToCraftStacks.add(requireStack);
+                    }
                 }
+            }
+        } else {
+            for (Ingredient ingredient : this.getIngredients()) {
+                boolean find = false;
+                if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
+                    for (ItemStack stack : requireToCraftStacks) {
+                        boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
+                        if (areStackEqual) {
+                            stack.setCount((int) (stack.getCount() + ingredient.getMissingCount()));
+                            find = true;
+                            break;
+                        }
 
-                if (!find) {
-                    ItemStack requireStack = ingredient.getCraftableIngredient().copy();
-                    requireStack.setCount((int) ingredient.getMissingCount());
-                    requireToCraftStacks.add(requireStack);
+                    }
+
+                    if (!find) {
+                        ItemStack requireStack = ingredient.getCraftableIngredient().copy();
+                        requireStack.setCount((int) ingredient.getMissingCount());
+                        requireToCraftStacks.add(requireStack);
+                    }
                 }
             }
         }
         return requireToCraftStacks;
+    }
+
+    public List<ItemStack> getRequireStacks() {
+        return requireStacks;
+    }
+
+    public ItemStack getRequiredStack(int index) {
+        return this.getRequireStacks().get(index);
+    }
+
+    public boolean hasCraftableIngredient() {
+        for (Ingredient ingredient : this.getIngredients()) {
+            if (ingredient.isCraftable()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Ingredient> getIngredients() {
@@ -188,7 +229,7 @@ public class IngredientTracker {
 
         //set requireCount and reset currentCount
         for (Ingredient ingredient : ingredients) {
-            ingredient.setRequireCount(ingredient.getRequireCount() * craftingAmount);
+            ingredient.setRequireCount(ingredient.getDefaultRequireCount() * craftingAmount);
             ingredient.setCurrentCount(0);
         }
 
@@ -215,9 +256,9 @@ public class IngredientTracker {
             }
         }
 
-        if (this.craftingTermContainer instanceof IContainerCraftingPacket) {
+        if (this.termContainer instanceof IContainerCraftingPacket) {
             //check stacks in crafting grid
-            IContainerCraftingPacket ccp = (IContainerCraftingPacket) this.craftingTermContainer;
+            IContainerCraftingPacket ccp = (IContainerCraftingPacket) this.termContainer;
             final IItemHandler craftMatrix = ccp.getInventoryByName("crafting");
             for (int slotIndex = 0; slotIndex < craftMatrix.getSlots(); slotIndex++) {
                 if (!craftMatrix.getStackInSlot(slotIndex).isEmpty()) {
@@ -232,6 +273,7 @@ public class IngredientTracker {
             }
         }
 
+        this.requireStacks = this.getRequireToCraftStacks();
     }
 
 }

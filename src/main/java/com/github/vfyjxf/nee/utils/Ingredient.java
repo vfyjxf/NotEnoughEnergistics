@@ -7,6 +7,7 @@ public class Ingredient {
 
     private final IGuiIngredient<ItemStack> ingredient;
     private ItemStack craftableIngredient = ItemStack.EMPTY;
+    private final long defaultRequireCount;
     private long requireCount;
     private long currentCount = 0;
 
@@ -14,6 +15,7 @@ public class Ingredient {
     public Ingredient(IGuiIngredient<ItemStack> ingredient) {
         this.ingredient = ingredient;
         this.requireCount = ingredient.getAllIngredients().get(0).getCount();
+        this.defaultRequireCount = ingredient.getAllIngredients().get(0).getCount();
     }
 
     public ItemStack getCraftableIngredient() {
@@ -36,6 +38,10 @@ public class Ingredient {
         return currentCount;
     }
 
+    public long getDefaultRequireCount() {
+        return defaultRequireCount;
+    }
+
     public boolean requiresToCraft() {
         return this.getMissingCount() > 0;
     }
@@ -45,7 +51,11 @@ public class Ingredient {
     }
 
     public void addCount(long count) {
-        this.currentCount += count;
+        if (currentCount + count < requireCount) {
+            currentCount += count;
+        } else {
+            currentCount = requireCount;
+        }
     }
 
     public void setRequireCount(long requireCount) {

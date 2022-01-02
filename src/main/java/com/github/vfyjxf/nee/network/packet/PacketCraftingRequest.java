@@ -16,12 +16,14 @@ import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.utils.GuiUtils;
+import com.github.vfyjxf.nee.utils.ModIds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -45,11 +47,6 @@ public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCr
 
     public PacketCraftingRequest(IAEItemStack requireToCraftStack, boolean noPreview) {
         this.requireToCraftStack = requireToCraftStack;
-        this.noPreview = noPreview;
-    }
-
-    public PacketCraftingRequest(int craftAmount, boolean noPreview) {
-        this.craftAmount = craftAmount;
         this.noPreview = noPreview;
     }
 
@@ -145,13 +142,11 @@ public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCr
             IGridNode gn = ah.getActionableNode();
             IGrid grid = gn.getGrid();
             ItemStack resultStack = container.getResultStack();
-            ItemStack firstInputStack = container.getFirstInputStack();
-            if (!resultStack.isEmpty() && !firstInputStack.isEmpty()) {
+            IAEItemStack result = message.getRequireToCraftStack();
+            if (resultStack != null && !resultStack.isEmpty() && result != null) {
                 Future<ICraftingJob> futureJob = null;
                 try {
                     final ICraftingGrid cg = grid.getCache(ICraftingGrid.class);
-                    firstInputStack.setCount(firstInputStack.getCount() * message.craftAmount);
-                    IAEItemStack result = AEItemStack.fromItemStack(firstInputStack);
                     futureJob = cg.beginCraftingJob(player.world, grid, container.getActionSource(), result, null);
 
                     final ContainerOpenContext context = container.getOpenContext();
@@ -160,6 +155,19 @@ public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCr
                         Platform.openGUI(player, te, context.getSide(), GuiBridge.GUI_CRAFTING_CONFIRM);
                         if (player.openContainer instanceof ContainerCraftConfirm) {
                             final ContainerCraftConfirm ccc = (ContainerCraftConfirm) player.openContainer;
+                            ccc.setAutoStart(message.isNoPreview());
+                            ccc.setJob(futureJob);
+                            ccc.detectAndSendChanges();
+                        }
+                    } else if (Loader.isModLoaded(ModIds.WCT) && container.isWirelessTerm()) {
+
+                        int x = (int) player.posX;
+                        int y = (int) player.posY;
+                        int z = (int) player.posZ;
+
+                        ModGuiHandler.open(ModGuiHandler.GUI_CRAFT_CONFIRM, player, player.getEntityWorld(), new BlockPos(x, y, z), false, container.isBauble(), container.getWctSlot());
+                        if (player.openContainer instanceof p455w0rd.wct.container.ContainerCraftConfirm) {
+                            final p455w0rd.wct.container.ContainerCraftConfirm ccc = (p455w0rd.wct.container.ContainerCraftConfirm) player.openContainer;
                             ccc.setAutoStart(message.isNoPreview());
                             ccc.setJob(futureJob);
                             ccc.detectAndSendChanges();

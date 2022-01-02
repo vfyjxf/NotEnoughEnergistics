@@ -23,8 +23,8 @@ public class GuiHandler {
         boolean isCraftingGui = event.getGui() instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(event.getGui());
         boolean isCraftConfirmGui = currentScreen instanceof GuiCraftConfirm || GuiUtils.isWirelessGuiCraftConfirm(currentScreen);
         if (isCraftingGui && isCraftConfirmGui && tracker != null) {
-            if (tracker.getRequireToCraftStacks().size() > 1 && stackIndex < tracker.getRequireToCraftStacks().size()) {
-                IAEItemStack stack = AEItemStack.fromItemStack(tracker.getRequireToCraftStacks().get(stackIndex));
+            if (tracker.getRequireStacks().size() > 1 && stackIndex < tracker.getRequireStacks().size()) {
+                IAEItemStack stack = AEItemStack.fromItemStack(tracker.getRequiredStack(stackIndex));
                 NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
                 stackIndex++;
             }

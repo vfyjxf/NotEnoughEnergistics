@@ -69,6 +69,10 @@ repositories {
         url = "https://modmaven.k-4u.nl"
     }
     maven {
+        name = "covers Maven"
+        url = "http://maven.covers1624.net"
+    }
+    maven {
         name = "CurseMaven"
         url = "https://www.cursemaven.com"
     }
@@ -85,6 +89,9 @@ dependencies {
     deobfCompile "curse.maven:wireless-crafting-terminal-244559:2830252"
     compile "curse.maven:ae2wtlib-304024:2830114"
     compile "curse.maven:p455w0rds-library-255232:2830265"
+//    deobfCompile "p455w0rd:WirelessCraftingTerminal:1.12.2-3.12.97"
+//    deobfCompile "p455w0rd:AE2WTLib:1.12.2-1.0.34"
+//    deobfCompile "p455w0rd:p455w0rdslib:1.12.2-2.3.161"
 
 }
 

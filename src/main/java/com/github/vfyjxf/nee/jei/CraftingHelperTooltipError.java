@@ -1,5 +1,6 @@
 package com.github.vfyjxf.nee.jei;
 
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.utils.Ingredient;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
 import mezz.jei.api.gui.IRecipeLayout;
@@ -54,6 +55,10 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
                     drawMissingItemTooltip = true;
                     ingredient.getIngredient().drawHighlight(minecraft, missingColor, recipeX, recipeY);
                 }
+                if (NEEConfig.enableCraftAmountSettingGui && !ingredient.isCraftable()) {
+                    drawMissingItemTooltip = true;
+                    ingredient.getIngredient().drawHighlight(minecraft, missingColor, recipeX, recipeY);
+                }
             } else {
                 if (ingredient.isCraftable()) {
                     drawTooltipInPattenTerm = true;
@@ -65,13 +70,13 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
             tooltips.add(String.format("%s" + TextFormatting.GRAY + " + " +
                             TextFormatting.BLUE + I18n.format("jei.tooltip.nee.helper.crafting"),
                     TextFormatting.YELLOW + Keyboard.getKeyName(craftingHelperPreview.getKeyCode())));
-            TooltipRenderer.drawHoveringText(minecraft, tooltips, mouseX, mouseY);
-        } else if (drawTooltipInPattenTerm) {
-            tooltips.add(TextFormatting.BLUE + I18n.format("jei.tooltip.nee.helper.pattern"));
-            TooltipRenderer.drawHoveringText(minecraft, tooltips, mouseX, mouseY);
-        } else if (drawMissingItemTooltip) {
-            tooltips.add(TextFormatting.RED + I18n.format("jei.tooltip.error.recipe.transfer.missing"));
-            TooltipRenderer.drawHoveringText(minecraft, tooltips, mouseX, mouseY);
         }
+        if (drawTooltipInPattenTerm) {
+            tooltips.add(TextFormatting.BLUE + I18n.format("jei.tooltip.nee.helper.pattern"));
+        }
+        if (drawMissingItemTooltip) {
+            tooltips.add(TextFormatting.RED + I18n.format("jei.tooltip.error.recipe.transfer.missing"));
+        }
+        TooltipRenderer.drawHoveringText(minecraft, tooltips, mouseX, mouseY);
     }
 }

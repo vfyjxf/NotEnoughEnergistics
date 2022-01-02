@@ -29,6 +29,9 @@ public class NEEConfig {
     @Comment("If true, it will make all similar ingredient switch at the same time ")
     public static boolean allowSynchronousSwitchIngredient = true;
 
+    @Comment("If true, it will open a gui to set craft amount after ctrl + click [+] button")
+    public static boolean enableCraftAmountSettingGui = true;
+
     @Comment("If oredict has this mod's item, use it first.")
     public static String[] modPriorityList = new String[0];
 
