@@ -28,7 +28,8 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
     NBTTagCompound input;
     NBTTagCompound output;
 
-    public PacketNEIPatternRecipe() {}
+    public PacketNEIPatternRecipe() {
+    }
 
     public PacketNEIPatternRecipe(@Nonnull NBTTagCompound input, NBTTagCompound output) {
         this.input = input;
@@ -65,9 +66,9 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
         } else if (container instanceof ContainerPatternTerm) {
             ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(false);
             message.processRecipeHandler((ContainerPatternTerm) container, message);
-        } else if (container instanceof ContainerPatternTermEx && message.output != null){
+        } else if (container instanceof ContainerPatternTermEx && message.output != null) {
             ((ContainerPatternTermEx) container).getPatternTerminal().setInverted(false);
-            message.processRecipeHandler((ContainerPatternTermEx) container,message);
+            message.processRecipeHandler((ContainerPatternTermEx) container, message);
         }
         return null;
     }

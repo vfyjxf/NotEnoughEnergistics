@@ -57,7 +57,7 @@ public class NEINeeConfig implements IConfigureNEI {
 
         for (String ident : identifiers) {
             API.registerGuiOverlay(GuiPatternTerm.class, ident);
-            API.registerGuiOverlayHandler(GuiPatternTerm.class, new NEECraftingHandler(), ident);
+            API.registerGuiOverlayHandler(GuiPatternTerm.class, NEECraftingHandler.INSTANCE, ident);
         }
 
         installCraftingTermSupport();

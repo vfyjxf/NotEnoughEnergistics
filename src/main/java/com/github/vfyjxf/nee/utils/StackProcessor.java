@@ -13,23 +13,25 @@ public class StackProcessor {
     public String recipeProcessor;
     public String identifier;
 
-    public StackProcessor(String modid, String name, String meta, String nbt){
+    public StackProcessor(String modid, String name, String meta, String nbt) {
         this.modid = modid;
         this.name = name;
         this.meta = meta;
         this.nbt = nbt;
     }
-    public StackProcessor(String modid, String name, String meta){
+
+    public StackProcessor(String modid, String name, String meta) {
         this.modid = modid;
         this.name = name;
         this.meta = meta;
     }
-    public StackProcessor(String modid, String name){
+
+    public StackProcessor(String modid, String name) {
         this.modid = modid;
         this.name = name;
     }
 
-    public StackProcessor(ItemStack itemStack, Item item, String recipeProcessor, String identifier){
+    public StackProcessor(ItemStack itemStack, Item item, String recipeProcessor, String identifier) {
         this.itemStack = itemStack;
         this.item = item;
         this.recipeProcessor = recipeProcessor;

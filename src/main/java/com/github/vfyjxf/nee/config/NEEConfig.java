@@ -23,7 +23,8 @@ public class NEEConfig {
     public static boolean matchOtherItems = true;
     public static boolean drawHighlight = true;
     public static boolean allowSynchronousSwitchIngredient = true;
-    public static boolean useStackSizeFromNEI = true;
+    public static boolean useStackSizeFromNEI = false;
+    public static boolean enableCraftAmountSettingGui = true;
 
     public static int draggedStackDefaultSize = 1;
 
@@ -53,8 +54,11 @@ public class NEEConfig {
         allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
                 "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
 
-        useStackSizeFromNEI = config.get("client","useStackSizeFromNEI",true,
+        useStackSizeFromNEI = config.get("client", "useStackSizeFromNEI", false,
                 "Use the StackSize set by NEI").getBoolean();
+
+        enableCraftAmountSettingGui = config.get("client", "enableCraftAmountSettingGui", true,
+                "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
 
         draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
                 "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
@@ -80,8 +84,11 @@ public class NEEConfig {
         allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
                 "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
 
-        useStackSizeFromNEI = config.get("client","useStackSizeFromNEI",true,
+        useStackSizeFromNEI = config.get("client", "useStackSizeFromNEI", false,
                 "Use the StackSize set by NEI").getBoolean();
+
+        enableCraftAmountSettingGui = config.get("client", "enableCraftAmountSettingGui", true,
+                "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
 
         draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
                 "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();

@@ -5,46 +5,64 @@ import net.minecraft.item.ItemStack;
 
 public class Ingredient {
 
-    private PositionedStack ingredients;
+    private long requireCount;
+    private final long defaultRequireCount;
+    private final PositionedStack ingredient;
     private ItemStack craftableIngredient;
-    private final long requireCount;
     private long currentCount = 0;
 
     public Ingredient(PositionedStack ingredients) {
-        this.ingredients = ingredients;
+        this.ingredient = ingredients;
         this.requireCount = ingredients.items[0].stackSize;
+        this.defaultRequireCount = ingredients.items[0].stackSize;
     }
 
-    public void setCraftableIngredient(ItemStack craftableIngredient) {
-        this.craftableIngredient = craftableIngredient;
-    }
-
-    public PositionedStack getIngredients() {
-        return ingredients;
+    public PositionedStack getIngredient() {
+        return ingredient;
     }
 
     public ItemStack getCraftableIngredient() {
         return craftableIngredient;
     }
 
-    public long getMissingCount(){
+    public void setCraftableIngredient(ItemStack craftableIngredient) {
+        this.craftableIngredient = craftableIngredient;
+    }
+
+    public long getMissingCount() {
         return requireCount - currentCount;
+    }
+
+    public long getDefaultRequireCount() {
+        return defaultRequireCount;
     }
 
     public long getRequireCount() {
         return requireCount;
     }
 
-    public boolean isCraftable(){
+    public void setRequireCount(long requireCount) {
+        this.requireCount = requireCount;
+    }
+
+    public void setCurrentCount(long currentCount) {
+        this.currentCount = currentCount;
+    }
+
+    public boolean isCraftable() {
         return this.craftableIngredient != null;
     }
 
-    public boolean requiresToCraft(){
+    public boolean requiresToCraft() {
         return this.getMissingCount() > 0;
     }
 
-    public void addCurrentCount(long count){
-        currentCount += count;
+    public void addCount(long count) {
+        if (currentCount + count < requireCount) {
+            currentCount += count;
+        } else {
+            currentCount = requireCount;
+        }
     }
 
 }

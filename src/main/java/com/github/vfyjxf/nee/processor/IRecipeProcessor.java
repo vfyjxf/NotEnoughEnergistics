@@ -14,7 +14,7 @@ import java.util.Set;
 public interface IRecipeProcessor {
 
     @Nonnull
-    default Set<String> getAllOverlayIdentifier(){
+    default Set<String> getAllOverlayIdentifier() {
         return Collections.emptySet();
     }
 

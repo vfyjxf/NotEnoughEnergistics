@@ -29,7 +29,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 
 ## Compatible Modslist as followed：
 
-- [ ]  AppliedEnergistics2(Won't support it because AE2 doesn't register OverlayHandler)
+- [x]  AppliedEnergistics2
 - [x]  Vanilla
 - [x]  GregTech5
 - [x]  GregTech6

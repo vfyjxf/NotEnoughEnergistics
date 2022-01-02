@@ -1,5 +1,6 @@
 package com.github.vfyjxf.nee.nei;
 
+import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.slot.SlotCraftingMatrix;
@@ -9,6 +10,7 @@ import appeng.core.sync.AppEngPacket;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketNEIRecipe;
 import appeng.util.Platform;
+import appeng.util.item.AEItemStack;
 import codechicken.nei.NEIClientConfig;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
@@ -18,7 +20,8 @@ import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.PacketCraftingHelper;
+import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
+import com.github.vfyjxf.nee.network.packet.PacketOpenCraftAmount;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
 import cpw.mods.fml.common.Optional;
@@ -48,41 +51,34 @@ import java.util.List;
 
 
 public class NEECraftingHelper implements IOverlayHandler {
+    public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
     public static IngredientTracker tracker = null;
     public static int stackIndex = 1;
     public static boolean noPreview = false;
-
-    public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
         boolean isCraftingGuiTerm = firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui);
         if (isCraftingGuiTerm && NEECraftingHandler.isCraftingTableRecipe(recipe)) {
-            tracker = createTracker(firstGui, recipe, recipeIndex);
+            tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
             boolean doCraftingHelp = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview")) || Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
             noPreview = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
-            if (doCraftingHelp && !tracker.getRequireToCraftStacks().isEmpty()) {
-                NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(0), noPreview));
+            if (doCraftingHelp) {
+                if (noPreview) {
+                    if (!tracker.getRequireStacks().isEmpty()) {
+                        IAEItemStack stack = AEItemStack.create(tracker.getRequiredStack(0));
+                        NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
+                    } else {
+                        moveItem(firstGui, recipe, recipeIndex);
+                    }
+                } else if (NEEConfig.enableCraftAmountSettingGui) {
+                    NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(recipe.getResultStack(recipeIndex).item));
+                }
                 stackIndex = 1;
             } else {
                 moveItem(firstGui, recipe, recipeIndex);
             }
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private IngredientTracker createTracker(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
-        IngredientTracker tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
-
-        //check stacks in player's inventory and crafting grid
-        for (Slot slot : (List<Slot>) firstGui.inventorySlots.inventorySlots) {
-            boolean canGetStack = slot != null && slot.getHasStack() && slot.getStack().stackSize > 0 && slot.isItemValid(slot.getStack()) && slot.canTakeStack(Minecraft.getMinecraft().thePlayer);
-            if (canGetStack) {
-                tracker.addAvailableStack(slot.getStack());
-            }
-        }
-
-        return tracker;
     }
 
     /**
@@ -214,8 +210,8 @@ public class NEECraftingHelper implements IOverlayHandler {
                 }
                 if (!isGtnhNei) {
                     overlayButtons = new ArrayList<>();
-                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay1");
-                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class,guiRecipe,"overlay2");
+                    GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay1");
+                    GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay2");
                     overlayButtons.add(overlay1);
                     overlayButtons.add(overlay2);
                 }

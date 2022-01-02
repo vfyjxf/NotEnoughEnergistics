@@ -17,7 +17,6 @@ import com.github.vfyjxf.nee.utils.ItemUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,8 +28,17 @@ import java.util.Map;
  */
 public class NEECraftingHandler implements IOverlayHandler {
 
+    public static final String INPUT_KEY = "input";
     public static final String OUTPUT_KEY = "Outputs";
     public static Map<String, PositionedStack> ingredients = new HashMap<>();
+
+    public static final NEECraftingHandler INSTANCE = new NEECraftingHandler();
+
+    public static boolean isCraftingTableRecipe(IRecipeHandler recipe) {
+        TemplateRecipeHandler templateRecipeHandler = (TemplateRecipeHandler) recipe;
+        String overlayIdentifier = templateRecipeHandler.getOverlayIdentifier();
+        return "crafting".equals(overlayIdentifier) || "crafting2x2".equals(overlayIdentifier);
+    }
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
@@ -102,12 +110,12 @@ public class NEECraftingHandler implements IOverlayHandler {
                         }
 
                         //Fix ItemStack with wrong meta
-                        if (currentStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                        if (currentStack.getItemDamage() == 32767) {
                             currentStack.setItemDamage(0);
                         }
 
                         recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-                        NEECraftingHandler.ingredients.put("input" + inputIndex, positionedStack);
+                        NEECraftingHandler.ingredients.put(INPUT_KEY + inputIndex, positionedStack);
                         inputIndex++;
                     }
 
@@ -118,7 +126,7 @@ public class NEECraftingHandler implements IOverlayHandler {
 
                         ItemStack outputStack = positionedStack.item.copy();
                         //Fix ItemStack with wrong meta(maybe ?)
-                        if (outputStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                        if (outputStack.getItemDamage() == 32767) {
                             outputStack.setItemDamage(0);
                         }
 
@@ -155,12 +163,12 @@ public class NEECraftingHandler implements IOverlayHandler {
                 }
 
                 //Fix ItemStack with wrong meta
-                if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                if (stack.getItemDamage() == 32767) {
                     stack.setItemDamage(0);
                 }
 
                 recipeInputs.setTag("#" + slotIndex, stack.writeToNBT(new NBTTagCompound()));
-                NEECraftingHandler.ingredients.put("input" + slotIndex, positionedStack);
+                NEECraftingHandler.ingredients.put(INPUT_KEY + slotIndex, positionedStack);
             }
         }
         return new PacketNEIPatternRecipe(recipeInputs, null);
@@ -269,12 +277,6 @@ public class NEECraftingHandler implements IOverlayHandler {
             default:
                 return 0;
         }
-    }
-
-    public static boolean isCraftingTableRecipe(IRecipeHandler recipe) {
-        TemplateRecipeHandler templateRecipeHandler = (TemplateRecipeHandler) recipe;
-        String overlayIdentifier = templateRecipeHandler.getOverlayIdentifier();
-        return "crafting".equals(overlayIdentifier) || "crafting2x2".equals(overlayIdentifier);
     }
 
 }

@@ -1,11 +1,13 @@
 package com.github.vfyjxf.nee.client;
 
+import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiInterface;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.slot.SlotFake;
+import appeng.util.item.AEItemStack;
 import codechicken.nei.NEIClientConfig;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.VisiblityData;
@@ -14,7 +16,7 @@ import codechicken.nei.api.TaggedInventoryArea;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.PacketCraftingHelper;
+import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
 import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
@@ -71,8 +73,9 @@ public class GuiHandler implements INEIGuiHandler {
         boolean isGuiCraftingTerm = event.gui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(event.gui);
         boolean isGuiCraftConfirm = currentScreen instanceof GuiCraftConfirm || GuiUtils.isWirelessGuiCraftConfirm(currentScreen);
         if (isGuiCraftingTerm && isGuiCraftConfirm && tracker != null) {
-            if (tracker.getRequireToCraftStacks().size() > 1 && stackIndex < tracker.getRequireToCraftStacks().size()) {
-                NEENetworkHandler.getInstance().sendToServer(new PacketCraftingHelper(tracker.getRequireToCraftStacks().get(stackIndex), noPreview));
+            if (!tracker.getRequireStacks().isEmpty() && stackIndex < tracker.getRequireStacks().size()) {
+                IAEItemStack stack = AEItemStack.create(tracker.getRequireStacks().get(stackIndex));
+                NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
                 stackIndex++;
             }
         } else if (!isGuiCraftingTerm && isGuiCraftConfirm && tracker != null) {
