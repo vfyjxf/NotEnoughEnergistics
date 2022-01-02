@@ -17,6 +17,7 @@ import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import com.github.vfyjxf.nee.network.packet.PacketOpenCraftAmount;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
+import com.github.vfyjxf.nee.utils.ModIds;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
@@ -24,10 +25,13 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.gui.recipes.RecipesGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Optional;
 import org.lwjgl.input.Keyboard;
 import p455w0rd.wct.container.ContainerWCT;
 import p455w0rd.wct.init.ModNetworking;
@@ -82,9 +86,8 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
                         } else if (NEEConfig.enableCraftAmountSettingGui && tracker.hasCraftableIngredient()) {
                             if (!GuiUtils.isWirelessCraftingTermContainer(container)) {
                                 NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(getRecipeOutput(recipeLayout)));
-                            } else {
-                                ContainerWCT wct = (ContainerWCT) container;
-                                NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(getRecipeOutput(recipeLayout), wct.isWTBauble(), wct.getWTSlot()));
+                            } else if (Loader.isModLoaded(ModIds.WCT)) {
+                                openWirelessCraftingAmountGui(container, recipeLayout);
                             }
                         }
                     } else {
@@ -155,7 +158,7 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
             if (container instanceof ContainerCraftingTerm) {
                 NetworkHandler.instance().sendToServer(new PacketJEIRecipe(recipe));
             } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
-                ModNetworking.instance().sendToServer(new p455w0rd.wct.sync.packets.PacketJEIRecipe(recipe));
+                moveItemsForWirelessTerm(recipe);
             }
         } catch (IOException e) {
             AELog.debug(e);
@@ -171,6 +174,23 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
             }
         }
         return recipeOutput;
+    }
+
+    @Optional.Method(modid = ModIds.WCT)
+    private void openWirelessCraftingAmountGui(Container container, IRecipeLayout recipeLayout) {
+        if (container instanceof ContainerWCT) {
+            ContainerWCT wct = (ContainerWCT) container;
+            NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(getRecipeOutput(recipeLayout), wct.isWTBauble(), wct.getWTSlot()));
+        }
+    }
+
+    @Optional.Method(modid = ModIds.WCT)
+    private void moveItemsForWirelessTerm(NBTTagCompound recipe) {
+        try {
+            ModNetworking.instance().sendToServer(new p455w0rd.wct.sync.packets.PacketJEIRecipe(recipe));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

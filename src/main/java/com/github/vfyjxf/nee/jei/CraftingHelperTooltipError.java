@@ -54,8 +54,7 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
                 } else if (ingredient.requiresToCraft()) {
                     drawMissingItemTooltip = true;
                     ingredient.getIngredient().drawHighlight(minecraft, missingColor, recipeX, recipeY);
-                }
-                if (NEEConfig.enableCraftAmountSettingGui && !ingredient.isCraftable()) {
+                }else if (NEEConfig.enableCraftAmountSettingGui && !ingredient.isCraftable()) {
                     drawMissingItemTooltip = true;
                     ingredient.getIngredient().drawHighlight(minecraft, missingColor, recipeX, recipeY);
                 }

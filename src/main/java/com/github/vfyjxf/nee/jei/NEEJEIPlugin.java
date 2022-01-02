@@ -7,6 +7,7 @@ import appeng.client.gui.AEBaseGui;
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.utils.ModIds;
 import com.github.vfyjxf.nee.utils.WrappedTable;
 import com.google.common.collect.Table.Cell;
 import mezz.jei.api.IModPlugin;
@@ -17,7 +18,9 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.collect.Table;
 import mezz.jei.config.Constants;
 import mezz.jei.recipes.RecipeTransferRegistry;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.Optional;
 import p455w0rd.wct.container.ContainerWCT;
 
 /**
@@ -44,7 +47,7 @@ public class NEEJEIPlugin implements IModPlugin {
                 craftingHandlerFound = true;
                 continue;
             }
-            if (isEqualsGuiWirelessCrafting(currentCell.getRowKey())) {
+            if (Loader.isModLoaded(ModIds.WCT) && isEqualsGuiWirelessCrafting(currentCell.getRowKey())) {
                 wirelessCraftingHandlerFound = true;
                 continue;
             }
@@ -59,8 +62,10 @@ public class NEEJEIPlugin implements IModPlugin {
             newRegistry = new WrappedTable<>(newRegistry);
         }
 
-        if (!addWirelessCraftingHandler(newRegistry) && !wirelessCraftingHandlerFound) {
-            newRegistry = new WrappedTable<>(newRegistry);
+        if (Loader.isModLoaded(ModIds.WCT)) {
+            if (!addWirelessCraftingHandler(newRegistry) && !wirelessCraftingHandlerFound) {
+                newRegistry = new WrappedTable<>(newRegistry);
+            }
         }
 
         ObfuscationReflectionHelper.setPrivateValue(RecipeTransferRegistry.class, (RecipeTransferRegistry) registry.getRecipeTransferRegistry(), newRegistry, "recipeTransferHandlers");
@@ -69,6 +74,7 @@ public class NEEJEIPlugin implements IModPlugin {
 
     }
 
+    @Optional.Method(modid = ModIds.WCT)
     private boolean addWirelessCraftingHandler(Table<Class<?>, String, IRecipeTransferHandler<?>> newRegistry) {
         try {
             Class.forName("p455w0rd.wct.container.ContainerWCT");

@@ -13,6 +13,10 @@ public class NEEClassTransformer implements IClassTransformer {
     private final static String METHOD_NAME = "init";
     private final static String METHOD_TARGET = "(Lnet/minecraft/inventory/Container;Lnet/minecraft/entity/player/EntityPlayer;)V";
 
+    private final static String HELPER_CLASS_NAME = "com/github/vfyjxf/nee/asm/JEIHelper";
+    private final static String HELPER_METHOD_NAME = "setButtonEnable";
+    private final static String HELPER_METHOD_TARGET = "(Lnet/minecraft/client/gui/GuiButton;)V";
+
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         String internalName = transformedName.replace('.', '/');
@@ -35,8 +39,7 @@ public class NEEClassTransformer implements IClassTransformer {
                             LabelNode label = new LabelNode();
                             insnList.add(new JumpInsnNode(IFEQ, label));
                             insnList.add(new VarInsnNode(ALOAD, 0));
-                            insnList.add(new InsnNode(ICONST_1));
-                            insnList.add(new FieldInsnNode(PUTFIELD, "mezz/jei/gui/recipes/RecipeTransferButton", "enabled", "Z"));
+                            insnList.add(new MethodInsnNode(INVOKESTATIC, HELPER_CLASS_NAME, HELPER_METHOD_NAME, HELPER_METHOD_TARGET, false));
                             insnList.add(label);
                             methodNode.instructions.insertBefore(instruction, insnList);
                         }
