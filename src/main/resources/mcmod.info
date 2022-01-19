@@ -2,16 +2,16 @@
   {
     "modid": "${modId}",
     "name": "${modName}",
-    "description": "${mod_description}",
+    "description": "${modDescription}",
     "version": "${modVersion}",
     "mcversion": "${mcVersion}",
     "url": "",
     "updateUrl": "",
     "authorList": [
-      "${mod_author}"
+      "${modAuthor}"
     ],
-    "credits": "${mod_credits}",
-    "logoFile": "${mod_logo}",
+    "credits": "${modCredits}",
+    "logoFile": "${modLogo}",
     "screenshots": [],
     "dependencies": []
   }
