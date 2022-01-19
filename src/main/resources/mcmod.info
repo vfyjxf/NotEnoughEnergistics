@@ -4,14 +4,14 @@
     "name": "${modName}",
     "description": "This mod replaces AE2's default NEI integration for the Pattern Terminal.",
     "version": "${modVersion}",
-    "mcversion": "${mcVersion}",
+    "mcversion": "${minecraftVersion}",
     "url": "",
     "updateUrl": "",
     "authorList": [
-      "${modAuthor}"
+      "vfyjxf"
     ],
-    "credits": "${modCredits}",
-    "logoFile": "${modLogo}",
+    "credits": "vfyjxf",
+    "logoFile": "assets/neenergistics/meta/logo.png",
     "screenshots": [],
     "dependencies": []
   }
