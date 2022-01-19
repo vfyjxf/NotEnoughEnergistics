@@ -2,7 +2,7 @@
   {
     "modid": "${modId}",
     "name": "${modName}",
-    "description": "${modDescription}",
+    "description": "This mod replaces AE2's default NEI integration for the Pattern Terminal.",
     "version": "${modVersion}",
     "mcversion": "${mcVersion}",
     "url": "",
