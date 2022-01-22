@@ -47,20 +47,22 @@ public class GuiHandler implements INEIGuiHandler {
     public void onRenderTick(TickEvent.RenderTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             Minecraft mc = Minecraft.getMinecraft();
-            int dWheel = Mouse.getDWheel();
             boolean isPatternTerm = mc.currentScreen instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(mc.currentScreen);
             boolean isInterface = mc.currentScreen instanceof GuiInterface;
-            if (dWheel != 0 && (isPatternTerm || isInterface)) {
-                int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
-                int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
-                Slot currentSlot = ((GuiContainer) mc.currentScreen).getSlotAtPosition(x, y);
-                if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
-                    //try to change current itemstack to next ingredient;
-                    if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.ingredient")) && GuiUtils.isCraftingSlot(currentSlot)) {
-                        handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, dWheel);
-                    } else if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.count"))) {
-                        int changeCount = dWheel / 120;
-                        NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+            if (isPatternTerm || isInterface) {
+                int dWheel = Mouse.getDWheel();
+                if (dWheel != 0) {
+                    int x = Mouse.getEventX() * mc.currentScreen.width / mc.displayWidth;
+                    int y = mc.currentScreen.height - Mouse.getEventY() * mc.currentScreen.height / mc.displayHeight - 1;
+                    Slot currentSlot = ((GuiContainer) mc.currentScreen).getSlotAtPosition(x, y);
+                    if (currentSlot instanceof SlotFake && currentSlot.getHasStack()) {
+                        //try to change current itemstack to next ingredient;
+                        if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.ingredient")) && GuiUtils.isCraftingSlot(currentSlot)) {
+                            handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, dWheel);
+                        } else if (Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.count"))) {
+                            int changeCount = dWheel / 120;
+                            NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                        }
                     }
                 }
             }
