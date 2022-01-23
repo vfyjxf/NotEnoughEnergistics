@@ -43,8 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.vfyjxf.nee.client.MouseHandler.craftingHelperNoPreview;
-import static com.github.vfyjxf.nee.client.MouseHandler.craftingHelperPreview;
+import static com.github.vfyjxf.nee.client.KeyBindings.craftingHelperNoPreview;
+import static com.github.vfyjxf.nee.client.KeyBindings.craftingHelperPreview;
 
 public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements IRecipeTransferHandler<C> {
 

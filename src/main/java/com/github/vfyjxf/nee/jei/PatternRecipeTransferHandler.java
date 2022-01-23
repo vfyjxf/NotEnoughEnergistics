@@ -2,6 +2,7 @@ package com.github.vfyjxf.nee.jei;
 
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.config.ItemCombination;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeTransfer;
@@ -15,18 +16,12 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.gui.recipes.RecipesGui;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.github.vfyjxf.nee.jei.NEEJEIPlugin.registry;
+import java.util.*;
 
 /**
  * @author vfyjxf
@@ -50,15 +45,6 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
     public IRecipeTransferError transferRecipe(ContainerPatternTerm container, IRecipeLayout recipeLayout, EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         String recipeType = recipeLayout.getRecipeCategory().getUid();
         boolean isCraftingRecipe = isCraftingRecipe(recipeType);
-        if (container.isCraftingMode()) {
-            if (!isCraftingRecipe && !NEEConfig.allowAutomaticSwitchPatternTerminalMode) {
-                return registry.getJeiHelpers().recipeTransferHandlerHelper().createUserErrorWithTooltip(I18n.format("jei.tooltip.nee.need.processing"));
-            }
-        } else {
-            if (isCraftingRecipe && !NEEConfig.allowAutomaticSwitchPatternTerminalMode) {
-                return registry.getJeiHelpers().recipeTransferHandlerHelper().createUserErrorWithTooltip(I18n.format("jei.tooltip.nee.need.crating"));
-            }
-        }
         if (doTransfer) {
             final Map<Integer, ? extends IGuiIngredient<ItemStack>> ingredients = recipeLayout.getItemStacks().getGuiIngredients();
             final NBTTagCompound recipeInputs = new NBTTagCompound();
@@ -83,12 +69,18 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                             if (currentStack.isEmpty()) {
                                 continue;
                             }
-                            for (StackProcessor storedIngredient : tInputs) {
-                                ItemStack storedStack = storedIngredient.getIngredient().getDisplayedIngredient();
-                                if (storedStack != null && currentStack.isItemEqual(storedStack) && ItemStack.areItemStackTagsEqual(currentStack, storedStack)) {
-                                    if (currentStack.getCount() + storedIngredient.getStackSize() <= storedStack.getMaxStackSize()) {
-                                        find = true;
-                                        storedIngredient.setStackSize(currentStack.getCount() + storedIngredient.getStackSize());
+                            ItemCombination currentValue = ItemCombination.valueOf(NEEConfig.itemCombinationMode);
+                            if (currentValue != ItemCombination.DISABLED) {
+                                boolean isWhitelist = currentValue == ItemCombination.WHITELIST && Arrays.asList(NEEConfig.itemCombinationWhitelist).contains(recipeType);
+                                if (currentValue == ItemCombination.ENABLED || isWhitelist) {
+                                    for (StackProcessor storedIngredient : tInputs) {
+                                        ItemStack storedStack = storedIngredient.getIngredient().getDisplayedIngredient();
+                                        if (storedStack != null && currentStack.isItemEqual(storedStack) && ItemStack.areItemStackTagsEqual(currentStack, storedStack)) {
+                                            if (currentStack.getCount() + storedIngredient.getStackSize() <= storedStack.getMaxStackSize()) {
+                                                find = true;
+                                                storedIngredient.setStackSize(currentStack.getCount() + storedIngredient.getStackSize());
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -97,7 +89,7 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                             }
                         }
                     } else {
-                        if (outputIndex >= 3 || currentStack.isEmpty() || (container.isCraftingMode() && !NEEConfig.allowAutomaticSwitchPatternTerminalMode)) {
+                        if (outputIndex >= 3 || currentStack.isEmpty() || (container.isCraftingMode())) {
                             continue;
                         }
                         recipeOutputs.setTag(OUTPUT_KEY + outputIndex, currentStack.writeToNBT(new NBTTagCompound()));

@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 /**
  * @author vfyjxf
  */
-public class PacketStackCountChange implements IMessage, IMessageHandler<PacketStackCountChange, IMessage> {
+public class PacketStackSizeChange implements IMessage, IMessageHandler<PacketStackSizeChange, IMessage> {
 
     private int slotIndex;
     private int changeCount;
@@ -28,11 +28,11 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
         return changeCount;
     }
 
-    public PacketStackCountChange() {
+    public PacketStackSizeChange() {
 
     }
 
-    public PacketStackCountChange(int slotIndex, int changeCount) {
+    public PacketStackSizeChange(int slotIndex, int changeCount) {
         this.slotIndex = slotIndex;
         this.changeCount = changeCount;
     }
@@ -50,7 +50,7 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
     }
 
     @Override
-    public IMessage onMessage(PacketStackCountChange message, MessageContext ctx) {
+    public IMessage onMessage(PacketStackSizeChange message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         Container container = player.openContainer;
         player.getServerWorld().addScheduledTask(() -> {

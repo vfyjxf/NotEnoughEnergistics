@@ -20,7 +20,7 @@ public class NEENetworkHandler {
 
     public static void init() {
         NEENetworkHandler.getInstance().registerMessage(PacketRecipeTransfer.class, PacketRecipeTransfer.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketStackCountChange.class, PacketStackCountChange.class, nextID(), Side.SERVER);
+        NEENetworkHandler.getInstance().registerMessage(PacketStackSizeChange.class, PacketStackSizeChange.class, nextID(), Side.SERVER);
         NEENetworkHandler.getInstance().registerMessage(PacketSlotStackChange.class, PacketSlotStackChange.class, nextID(), Side.SERVER);
         NEENetworkHandler.getInstance().registerMessage(PacketCraftingRequest.class, PacketCraftingRequest.class, nextID(), Side.SERVER);
         NEENetworkHandler.getInstance().registerMessage(PacketOpenGui.class, PacketOpenGui.class, nextID(), Side.SERVER);

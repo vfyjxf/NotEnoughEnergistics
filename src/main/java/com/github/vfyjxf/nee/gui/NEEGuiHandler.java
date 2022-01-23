@@ -8,9 +8,11 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.AEPartLocation;
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
+import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.parts.reporting.PartCraftingTerminal;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.utils.ModIds;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -37,8 +39,8 @@ public class NEEGuiHandler implements IGuiHandler {
 
 
     public static final int CRAFTING_AMOUNT_ID = 0;
-    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 1;
-
+    public static final int CRAFTING_CONFIRM_ID = 1;
+    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 2;
 
     @Nullable
     @Override
@@ -52,11 +54,22 @@ public class NEEGuiHandler implements IGuiHandler {
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
-                    if (guiId == CRAFTING_AMOUNT_ID) {
-                        if (part instanceof PartCraftingTerminal) {
-                            return updateGui(new ContainerCraftingAmount(player.inventory, part), world, x, y, z, side, part);
-                        }
+                    switch (guiId) {
+                        case CRAFTING_AMOUNT_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new ContainerCraftingAmount(player.inventory, part), world, x, y, z, side, part);
+                            }
+                            return null;
+                        case CRAFTING_CONFIRM_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new ContainerCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                            }
+                            return null;
+
+                        default:
+                            break;
                     }
+
                 }
             }
         } else if (Loader.isModLoaded(ModIds.WCT)) {
@@ -82,10 +95,21 @@ public class NEEGuiHandler implements IGuiHandler {
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
-                    if (guiId == CRAFTING_AMOUNT_ID) {
-                        if (part instanceof PartCraftingTerminal) {
-                            return updateGui(new GuiCraftingAmount(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
-                        }
+
+                    switch (guiId) {
+                        case CRAFTING_AMOUNT_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new GuiCraftingAmount(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                            }
+                            return null;
+                        case CRAFTING_CONFIRM_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new GuiCraftingConfirm(Minecraft.getMinecraft().currentScreen, player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                            }
+                            return null;
+
+                        default:
+                            break;
                     }
                 }
 
@@ -127,8 +151,8 @@ public class NEEGuiHandler implements IGuiHandler {
         player.openGui(instance, (ID << 4), world, x, y, z);
     }
 
-    @Optional.Method(modid = ModIds.WCT)
     @SuppressWarnings("unchecked")
+    @Optional.Method(modid = ModIds.WCT)
     private ITerminalHost getCraftingTerminal(final EntityPlayer player, final boolean isBauble, final int slot) {
         ItemStack wirelessTerminal;
         if (slot >= 0) {

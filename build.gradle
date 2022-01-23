@@ -108,6 +108,7 @@ task sourcesJar(type: Jar) {
 jar {
     appendix project.minecraft.version
     manifest.attributes(
+            'FMLAT': 'neenergistics_at.cfg',
             'FMLCorePlugin': 'com.github.vfyjxf.nee.asm.NEELoadingPlugin',
             'FMLCorePluginContainsFMLMod': 'true'
     )

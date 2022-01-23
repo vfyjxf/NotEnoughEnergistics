@@ -15,7 +15,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.vfyjxf.nee.client.MouseHandler.craftingHelperPreview;
+import static com.github.vfyjxf.nee.client.KeyBindings.craftingHelperPreview;
 import static mezz.jei.api.recipe.transfer.IRecipeTransferError.Type.USER_FACING;
 
 public class CraftingHelperTooltipError implements IRecipeTransferError {

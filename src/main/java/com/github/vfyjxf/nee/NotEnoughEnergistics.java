@@ -1,10 +1,7 @@
 package com.github.vfyjxf.nee;
 
-import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.gui.NEEGuiHandler;
-import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.proxy.CommonProxy;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -38,8 +35,7 @@ public class NotEnoughEnergistics {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        NEENetworkHandler.init();
-        MinecraftForge.EVENT_BUS.register(new NEEConfig());
+        proxy.preInit(event);
     }
 
     @EventHandler

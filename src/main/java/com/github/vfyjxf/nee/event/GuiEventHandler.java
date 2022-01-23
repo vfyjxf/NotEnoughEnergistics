@@ -1,24 +1,26 @@
-package com.github.vfyjxf.nee.client;
+package com.github.vfyjxf.nee.event;
 
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.implementations.GuiInterface;
 import appeng.client.gui.implementations.GuiPatternTerm;
+import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
+import com.github.vfyjxf.nee.client.KeyBindings;
+import com.github.vfyjxf.nee.config.ItemCombination;
 import com.github.vfyjxf.nee.config.NEEConfig;
+import com.github.vfyjxf.nee.gui.widgets.GuiImgButtonEnableCombination;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
-import com.github.vfyjxf.nee.network.packet.PacketStackCountChange;
+import com.github.vfyjxf.nee.network.packet.PacketStackSizeChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -28,14 +30,12 @@ import java.util.List;
 
 import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.INPUT_KEY;
 
-public class MouseHandler {
-    public static final KeyBinding recipeIngredientChange = new KeyBinding("key.neenergistics.recipe.ingredient.change", KeyConflictContext.GUI, Keyboard.KEY_LSHIFT, "neenergistics.NotEnoughEnergistics");
-    public static final KeyBinding stackCountChange = new KeyBinding("key.neenergistics.stack.count.change", KeyConflictContext.GUI, Keyboard.KEY_LCONTROL, "neenergistics.NotEnoughEnergistics");
-    public static final KeyBinding craftingHelperPreview = new KeyBinding("key.neenergistics.crafting.helper.preview", KeyConflictContext.GUI, Keyboard.KEY_LCONTROL, "neenergistics.NotEnoughEnergistics");
-    public static final KeyBinding craftingHelperNoPreview = new KeyBinding("key.neenergistics.crafting.helper.noPreview", KeyConflictContext.GUI, Keyboard.KEY_LMENU, "neenergistics.NotEnoughEnergistics");
+public class GuiEventHandler {
+
+    private GuiImgButtonEnableCombination buttonCombination;
 
     @SubscribeEvent
-    public void onMouseInput(GuiScreenEvent.MouseInputEvent.Post event) {
+    public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre event) {
         Minecraft mc = Minecraft.getMinecraft();
         int dWheel = Mouse.getEventDWheel();
         boolean isSupportedGui = mc.currentScreen instanceof GuiPatternTerm || mc.currentScreen instanceof GuiInterface;
@@ -44,11 +44,13 @@ public class MouseHandler {
             Slot currentSlot = aeBaseGui.getSlotUnderMouse();
             if (currentSlot != null && currentSlot.getHasStack()) {
                 if (currentSlot instanceof SlotFake) {
-                    if (Keyboard.isKeyDown(recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
+                    if (Keyboard.isKeyDown(KeyBindings.recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
                         handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, dWheel);
-                    } else if (Keyboard.isKeyDown(stackCountChange.getKeyCode())) {
+                        event.setCanceled(true);
+                    } else if (Keyboard.isKeyDown(KeyBindings.stackCountChange.getKeyCode())) {
                         int changeCount = dWheel / 120;
-                        NEENetworkHandler.getInstance().sendToServer(new PacketStackCountChange(currentSlot.slotNumber, changeCount));
+                        NEENetworkHandler.getInstance().sendToServer(new PacketStackSizeChange(currentSlot.slotNumber, changeCount));
+                        event.setCanceled(true);
                     }
                 }
             }
@@ -107,6 +109,46 @@ public class MouseHandler {
             }
         }
         return craftingSlots;
+    }
+
+    @SubscribeEvent
+    public void onInitGui(GuiScreenEvent.InitGuiEvent.Post event) {
+        if (event.getGui() instanceof GuiPatternTerm) {
+            GuiPatternTerm gui = (GuiPatternTerm) event.getGui();
+            buttonCombination = new GuiImgButtonEnableCombination(gui.guiLeft + 84, gui.guiTop + gui.ySize - 163, ItemCombination.valueOf(NEEConfig.itemCombinationMode));
+            event.getButtonList().add(buttonCombination);
+        }
+    }
+
+    @SubscribeEvent
+    public void onActionPerformed(GuiScreenEvent.ActionPerformedEvent.Pre event) {
+        if (event.getButton() instanceof GuiImgButtonEnableCombination) {
+            GuiImgButtonEnableCombination button = (GuiImgButtonEnableCombination) event.getButton();
+            int ordinal = Mouse.getEventButton() != 2 ? button.getCurrentValue().ordinal() + 1 : button.getCurrentValue().ordinal() - 1;
+
+            if (ordinal >= ItemCombination.values().length) {
+                ordinal = 0;
+            }
+            if (ordinal < 0) {
+                ordinal = ItemCombination.values().length - 1;
+            }
+            button.setValue(ItemCombination.values()[ordinal]);
+            NEEConfig.setItemCombinationMode(ItemCombination.values()[ordinal].name());
+        }
+    }
+
+    @SubscribeEvent
+    public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
+        if (event.getGui() instanceof GuiPatternTerm) {
+            ContainerPatternTerm container = (ContainerPatternTerm) ((GuiPatternTerm) event.getGui()).inventorySlots;
+            if (container.isCraftingMode()) {
+                buttonCombination.enabled = false;
+                buttonCombination.visible = false;
+            } else {
+                buttonCombination.enabled = true;
+                buttonCombination.visible = true;
+            }
+        }
     }
 
 }

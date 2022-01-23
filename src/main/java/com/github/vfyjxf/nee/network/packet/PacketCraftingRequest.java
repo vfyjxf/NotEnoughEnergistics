@@ -11,10 +11,9 @@ import appeng.container.ContainerOpenContext;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.core.AELog;
-import appeng.core.sync.GuiBridge;
-import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
+import com.github.vfyjxf.nee.gui.NEEGuiHandler;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ModIds;
 import io.netty.buffer.ByteBuf;
@@ -118,7 +117,7 @@ public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCr
                     final ContainerOpenContext context = container.getOpenContext();
                     if (context != null) {
                         final TileEntity te = context.getTile();
-                        Platform.openGUI(player, te, context.getSide(), GuiBridge.GUI_CRAFTING_CONFIRM);
+                        NEEGuiHandler.openGui(player, NEEGuiHandler.CRAFTING_CONFIRM_ID, te, context.getSide());
                         if (player.openContainer instanceof ContainerCraftConfirm) {
                             final ContainerCraftConfirm ccc = (ContainerCraftConfirm) player.openContainer;
                             ccc.setAutoStart(message.isNoPreview());
@@ -152,7 +151,7 @@ public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCr
                     final ContainerOpenContext context = container.getOpenContext();
                     if (context != null) {
                         final TileEntity te = context.getTile();
-                        Platform.openGUI(player, te, context.getSide(), GuiBridge.GUI_CRAFTING_CONFIRM);
+                        NEEGuiHandler.openGui(player, NEEGuiHandler.CRAFTING_CONFIRM_ID, te, context.getSide());
                         if (player.openContainer instanceof ContainerCraftConfirm) {
                             final ContainerCraftConfirm ccc = (ContainerCraftConfirm) player.openContainer;
                             ccc.setAutoStart(message.isNoPreview());

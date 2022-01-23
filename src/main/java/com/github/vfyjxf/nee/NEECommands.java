@@ -12,14 +12,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.client.config.IConfigElement;
-import net.minecraftforge.fml.common.Loader;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +41,7 @@ public class NEECommands extends CommandBase {
         if (args.length == 1) {
             return CommandBase.getListOfStringsMatchingLastWord(args, "add", "reload");
         } else if (args.length == 2) {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "blacklist", "priorityItem", "priorityMod");
+            return CommandBase.getListOfStringsMatchingLastWord(args, "blacklist", "priorityItem", "priorityMod", "itemCombinationWhitelist");
         }
         return Collections.emptyList();
     }
@@ -66,39 +61,33 @@ public class NEECommands extends CommandBase {
                             itemJsonString = new Gson().toJson(itemJsonObject);
                         }
                         String[] itemList = "blacklist".equalsIgnoreCase(args[1]) ? NEEConfig.itemBlacklist : NEEConfig.itemPriorityList;
-                        String name = "blacklist".equalsIgnoreCase(args[1]) ? "itemBlacklist" : "itemPriorityList";
                         List<String> newItemList = new ArrayList<>(Arrays.asList(itemList));
                         for (String currentJsonString : itemList) {
                             if (currentJsonString.equals(itemJsonString)) {
                                 return;
                             }
                         }
-
                         newItemList.add(itemJsonString);
-                        for (IConfigElement configElement : ConfigElement.from(NEEConfig.class).getChildElements()) {
-                            if (configElement.getName().equals(name)) {
-                                configElement.set(newItemList.toArray());
-                            }
+                        if ("blacklist".equalsIgnoreCase(args[1])) {
+                            NEEConfig.setItemBlacklist(newItemList.toArray(new String[0]));
+                        } else {
+                            NEEConfig.setItemPriorityList(newItemList.toArray(new String[0]));
                         }
-                        Configuration config = new Configuration(new File(Loader.instance().getConfigDir(), "config/NotEnoughEnergistics.cfg"));
-                        config.save();
-                        ConfigManager.sync(NotEnoughEnergistics.MODID, Config.Type.INSTANCE);
                     }
                 } else if ("priorityMod".equalsIgnoreCase(args[1]) && args.length == 3) {
                     String modid = args[2];
                     if (!ItemUtils.hasModId(modid)) {
-                        for (IConfigElement configElement : ConfigElement.from(NEEConfig.class).getChildElements()) {
-                            if ("modPriorityList".equals(configElement.getName())) {
-                                List<String> newModIDList = new ArrayList<>(Arrays.asList(NEEConfig.modPriorityList));
-                                newModIDList.add(modid);
-                                configElement.set(newModIDList.toArray());
-                                Configuration config = new Configuration(new File(Loader.instance().getConfigDir(), "config/NotEnoughEnergistics.cfg"));
-                                config.save();
-                                ConfigManager.sync(NotEnoughEnergistics.MODID, Config.Type.INSTANCE);
-                            }
-                        }
+                        List<String> newModIDList = new ArrayList<>(Arrays.asList(NEEConfig.modPriorityList));
+                        newModIDList.add(modid);
+                        NEEConfig.setModPriorityList(newModIDList.toArray(new String[0]));
                     }
-
+                } else if ("itemCombinationWhitelist".equalsIgnoreCase(args[1]) && args.length == 3) {
+                    String recipeType = args[2];
+                    if (!Arrays.asList(NEEConfig.itemCombinationWhitelist).contains(recipeType)) {
+                        List<String> newLists = new ArrayList<>(Arrays.asList(NEEConfig.itemCombinationWhitelist));
+                        newLists.add(recipeType);
+                        NEEConfig.setItemCombinationWhitelist(newLists.toArray(new String[0]));
+                    }
                 }
             } else if ("reload".equalsIgnoreCase(args[0])) {
                 ConfigManager.sync(NotEnoughEnergistics.MODID, Config.Type.INSTANCE);
