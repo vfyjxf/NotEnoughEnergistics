@@ -28,13 +28,17 @@ public class NEECommands extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "";
+        return "See /nee help";
     }
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length != 0) {
-            if ("processor".equalsIgnoreCase(args[0])) {
+            if ("help".equalsIgnoreCase(args[0])) {
+                sender.addChatMessage(new ChatComponentText("Usage:"));
+                sender.addChatMessage(new ChatComponentText("/nee add blacklist/priorityItem processor_id identifier"));
+                sender.addChatMessage(new ChatComponentText("/nee add blacklist/priorityItem/itemCombination identifier"));
+            } else if ("processor".equalsIgnoreCase(args[0])) {
                 for (IRecipeProcessor processor : RecipeProcessor.recipeProcessors) {
                     logger.info("RecipeProcessor:" + processor.getRecipeProcessorId() + "  identifier:");
                     for (String ident : processor.getAllOverlayIdentifier()) {
@@ -47,9 +51,13 @@ public class NEECommands extends CommandBase {
                     if (currentStack != null) {
                         String currentItemJsonString = ItemUtils.toItemJsonString(currentStack);
                         JsonObject itemJsonObject = new JsonParser().parse(currentItemJsonString).getAsJsonObject();
-                        if (args.length == 3) {
+                        if (args.length >= 3) {
                             boolean hasRecipeProcessor = ItemUtils.hasRecipeProcessor(args[2]);
                             boolean hasOverlayIdentifier = ItemUtils.hasOverlayIdentifier(args[2]);
+
+                            if (args.length == 4) {
+                                hasOverlayIdentifier = ItemUtils.hasOverlayIdentifier(args[3]);
+                            }
 
                             if (hasRecipeProcessor) {
                                 itemJsonObject.addProperty("recipeProcessor", args[2]);
@@ -58,7 +66,7 @@ public class NEECommands extends CommandBase {
                             }
 
                             if (hasOverlayIdentifier) {
-                                itemJsonObject.addProperty("identifier", args[2]);
+                                itemJsonObject.addProperty("identifier", args.length == 4 ? args[3] : args[2]);
                             } else if (!hasRecipeProcessor) {
                                 sender.addChatMessage(new ChatComponentText("Can't find identifier: " + args[2]));
                             }
@@ -66,7 +74,6 @@ public class NEECommands extends CommandBase {
                         }
                         String newJsonString = new Gson().toJson(itemJsonObject);
                         String[] oldList = "blacklist".equalsIgnoreCase(args[1]) ? NEEConfig.transformBlacklist : NEEConfig.transformPriorityList;
-                        String key = "blacklist".equalsIgnoreCase(args[1]) ? "transformItemBlacklist" : "transformItemPriorityList";
                         List<String> newList = new ArrayList<>(Arrays.asList(oldList));
                         for (String currentJsonString : oldList) {
                             if (currentJsonString.equals(newJsonString)) {
@@ -74,18 +81,29 @@ public class NEECommands extends CommandBase {
                             }
                         }
                         newList.add(newJsonString);
-                        NEEConfig.config.getCategory("client").get(key).set(newList.toArray(new String[0]));
-                        NEEConfig.config.save();
-                        NEEConfig.reload();
+                        if ("blacklist".equalsIgnoreCase(args[1])) {
+                            NEEConfig.setTransformBlacklist(newList.toArray(new String[0]));
+                        } else {
+                            NEEConfig.setTransformPriorityList(newList.toArray(new String[0]));
+                        }
                     }
                 } else if ("priorityMod".equalsIgnoreCase(args[1]) && args.length == 3) {
                     String modid = args[2];
                     if (!ItemUtils.hasModId(modid)) {
                         List<String> newList = new ArrayList<>(Arrays.asList(NEEConfig.transformPriorityModList));
                         newList.add(modid);
-                        NEEConfig.config.getCategory("client").get("transformPriorityModList").set(newList.toArray(new String[0]));
-                        NEEConfig.config.save();
-                        NEEConfig.reload();
+                        NEEConfig.setTransformPriorityModList(newList.toArray(new String[0]));
+                    }
+                } else if ("itemCombination".equalsIgnoreCase(args[1]) && args.length == 3) {
+                    String identifier = args[2];
+                    if (!Arrays.asList(NEEConfig.itemCombinationWhitelist).contains(identifier)) {
+                        if (ItemUtils.hasOverlayIdentifier(args[2])) {
+                            List<String> newLists = new ArrayList<>(Arrays.asList(NEEConfig.itemCombinationWhitelist));
+                            newLists.add(identifier);
+                            NEEConfig.setItemCombinationWhitelist(newLists.toArray(new String[0]));
+                        } else {
+                            sender.addChatMessage(new ChatComponentText("Can't find identifier: " + args[2]));
+                        }
                     }
                 }
             } else if ("reload".equalsIgnoreCase(args[0])) {
@@ -98,8 +116,8 @@ public class NEECommands extends CommandBase {
 
     @Override
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
-        return args.length <= 1 ? CommandBase.getListOfStringsMatchingLastWord(args, "reload", "add", "processor") :
-                args.length == 2 ? CommandBase.getListOfStringsMatchingLastWord(args, "blacklist", "priorityItem", "priorityMod") : null;
+        return args.length <= 1 ? CommandBase.getListOfStringsMatchingLastWord(args, "help", "reload", "add", "processor") :
+                args.length == 2 ? CommandBase.getListOfStringsMatchingLastWord(args, "blacklist", "priorityItem", "priorityMod", "itemCombination") : null;
     }
 
     @Override

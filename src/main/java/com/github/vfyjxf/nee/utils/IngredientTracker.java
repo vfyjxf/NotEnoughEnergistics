@@ -5,6 +5,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.me.ItemRepo;
 import codechicken.nei.PositionedStack;
+import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import cpw.mods.fml.relauncher.ReflectionHelper;
@@ -23,12 +24,14 @@ public class IngredientTracker {
     private int craftingAmount = 1;
     private final GuiContainer termGui;
     private List<ItemStack> requireStacks;
+    private final int recipeIndex;
 
     /**
      * For NEECraftingHelper
      */
     public IngredientTracker(GuiContainer termGui, IRecipeHandler recipe, int recipeIndex) {
         this.termGui = termGui;
+        this.recipeIndex = recipeIndex;
 
         for (PositionedStack requiredIngredient : recipe.getIngredientStacks(recipeIndex)) {
             Ingredient ingredient = new Ingredient(requiredIngredient);
@@ -44,6 +47,26 @@ public class IngredientTracker {
         }
 
         this.calculateIngredients();
+    }
+
+    public IngredientTracker(GuiRecipe guiRecipe, IRecipeHandler recipe, int recipeIndex) {
+        this.termGui = guiRecipe.firstGui;
+        this.recipeIndex = recipeIndex;
+        getCraftableStacks();
+
+        for (PositionedStack requiredIngredient : recipe.getIngredientStacks(recipeIndex)) {
+            Ingredient ingredient = new Ingredient(requiredIngredient);
+            ingredients.add(ingredient);
+        }
+
+        for (Ingredient ingredient : this.ingredients) {
+            for (IAEItemStack stack : getCraftableStacks()) {
+                if (ingredient.getIngredient().contains(stack.getItemStack())) {
+                    ingredient.setCraftableIngredient(stack.getItemStack());
+                }
+            }
+        }
+
     }
 
 
@@ -158,6 +181,10 @@ public class IngredientTracker {
 
     public ItemStack getRequiredStack(int index) {
         return this.getRequireStacks().get(index);
+    }
+
+    public int getRecipeIndex() {
+        return recipeIndex;
     }
 
     public void setCraftingAmount(int craftingAmount) {

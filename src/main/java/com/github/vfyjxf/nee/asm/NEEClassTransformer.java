@@ -1,5 +1,7 @@
 package com.github.vfyjxf.nee.asm;
 
+import codechicken.lib.asm.ASMInit;
+import codechicken.lib.asm.ObfMapping;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
@@ -13,10 +15,18 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class NEEClassTransformer implements IClassTransformer {
 
+    static {
+        ASMInit.init();
+    }
+
     private static final List<String> transformedClassNames = Arrays.asList(
             "appeng/integration/modules/NEIHelpers/NEIInscriberRecipeHandler",
             "appeng/integration/modules/NEIHelpers/NEIGrinderRecipeHandler"
     );
+
+    private static final String TARGET_CLASS_NAME = "appeng/client/gui/AEBaseGui";
+
+    private static final ObfMapping TARGET_METHOD_MAPPING = new ObfMapping(TARGET_CLASS_NAME, "func_146274_d", "()V").toClassloading();
 
     private static final String METHOD_OWNER = "codechicken/nei/recipe/TemplateRecipeHandler";
 
@@ -34,9 +44,7 @@ public class NEEClassTransformer implements IClassTransformer {
 
         //rewrite ae2's methods to support recipe transfer.
         if (transformedClassNames.contains(internalName)) {
-            ClassNode classNode = new ClassNode();
-            ClassReader classReader = new ClassReader(basicClass);
-            classReader.accept(classNode, 0);
+            ClassNode classNode = createClassNode(basicClass);
             for (MethodNode methodNode : classNode.methods) {
                 if (METHOD_NAME_1.equals(methodNode.name) && METHOD_TARGET_1.equals(methodNode.desc)) {
                     NotEnoughEnergistics.logger.info("Transforming : " + internalName + methodNode.name + methodNode.desc);
@@ -81,7 +89,43 @@ public class NEEClassTransformer implements IClassTransformer {
             classNode.accept(classWriter);
             return classWriter.toByteArray();
         }
+
+
+        if (TARGET_CLASS_NAME.equals(internalName)) {
+            ClassNode classNode = createClassNode(basicClass);
+            for (MethodNode methodNode : classNode.methods) {
+                if (TARGET_METHOD_MAPPING.matches(methodNode)) {
+                    NotEnoughEnergistics.logger.info("Transforming : " + internalName + methodNode.name + methodNode.desc);
+                    AbstractInsnNode aLoad = methodNode.instructions.getLast().getPrevious();
+                    while (aLoad.getOpcode() != ALOAD) {
+                        aLoad = aLoad.getPrevious();
+                    }
+                    InsnList insnList = new InsnList();
+                    insnList.add(new VarInsnNode(ILOAD, 1));
+                    insnList.add(new MethodInsnNode(INVOKESTATIC,
+                            "com/github/vfyjxf/nee/asm/AppengHelper",
+                            "handleMouseWheelInput",
+                            "(I)Z", false));
+                    LabelNode label = new LabelNode();
+                    insnList.add(new JumpInsnNode(IFEQ, label));
+                    insnList.add(new InsnNode(RETURN));
+                    insnList.add(label);
+                    methodNode.instructions.insertBefore(aLoad, insnList);
+                }
+            }
+            ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+            classNode.accept(classWriter);
+            return classWriter.toByteArray();
+        }
+
         return basicClass;
+    }
+
+    private ClassNode createClassNode(byte[] basicClass) {
+        ClassNode classNode = new ClassNode();
+        ClassReader classReader = new ClassReader(basicClass);
+        classReader.accept(classNode, 0);
+        return classNode;
     }
 
 }

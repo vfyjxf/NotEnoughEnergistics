@@ -9,7 +9,7 @@ import codechicken.nei.api.API;
 import codechicken.nei.api.IConfigureNEI;
 import codechicken.nei.guihook.GuiContainerManager;
 import codechicken.nei.guihook.IContainerInputHandler;
-import com.github.vfyjxf.nee.client.GuiHandler;
+import com.github.vfyjxf.nee.client.GuiEventHandler;
 import com.github.vfyjxf.nee.client.NEEContainerDrawHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.nei.NEECraftingHandler;
@@ -89,7 +89,7 @@ public class NEINeeConfig implements IConfigureNEI {
     }
 
     private void registerGuiHandler() {
-        API.registerNEIGuiHandler(GuiHandler.instance);
+        API.registerNEIGuiHandler(GuiEventHandler.instance);
         //disable MouseScrollTransfer in some gui
         replaceNEIController();
     }

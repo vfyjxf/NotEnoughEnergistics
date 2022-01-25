@@ -6,6 +6,8 @@ import codechicken.nei.PositionedStack;
 import codechicken.nei.api.IOverlayHandler;
 import codechicken.nei.recipe.IRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import com.github.vfyjxf.nee.config.ItemCombination;
+import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketArcaneRecipe;
 import com.github.vfyjxf.nee.network.packet.PacketExtremeRecipe;
@@ -18,10 +20,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author vfyjxf
@@ -77,12 +76,18 @@ public class NEECraftingHandler implements IOverlayHandler {
                     for (PositionedStack positionedStack : inputs) {
                         ItemStack currentStack = positionedStack.items[0];
                         boolean find = false;
-                        for (PositionedStack storedStack : tInputs) {
-                            ItemStack firstStack = storedStack.items[0];
-                            boolean areItemStackEqual = firstStack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(firstStack, currentStack);
-                            if (areItemStackEqual && (firstStack.stackSize + currentStack.stackSize) <= firstStack.getMaxStackSize()) {
-                                find = true;
-                                storedStack.items[0].stackSize = firstStack.stackSize + currentStack.stackSize;
+                        ItemCombination currentValue = ItemCombination.valueOf(NEEConfig.itemCombinationMode);
+                        if (currentValue != ItemCombination.DISABLED) {
+                            boolean isWhitelist = currentValue == ItemCombination.WHITELIST && Arrays.asList(NEEConfig.itemCombinationWhitelist).contains(identifier);
+                            if (currentValue == ItemCombination.ENABLED || isWhitelist) {
+                                for (PositionedStack storedStack : tInputs) {
+                                    ItemStack firstStack = storedStack.items[0];
+                                    boolean areItemStackEqual = firstStack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(firstStack, currentStack);
+                                    if (areItemStackEqual && (firstStack.stackSize + currentStack.stackSize) <= firstStack.getMaxStackSize()) {
+                                        find = true;
+                                        storedStack.items[0].stackSize = firstStack.stackSize + currentStack.stackSize;
+                                    }
+                                }
                             }
                         }
                         if (!find) {

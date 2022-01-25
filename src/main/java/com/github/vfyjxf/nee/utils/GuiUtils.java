@@ -5,9 +5,11 @@ import appeng.helpers.IContainerCraftingPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import org.lwjgl.input.Mouse;
 
 /**
  * @author vfyjxf
@@ -47,7 +49,14 @@ public class GuiUtils {
         }
     }
 
-    public static boolean isMouseOverButton(GuiButton button, int mouseX, int mouseY) {
+    public static boolean isMouseOverButton(GuiButton button) {
+        Minecraft mc = Minecraft.getMinecraft();
+        final ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        int i = scaledresolution.getScaledWidth();
+        int j = scaledresolution.getScaledHeight();
+        final int mouseX = Mouse.getX() * i / mc.displayWidth;
+        final int mouseY = j - Mouse.getY() * j / mc.displayHeight - 1;
+
         return mouseX >= button.xPosition &&
                 mouseY >= button.yPosition &&
                 mouseX < button.xPosition + button.width &&

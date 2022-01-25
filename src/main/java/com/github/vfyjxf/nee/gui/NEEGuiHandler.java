@@ -7,6 +7,7 @@ import appeng.api.parts.IPartHost;
 import appeng.api.storage.ITerminalHost;
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
+import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.parts.reporting.PartCraftingTerminal;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.utils.ModIDs;
@@ -28,7 +29,8 @@ import static com.github.vfyjxf.nee.NotEnoughEnergistics.instance;
 public class NEEGuiHandler implements IGuiHandler {
 
     public static final int CRAFTING_AMOUNT_ID = 0;
-    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 1;
+    public static final int CRAFTING_CONFIRM_ID = 1;
+    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 2;
 
     @Nullable
     @Override
@@ -41,10 +43,20 @@ public class NEEGuiHandler implements IGuiHandler {
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
-                    if (guiId == CRAFTING_AMOUNT_ID) {
-                        if (part instanceof PartCraftingTerminal) {
-                            return updateGui(new ContainerCraftingAmount(player.inventory, part), world, x, y, z, side, part);
-                        }
+                    switch (guiId) {
+                        case CRAFTING_AMOUNT_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new ContainerCraftingAmount(player.inventory, part), world, x, y, z, side, part);
+                            }
+                            return null;
+                        case CRAFTING_CONFIRM_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new ContainerCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                            }
+                            return null;
+
+                        default:
+                            break;
                     }
                 }
             }
@@ -68,10 +80,20 @@ public class NEEGuiHandler implements IGuiHandler {
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
-                    if (guiId == CRAFTING_AMOUNT_ID) {
-                        if (part instanceof PartCraftingTerminal) {
-                            return updateGui(new GuiCraftingAmount(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
-                        }
+                    switch (guiId) {
+                        case CRAFTING_AMOUNT_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new GuiCraftingAmount(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                            }
+                            return null;
+                        case CRAFTING_CONFIRM_ID:
+                            if (part instanceof PartCraftingTerminal) {
+                                return updateGui(new GuiCraftingConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                            }
+                            return null;
+
+                        default:
+                            break;
                     }
                 }
 

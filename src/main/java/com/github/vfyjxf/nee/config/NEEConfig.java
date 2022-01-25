@@ -14,17 +14,22 @@ import java.io.File;
 public class NEEConfig {
 
     public static Configuration config;
+    public static final String CATEGORY_PATTERN_TRANSFER = "transfer";
+    public static final String CATEGORY_CRAFTING_HELPER = "helper";
+    public static final String CATEGORY_OTHER_SETTINGS = "other";
 
     public static String[] transformBlacklist = new String[0];
     public static String[] transformPriorityList = new String[0];
     public static String[] transformPriorityModList = new String[0];
+    public static String itemCombinationMode = "ENABLED";
+    public static String[] itemCombinationWhitelist = new String[0];
 
     public static boolean noShift = true;
     public static boolean matchOtherItems = true;
     public static boolean drawHighlight = true;
     public static boolean allowSynchronousSwitchIngredient = true;
-    public static boolean useStackSizeFromNEI = false;
-    public static boolean enableCraftAmountSettingGui = true;
+    public static boolean useStackSizeFromNEI = true;
+    public static boolean enableCraftAmountSettingGui = false;
 
     public static int draggedStackDefaultSize = 1;
 
@@ -32,68 +37,107 @@ public class NEEConfig {
         config = new Configuration(configFile);
         config.load();
 
-        transformBlacklist = config.get("client", "transformItemBlacklist", new String[0],
-                "If item in the blacklist, it will not be transferred.\n" +
-                        "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n" +
-                        "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
-        transformPriorityList = config.get("client", "transformItemPriorityList", new String[0],
-                "If item in the priority list, it will be transferred first.").getStringList();
+        {
+            transformBlacklist = config.get(CATEGORY_PATTERN_TRANSFER, "transformItemBlacklist", new String[0],
+                    "If item in the blacklist, it will not be transferred.\n" +
+                            "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n" +
+                            "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
+            transformPriorityList = config.get(CATEGORY_PATTERN_TRANSFER, "transformItemPriorityList", new String[0],
+                    "If item in the priority list, it will be transferred first.").getStringList();
 
-        transformPriorityModList = config.get("client", "transformPriorityModList", new String[0],
-                "if oredict has this mod's item, use it first").getStringList();
+            transformPriorityModList = config.get(CATEGORY_PATTERN_TRANSFER, "transformPriorityModList", new String[0],
+                    "if oredict has this mod's item, use it first").getStringList();
 
-        noShift = config.get("client", "noShift", true,
-                "if true, you don't need to press shift to use NEI's transfer system in CratingTerminal and PatternTerminal").getBoolean();
+            noShift = config.get(CATEGORY_PATTERN_TRANSFER, "noShift", true,
+                    "if true, you don't need to press shift to use NEI's transfer system in CratingTerminal and PatternTerminal").getBoolean();
 
-        matchOtherItems = config.get("client", "matchOnCraftableItems", true,
-                "If true, Crafting Helper will match other items even they can't auto-crafting").getBoolean();
+            itemCombinationMode = config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationMode", itemCombinationMode,
+                    "Item Combination Mode Setting, here are all the modes. \n"
+                            + "\"ENABLED\"" + " " + "\"DISABLED\"" + " " + "WHITELIST").getString();
 
-        drawHighlight = config.get("client", "drawHighlight", true,
-                "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
+            itemCombinationWhitelist = config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationWhitelist", itemCombinationWhitelist,
+                    "Whitelist for item combination").getStringList();
+        }
+        {
+            matchOtherItems = config.get(CATEGORY_CRAFTING_HELPER, "matchOnCraftableItems", true,
+                    "If true, Crafting Helper will match other items even they can't auto-crafting").getBoolean();
 
-        allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
-                "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+            drawHighlight = config.get(CATEGORY_CRAFTING_HELPER, "drawHighlight", true,
+                    "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
 
-        useStackSizeFromNEI = config.get("client", "useStackSizeFromNEI", false,
-                "Use the StackSize set by NEI").getBoolean();
+            enableCraftAmountSettingGui = config.get(CATEGORY_CRAFTING_HELPER, "enableCraftAmountSettingGui", false,
+                    "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
+        }
+        {
+            allowSynchronousSwitchIngredient = config.get(CATEGORY_OTHER_SETTINGS, "allowSynchronousSwitchIngredient", true,
+                    "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
 
-        enableCraftAmountSettingGui = config.get("client", "enableCraftAmountSettingGui", true,
-                "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
+            useStackSizeFromNEI = config.get(CATEGORY_OTHER_SETTINGS, "useStackSizeFromNEI", true,
+                    "Use the StackSize set by NEI").getBoolean();
 
-        draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
-                "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
-
+            draggedStackDefaultSize = config.get(CATEGORY_OTHER_SETTINGS, "draggedStackDefaultSize", 1,
+                    "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
+        }
         if (config.hasChanged()) config.save();
     }
 
     public static void reload() {
         config.load();
-        transformBlacklist = config.get("client", "transformItemBlacklist", new String[0],
+        transformBlacklist = config.get(CATEGORY_PATTERN_TRANSFER, "transformItemBlacklist", new String[0],
                 "If item in the blacklist, it will not be transferred.\n" +
                         "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n" +
                         "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").getStringList();
-        transformPriorityList = config.get("client", "transformItemPriorityList", new String[0],
+        transformPriorityList = config.get(CATEGORY_PATTERN_TRANSFER, "transformItemPriorityList", new String[0],
                 "If item in the priority list, it will be transferred first.").getStringList();
 
-        transformPriorityModList = config.get("client", "transformPriorityModList", new String[0],
+        transformPriorityModList = config.get(CATEGORY_PATTERN_TRANSFER, "transformPriorityModList", new String[0],
                 "if oredict has this mod's item, use it first").getStringList();
 
-        matchOtherItems = config.get("client", "matchOnCraftableItems", false,
-                "If false, Crafting Helper will not match other items").getBoolean();
+        noShift = config.get(CATEGORY_PATTERN_TRANSFER, "noShift", true,
+                "if true, you don't need to press shift to use NEI's transfer system in CratingTerminal and PatternTerminal").getBoolean();
 
-        allowSynchronousSwitchIngredient = config.get("client", "allowSynchronousSwitchIngredient", true,
-                "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+        itemCombinationMode = config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationMode", itemCombinationMode,
+                "Item Combination Mode Setting, here are all the modes. \n"
+                        + "\"ENABLED\"" + " " + "\"DISABLED\"" + " " + "WHITELIST").getString();
 
-        useStackSizeFromNEI = config.get("client", "useStackSizeFromNEI", false,
-                "Use the StackSize set by NEI").getBoolean();
-
-        enableCraftAmountSettingGui = config.get("client", "enableCraftAmountSettingGui", true,
-                "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
-
-        draggedStackDefaultSize = config.get("client", "draggedStackDefaultSize", 1,
-                "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
-
+        itemCombinationWhitelist = config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationWhitelist", itemCombinationWhitelist,
+                "Whitelist for item combination").getStringList();
         ItemUtils.reloadConfig();
+    }
+
+    public static void setItemCombinationMode(String itemCombinationMode) {
+        NEEConfig.itemCombinationMode = itemCombinationMode;
+        config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationMode", itemCombinationMode, "Item Combination Mode Setting, here are all the modes. \n" + "\"ENABLED\"" + " " + "\"DISABLED\"" + " " + "WHITELIST").set(itemCombinationMode);
+        config.save();
+    }
+
+    public static void setItemCombinationWhitelist(String[] itemCombinationWhitelist) {
+        NEEConfig.itemCombinationWhitelist = itemCombinationWhitelist;
+        config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationWhitelist", itemCombinationWhitelist, "Whitelist for item combination").set(itemCombinationWhitelist);
+        config.save();
+    }
+
+    public static void setTransformBlacklist(String[] transformBlacklist) {
+        NEEConfig.transformBlacklist = transformBlacklist;
+        config.get("client", "transformItemBlacklist", new String[0],
+                "If item in the blacklist, it will not be transferred.\n" +
+                        "the format is \" {modid:modid,name:name,meta:meta,recipeProcessor:recipeProcessorID,identifier:identifier}\"\n" +
+                        "example: \"{modid:minecraft,name:iron_ingot,recipeProcessor:EnderIO,identifier:EnderIOAlloySmelter}\"").set(transformBlacklist);
+        config.save();
+    }
+
+    public static void setTransformPriorityList(String[] transformPriorityList) {
+        NEEConfig.transformPriorityList = transformPriorityList;
+        config.get("client", "transformPriorityModList", new String[0],
+                "if oredict has this mod's item, use it first").set(transformPriorityList);
+        config.save();
+    }
+
+    public static void setTransformPriorityModList(String[] transformPriorityModList) {
+        NEEConfig.transformPriorityModList = transformPriorityModList;
+        config.get("client", "transformPriorityModList", new String[0],
+                "if oredict has this mod's item, use it first").set(transformPriorityModList);
+        config.save();
     }
 
     @SubscribeEvent
