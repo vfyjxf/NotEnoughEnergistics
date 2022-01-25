@@ -11,6 +11,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 
@@ -39,7 +40,7 @@ public class NEECommands extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 1) {
-            return CommandBase.getListOfStringsMatchingLastWord(args, "add", "reload");
+            return CommandBase.getListOfStringsMatchingLastWord(args, "add", "reload","help");
         } else if (args.length == 2) {
             return CommandBase.getListOfStringsMatchingLastWord(args, "blacklist", "priorityItem", "priorityMod", "itemCombinationWhitelist");
         }
@@ -49,6 +50,11 @@ public class NEECommands extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
         if (args.length > 0) {
+            if("help".equalsIgnoreCase(args[0])){
+                sender.sendMessage(new TextComponentString("Usage:"));
+                sender.sendMessage(new TextComponentString("/nee add blacklist/priorityItem processor_id identifier"));
+                sender.sendMessage(new TextComponentString("/nee add blacklist/priorityItem/itemCombination identifier"));
+            }
             if ("add".equalsIgnoreCase(args[0]) && args.length > 1) {
                 if ("blacklist".equalsIgnoreCase(args[1]) || "priorityItem".equalsIgnoreCase(args[1])) {
                     ItemStack currentStack = Minecraft.getMinecraft().player.getHeldItemMainhand();

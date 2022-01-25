@@ -12,7 +12,6 @@ import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.parts.reporting.PartCraftingTerminal;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.utils.ModIds;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -104,7 +103,7 @@ public class NEEGuiHandler implements IGuiHandler {
                             return null;
                         case CRAFTING_CONFIRM_ID:
                             if (part instanceof PartCraftingTerminal) {
-                                return updateGui(new GuiCraftingConfirm(Minecraft.getMinecraft().currentScreen, player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                                return updateGui(new GuiCraftingConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
                             return null;
 
