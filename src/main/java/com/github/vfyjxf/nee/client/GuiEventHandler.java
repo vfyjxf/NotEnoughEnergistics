@@ -16,6 +16,7 @@ import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Slot;
@@ -161,19 +162,22 @@ public class GuiEventHandler implements INEIGuiHandler {
 
     @Override
     public boolean handleDragNDrop(GuiContainer gui, int mouseX, int mouseY, ItemStack draggedStack, int button) {
-        if (gui instanceof AEBaseGui) {
-            if (button != 2 && draggedStack != null) {
-                Slot currentSlot = gui.getSlotAtPosition(mouseX, mouseY);
-                if (currentSlot instanceof SlotFake && ((SlotFake) currentSlot).isEnabled()) {
-                    List<Integer> slots = new ArrayList<>();
-                    slots.add(currentSlot.slotNumber);
-                    ItemStack copyStack = draggedStack.copy();
-                    copyStack.stackSize = useStackSizeFromNEI ? draggedStack.stackSize : draggedStackDefaultSize;
-                    NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, slots));
-                    if (!NEEConfig.keepGhostitems) {
-                        draggedStack.stackSize = 0;
+        //When NEIAddons exist, give them to NEIAddons to handle
+        if(NEEConfig.enableNEIDragNDrop || Loader.isModLoaded("NEIAddons")) {
+            if (gui instanceof AEBaseGui) {
+                if (button != 2 && draggedStack != null) {
+                    Slot currentSlot = gui.getSlotAtPosition(mouseX, mouseY);
+                    if (currentSlot instanceof SlotFake && ((SlotFake) currentSlot).isEnabled()) {
+                        List<Integer> slots = new ArrayList<>();
+                        slots.add(currentSlot.slotNumber);
+                        ItemStack copyStack = draggedStack.copy();
+                        copyStack.stackSize = useStackSizeFromNEI ? draggedStack.stackSize : draggedStackDefaultSize;
+                        NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, slots));
+                        if (!NEEConfig.keepGhostitems) {
+                            draggedStack.stackSize = 0;
+                        }
+                        return true;
                     }
-                    return true;
                 }
             }
         }

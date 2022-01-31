@@ -28,6 +28,7 @@ public class NEEConfig {
     public static boolean matchOtherItems = true;
     public static boolean drawHighlight = true;
     public static boolean allowSynchronousSwitchIngredient = true;
+    public static boolean enableNEIDragNDrop = true;
     public static boolean useStackSizeFromNEI = true;
     public static boolean keepGhostitems = true;
     public static boolean enableCraftAmountSettingGui = false;
@@ -72,6 +73,8 @@ public class NEEConfig {
         {
             allowSynchronousSwitchIngredient = config.get(CATEGORY_OTHER_SETTINGS, "allowSynchronousSwitchIngredient", true,
                     "If true, it will make all similar ingredient switch at the same time").getBoolean(true);
+
+            enableNEIDragNDrop = config.get(CATEGORY_OTHER_SETTINGS, "enableNEIDragNDrop", true, "").getBoolean();
 
             useStackSizeFromNEI = config.get(CATEGORY_OTHER_SETTINGS, "useStackSizeFromNEI", true,
                     "Use the StackSize set by NEI").getBoolean();
