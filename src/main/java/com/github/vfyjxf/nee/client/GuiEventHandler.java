@@ -163,7 +163,7 @@ public class GuiEventHandler implements INEIGuiHandler {
     @Override
     public boolean handleDragNDrop(GuiContainer gui, int mouseX, int mouseY, ItemStack draggedStack, int button) {
         //When NEIAddons exist, give them to NEIAddons to handle
-        if(NEEConfig.enableNEIDragNDrop || Loader.isModLoaded("NEIAddons")) {
+        if(NEEConfig.enableNEIDragNDrop || !Loader.isModLoaded("NEIAddons")) {
             if (gui instanceof AEBaseGui) {
                 if (button != 2 && draggedStack != null) {
                     Slot currentSlot = gui.getSlotAtPosition(mouseX, mouseY);
