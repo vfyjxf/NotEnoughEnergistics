@@ -25,6 +25,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.input.Mouse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.github.vfyjxf.nee.config.NEEConfig.draggedStackDefaultSize;
@@ -163,20 +164,43 @@ public class GuiEventHandler implements INEIGuiHandler {
     @Override
     public boolean handleDragNDrop(GuiContainer gui, int mouseX, int mouseY, ItemStack draggedStack, int button) {
         //When NEIAddons exist, give them to NEIAddons to handle
-        if(NEEConfig.enableNEIDragNDrop || !Loader.isModLoaded("NEIAddons")) {
+        if(Loader.isModLoaded("NEIAddons") && NEEConfig.useNEIDragFromNEIAddons){
+            return false;
+        }
+
+        if (NEEConfig.enableNEIDragNDrop) {
             if (gui instanceof AEBaseGui) {
-                if (button != 2 && draggedStack != null) {
+                if (draggedStack != null) {
                     Slot currentSlot = gui.getSlotAtPosition(mouseX, mouseY);
-                    if (currentSlot instanceof SlotFake && ((SlotFake) currentSlot).isEnabled()) {
-                        List<Integer> slots = new ArrayList<>();
-                        slots.add(currentSlot.slotNumber);
+                    if (currentSlot instanceof SlotFake) {
+                        ItemStack slotStack = currentSlot.getStack();
                         ItemStack copyStack = draggedStack.copy();
-                        copyStack.stackSize = useStackSizeFromNEI ? draggedStack.stackSize : draggedStackDefaultSize;
-                        NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, slots));
-                        if (!NEEConfig.keepGhostitems) {
-                            draggedStack.stackSize = 0;
+                        boolean sendPacket = false;
+                        int copySize = useStackSizeFromNEI ? copyStack.stackSize : draggedStackDefaultSize;
+                        if (button == 0) {
+                            boolean areStackEqual = slotStack != null && slotStack.isItemEqual(copyStack) && ItemStack.areItemStackTagsEqual(slotStack, copyStack);
+                            copyStack.stackSize = areStackEqual ? Math.min(slotStack.stackSize + copySize, 127) : Math.min(copySize, 127);
+                            sendPacket = true;
+                        } else if (button == 1) {
+                            boolean areStackEqual = slotStack != null && slotStack.isItemEqual(copyStack) && ItemStack.areItemStackTagsEqual(slotStack, copyStack);
+                            if (areStackEqual) {
+                                copyStack.stackSize = Math.min(slotStack.stackSize + 1, 127);
+                            } else {
+                                copyStack.stackSize = slotStack == null ? 1 : copySize;
+                            }
+                            sendPacket = true;
                         }
-                        return true;
+
+                        if (sendPacket) {
+                            NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, Collections.singletonList(currentSlot.slotNumber)));
+                            if (!NEEConfig.keepGhostitems) {
+                                draggedStack.stackSize = 0;
+                            }
+                            return true;
+                        }
+                    }
+                    if (button == 2) {
+                        draggedStack.stackSize = 0;
                     }
                 }
             }
