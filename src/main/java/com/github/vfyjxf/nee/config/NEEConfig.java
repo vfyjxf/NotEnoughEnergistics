@@ -29,6 +29,7 @@ public class NEEConfig {
     public static boolean drawHighlight = true;
     public static boolean allowSynchronousSwitchIngredient = true;
     public static boolean useStackSizeFromNEI = true;
+    public static boolean keepGhostitems = true;
     public static boolean enableCraftAmountSettingGui = false;
 
     public static int draggedStackDefaultSize = 1;
@@ -74,6 +75,8 @@ public class NEEConfig {
 
             useStackSizeFromNEI = config.get(CATEGORY_OTHER_SETTINGS, "useStackSizeFromNEI", true,
                     "Use the StackSize set by NEI").getBoolean();
+
+            keepGhostitems = config.get(CATEGORY_OTHER_SETTINGS, "keepGhostitems", true, "keep ghost items after click").getBoolean();
 
             draggedStackDefaultSize = config.get(CATEGORY_OTHER_SETTINGS, "draggedStackDefaultSize", 1,
                     "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();

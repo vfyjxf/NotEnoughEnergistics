@@ -170,7 +170,9 @@ public class GuiEventHandler implements INEIGuiHandler {
                     ItemStack copyStack = draggedStack.copy();
                     copyStack.stackSize = useStackSizeFromNEI ? draggedStack.stackSize : draggedStackDefaultSize;
                     NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(copyStack, slots));
-                    draggedStack.stackSize = 0;
+                    if (!NEEConfig.keepGhostitems) {
+                        draggedStack.stackSize = 0;
+                    }
                     return true;
                 }
             }
