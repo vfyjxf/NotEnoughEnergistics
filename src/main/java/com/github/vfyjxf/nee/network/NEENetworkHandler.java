@@ -7,6 +7,9 @@ import net.minecraftforge.fml.relauncher.Side;
 
 public class NEENetworkHandler {
 
+
+//    private static final FMLEventChannel CHANNEL = NetworkRegistry.INSTANCE.newEventDrivenChannel(NotEnoughEnergistics.MODID);
+
     private static final SimpleNetworkWrapper INSTANCE = new SimpleNetworkWrapper(NotEnoughEnergistics.MODID);
     private static int packId = 0;
 
@@ -25,6 +28,9 @@ public class NEENetworkHandler {
         NEENetworkHandler.getInstance().registerMessage(PacketCraftingRequest.class, PacketCraftingRequest.class, nextID(), Side.SERVER);
         NEENetworkHandler.getInstance().registerMessage(PacketOpenGui.class, PacketOpenGui.class, nextID(), Side.SERVER);
         NEENetworkHandler.getInstance().registerMessage(PacketOpenCraftAmount.class, PacketOpenCraftAmount.class, nextID(), Side.SERVER);
+        NEENetworkHandler.getInstance().registerMessage(PacketValueConfigServer.class, PacketValueConfigServer.class, nextID(), Side.SERVER);
+        NEENetworkHandler.getInstance().registerMessage(PacketValueConfigClient.class, PacketValueConfigClient.class, nextID(), Side.CLIENT);
+        NEENetworkHandler.getInstance().registerMessage(PacketSetRecipe.class, PacketSetRecipe.class, nextID(), Side.SERVER);
     }
 
 }

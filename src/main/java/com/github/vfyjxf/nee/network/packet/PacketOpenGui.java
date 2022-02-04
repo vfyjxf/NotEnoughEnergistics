@@ -2,7 +2,7 @@ package com.github.vfyjxf.nee.network.packet;
 
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
-import com.github.vfyjxf.nee.gui.NEEGuiHandler;
+import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;

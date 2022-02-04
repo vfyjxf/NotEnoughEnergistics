@@ -1,6 +1,6 @@
 package com.github.vfyjxf.nee;
 
-import com.github.vfyjxf.nee.gui.NEEGuiHandler;
+import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.proxy.CommonProxy;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;

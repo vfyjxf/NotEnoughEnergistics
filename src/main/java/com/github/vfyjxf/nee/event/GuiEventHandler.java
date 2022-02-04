@@ -6,9 +6,9 @@ import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
 import com.github.vfyjxf.nee.client.KeyBindings;
+import com.github.vfyjxf.nee.client.gui.widgets.GuiImgButtonEnableCombination;
 import com.github.vfyjxf.nee.config.ItemCombination;
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.gui.widgets.GuiImgButtonEnableCombination;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
@@ -37,20 +37,22 @@ public class GuiEventHandler {
     @SubscribeEvent
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre event) {
         Minecraft mc = Minecraft.getMinecraft();
-        int dWheel = Mouse.getEventDWheel();
         boolean isSupportedGui = mc.currentScreen instanceof GuiPatternTerm || mc.currentScreen instanceof GuiInterface;
-        if (dWheel != 0 && isSupportedGui) {
-            AEBaseGui aeBaseGui = (AEBaseGui) mc.currentScreen;
-            Slot currentSlot = aeBaseGui.getSlotUnderMouse();
-            if (currentSlot != null && currentSlot.getHasStack()) {
-                if (currentSlot instanceof SlotFake) {
-                    if (Keyboard.isKeyDown(KeyBindings.recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
-                        handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, dWheel);
-                        event.setCanceled(true);
-                    } else if (Keyboard.isKeyDown(KeyBindings.stackCountChange.getKeyCode())) {
-                        int changeCount = dWheel / 120;
-                        NEENetworkHandler.getInstance().sendToServer(new PacketStackSizeChange(currentSlot.slotNumber, changeCount));
-                        event.setCanceled(true);
+        if (isSupportedGui) {
+            int dWheel = Mouse.getEventDWheel();
+            if (dWheel != 0) {
+                AEBaseGui aeBaseGui = (AEBaseGui) mc.currentScreen;
+                Slot currentSlot = aeBaseGui.getSlotUnderMouse();
+                if (currentSlot != null && currentSlot.getHasStack()) {
+                    if (currentSlot instanceof SlotFake) {
+                        if (Keyboard.isKeyDown(KeyBindings.recipeIngredientChange.getKeyCode()) && GuiUtils.isCraftingSlot(currentSlot)) {
+                            handleRecipeIngredientChange((GuiContainer) mc.currentScreen, currentSlot, dWheel);
+                            event.setCanceled(true);
+                        } else if (Keyboard.isKeyDown(KeyBindings.stackCountChange.getKeyCode())) {
+                            int changeCount = dWheel / 120;
+                            NEENetworkHandler.getInstance().sendToServer(new PacketStackSizeChange(currentSlot.slotNumber, changeCount));
+                            event.setCanceled(true);
+                        }
                     }
                 }
             }

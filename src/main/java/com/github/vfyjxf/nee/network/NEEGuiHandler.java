@@ -1,4 +1,4 @@
-package com.github.vfyjxf.nee.gui;
+package com.github.vfyjxf.nee.network;
 
 import appeng.api.AEApi;
 import appeng.api.parts.IPart;
@@ -10,7 +10,12 @@ import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.parts.reporting.PartCraftingTerminal;
+import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
+import com.github.vfyjxf.nee.client.gui.GuiCraftingAmount;
+import com.github.vfyjxf.nee.client.gui.GuiCraftingConfirm;
+import com.github.vfyjxf.nee.client.gui.GuiPatternInterface;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
+import com.github.vfyjxf.nee.container.ContainerPatternInterface;
 import com.github.vfyjxf.nee.utils.ModIds;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -39,7 +44,8 @@ public class NEEGuiHandler implements IGuiHandler {
 
     public static final int CRAFTING_AMOUNT_ID = 0;
     public static final int CRAFTING_CONFIRM_ID = 1;
-    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 2;
+    public static final int PATTERN_INTERFACE_ID = 2;
+    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 3;
 
     @Nullable
     @Override
@@ -69,6 +75,15 @@ public class NEEGuiHandler implements IGuiHandler {
                             break;
                     }
 
+                }
+            } else {
+                TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
+                if (tile != null) {
+                    if (guiId == PATTERN_INTERFACE_ID) {
+                        if (tile instanceof TilePatternInterface) {
+                            return new ContainerPatternInterface(player.inventory, (TilePatternInterface) tile);
+                        }
+                    }
                 }
             }
         } else if (Loader.isModLoaded(ModIds.WCT)) {
@@ -112,6 +127,15 @@ public class NEEGuiHandler implements IGuiHandler {
                     }
                 }
 
+            } else {
+                TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
+                if (tile != null) {
+                    if (guiId == PATTERN_INTERFACE_ID) {
+                        if (tile instanceof TilePatternInterface) {
+                            return new GuiPatternInterface(player.inventory, (TilePatternInterface) tile);
+                        }
+                    }
+                }
             }
         } else if (Loader.isModLoaded(ModIds.WCT)) {
             final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());

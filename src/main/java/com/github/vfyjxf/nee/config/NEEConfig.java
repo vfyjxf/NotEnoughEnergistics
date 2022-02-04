@@ -37,7 +37,6 @@ public class NEEConfig {
     public static String[] itemCombinationWhitelist = new String[0];
 
     public static boolean matchOtherItems = true;
-    public static boolean enableCraftAmountSettingGui = true;
 
     public static boolean allowSynchronousSwitchIngredient = true;
 
@@ -58,7 +57,6 @@ public class NEEConfig {
 
         {
             matchOtherItems = config.getBoolean("matchOtherItems", CATEGORY_CRAFTING_HELPER, matchOtherItems, "If true, Crafting Helper will match other items even they can't auto-crafting");
-            enableCraftAmountSettingGui = config.getBoolean("enableCraftAmountSettingGui", CATEGORY_CRAFTING_HELPER, enableCraftAmountSettingGui, "If true, it will open a gui to set craft amount after ctrl + click [+] button");
         }
 
         {

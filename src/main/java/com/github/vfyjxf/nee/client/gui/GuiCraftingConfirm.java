@@ -1,4 +1,4 @@
-package com.github.vfyjxf.nee.gui;
+package com.github.vfyjxf.nee.client.gui;
 
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;

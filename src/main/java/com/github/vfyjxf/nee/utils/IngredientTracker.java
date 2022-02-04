@@ -123,6 +123,7 @@ public class IngredientTracker {
 
     public List<ItemStack> getRequireToCraftStacks() {
         List<ItemStack> requireToCraftStacks = new ArrayList<>();
+        /*
         if (NEEConfig.enableCraftAmountSettingGui) {
             for (Ingredient ingredient : this.getIngredients()) {
                 boolean find = false;
@@ -162,6 +163,28 @@ public class IngredientTracker {
                         requireStack.setCount((int) ingredient.getMissingCount());
                         requireToCraftStacks.add(requireStack);
                     }
+                }
+            }
+        }
+
+         */
+        for (Ingredient ingredient : this.getIngredients()) {
+            boolean find = false;
+            if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
+                for (ItemStack stack : requireToCraftStacks) {
+                    boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
+                    if (areStackEqual) {
+                        stack.setCount((int) (stack.getCount() + ingredient.getMissingCount()));
+                        find = true;
+                        break;
+                    }
+
+                }
+
+                if (!find) {
+                    ItemStack requireStack = ingredient.getCraftableIngredient().copy();
+                    requireStack.setCount((int) ingredient.getMissingCount());
+                    requireToCraftStacks.add(requireStack);
                 }
             }
         }

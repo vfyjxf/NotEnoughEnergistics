@@ -15,9 +15,9 @@ import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import com.github.vfyjxf.nee.network.packet.PacketOpenCraftAmount;
-import com.github.vfyjxf.nee.utils.GuiUtils;
-import com.github.vfyjxf.nee.utils.IngredientTracker;
-import com.github.vfyjxf.nee.utils.ModIds;
+import com.github.vfyjxf.nee.network.packet.PacketSetRecipe;
+import com.github.vfyjxf.nee.network.packet.PacketValueConfigServer;
+import com.github.vfyjxf.nee.utils.*;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
@@ -45,6 +45,7 @@ import java.util.Map;
 
 import static com.github.vfyjxf.nee.client.KeyBindings.craftingHelperNoPreview;
 import static com.github.vfyjxf.nee.client.KeyBindings.craftingHelperPreview;
+import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.OUTPUT_KEY;
 
 public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements IRecipeTransferHandler<C> {
 
@@ -52,6 +53,10 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
     public static int stackIndex = 1;
     public static boolean noPreview = false;
     private final Class<C> containerClass;
+
+    private static boolean isPatternInterfaceExists = false;
+
+    public static final int RECIPE_LENGTH = 9;
 
     public CraftingHelperTransferHandler(Class<C> containerClass) {
         this.containerClass = containerClass;
@@ -70,12 +75,23 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
             if (Minecraft.getMinecraft().currentScreen instanceof RecipesGui) {
                 RecipesGui recipesGui = (RecipesGui) Minecraft.getMinecraft().currentScreen;
                 tracker = new IngredientTracker(container, recipeLayout, player, recipesGui);
+                //Check if PatternCrafter exists
+                NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("PatternInterface.check"));
                 if (doTransfer) {
                     tracker = new IngredientTracker(container, recipeLayout, player, recipesGui);
                     boolean doCraftingHelp = Keyboard.isKeyDown(craftingHelperPreview.getKeyCode()) || Keyboard.isKeyDown(craftingHelperNoPreview.getKeyCode());
                     noPreview = Keyboard.isKeyDown(craftingHelperNoPreview.getKeyCode());
                     if (doCraftingHelp) {
-                        if (noPreview) {
+
+                        if (isPatternInterfaceExists) {
+                            NEENetworkHandler.getInstance().sendToServer(new PacketSetRecipe(packCraftingRecipeInputs(recipeLayout)));
+                            if (!GuiUtils.isWirelessCraftingTermContainer(container)) {
+                                NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(getRecipeOutput(recipeLayout)));
+                            } else if (Loader.isModLoaded(ModIds.WCT)) {
+                                openWirelessCraftingAmountGui(container, recipeLayout);
+                            }
+                            isPatternInterfaceExists = false;
+                        } else {
                             if (!tracker.getRequireStacks().isEmpty()) {
                                 IAEItemStack stack = AEItemStack.fromItemStack(tracker.getRequiredStack(0));
                                 NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
@@ -83,22 +99,14 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
                             } else {
                                 moveItems(container, recipeLayout);
                             }
-                        } else if (NEEConfig.enableCraftAmountSettingGui && tracker.hasCraftableIngredient()) {
-                            if (!GuiUtils.isWirelessCraftingTermContainer(container)) {
-                                NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(getRecipeOutput(recipeLayout)));
-                            } else if (Loader.isModLoaded(ModIds.WCT)) {
-                                openWirelessCraftingAmountGui(container, recipeLayout);
-                            }
+
                         }
+
                     } else {
                         moveItems(container, recipeLayout);
                     }
                 } else {
-                    if (NEEConfig.enableCraftAmountSettingGui) {
-                        return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout, recipesGui), true);
-                    } else {
-                        return new CraftingHelperTooltipError(tracker, true);
-                    }
+                    return new CraftingHelperTooltipError(tracker, true);
                 }
             }
         }
@@ -176,6 +184,62 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
         return recipeOutput;
     }
 
+    private NBTTagCompound packCraftingRecipeInputs(IRecipeLayout recipeLayout) {
+        final NBTTagCompound recipe = new NBTTagCompound();
+        NBTTagCompound reslut = null;
+        String recipeType = recipeLayout.getRecipeCategory().getUid();
+        final Map<Integer, ? extends IGuiIngredient<ItemStack>> ingredients = recipeLayout.getItemStacks().getGuiIngredients();
+        int inputIndex = 0;
+
+        List<StackProcessor> tInputs = new ArrayList<>();
+        for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : ingredients.entrySet()) {
+            final IGuiIngredient<ItemStack> ingredient = entry.getValue();
+            if (ingredient != null) {
+                //get itemstack from ingredient
+                ItemStack displayedIngredient = ingredient.getDisplayedIngredient() == null ? ItemStack.EMPTY : ingredient.getDisplayedIngredient().copy();
+                ItemStack firstIngredient = ingredient.getAllIngredients().isEmpty() ? ItemStack.EMPTY : ingredient.getAllIngredients().get(0).copy();
+                ItemStack currentStack = NEEConfig.useDisplayedIngredient ? displayedIngredient : firstIngredient;
+                if (ingredient.isInput()) {
+                    tInputs.add(new StackProcessor(ingredient, currentStack, currentStack.getCount()));
+                } else {
+                    if (!currentStack.isEmpty() && reslut == null) {
+                        reslut = currentStack.writeToNBT(new NBTTagCompound());
+                        recipe.setTag(OUTPUT_KEY, reslut);
+                    }
+                }
+
+            }
+
+        }
+
+        for (StackProcessor currentIngredient : tInputs) {
+            ItemStack currentStack = currentIngredient.getCurrentStack();
+            ItemStack preferModItem = ItemUtils.isPreferModItem(currentStack) ? currentStack : ItemUtils.getPreferModItem(currentIngredient.getIngredient());
+
+            if (!currentStack.isEmpty()) {
+                currentStack.setCount(currentIngredient.getStackSize());
+            }
+
+            if (!currentStack.isEmpty() && preferModItem != null && !preferModItem.isEmpty()) {
+                currentStack = preferModItem.copy();
+                currentStack.setCount(currentIngredient.getStackSize());
+            }
+            for (ItemStack stack : currentIngredient.getIngredient().getAllIngredients()) {
+                if (ItemUtils.isPreferItems(stack, recipeType) && !currentStack.isEmpty()) {
+                    currentStack = stack.copy();
+                    currentStack.setCount(currentIngredient.getStackSize());
+                }
+            }
+            if (!currentStack.isEmpty() && ItemUtils.isInBlackList(currentStack, recipeType)) {
+                continue;
+            }
+            recipe.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
+            inputIndex++;
+        }
+
+        return recipe;
+    }
+
     @Optional.Method(modid = ModIds.WCT)
     private void openWirelessCraftingAmountGui(Container container, IRecipeLayout recipeLayout) {
         if (container instanceof ContainerWCT) {
@@ -193,4 +257,11 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
         }
     }
 
+    public static boolean isIsPatternInterfaceExists() {
+        return isPatternInterfaceExists;
+    }
+
+    public static void setIsPatternInterfaceExists(boolean isPatternInterfaceExists) {
+        CraftingHelperTransferHandler.isPatternInterfaceExists = isPatternInterfaceExists;
+    }
 }

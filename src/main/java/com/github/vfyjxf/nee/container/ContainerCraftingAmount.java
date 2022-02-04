@@ -11,6 +11,7 @@ import appeng.tile.inventory.AppEngInternalInventory;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 public class ContainerCraftingAmount extends AEBaseContainer {
@@ -19,6 +20,7 @@ public class ContainerCraftingAmount extends AEBaseContainer {
     private ItemStack resultStack;
     private boolean isBauble;
     private int wctSlot = -1;
+    private NBTTagCompound recipe;
 
     public ContainerCraftingAmount(InventoryPlayer ip, Object anchor) {
         super(ip, anchor);
@@ -31,7 +33,6 @@ public class ContainerCraftingAmount extends AEBaseContainer {
         super.detectAndSendChanges();
         this.verifyPermissions(SecurityPermissions.CRAFT, false);
     }
-
 
     public IGrid getGrid() {
         final IActionHost h = ((IActionHost) this.getTarget());
@@ -57,6 +58,10 @@ public class ContainerCraftingAmount extends AEBaseContainer {
         return resultStack;
     }
 
+    public NBTTagCompound getRecipe() {
+        return recipe;
+    }
+
     public boolean isBauble() {
         return isBauble;
     }
@@ -75,6 +80,10 @@ public class ContainerCraftingAmount extends AEBaseContainer {
 
     public boolean isWirelessTerm() {
         return this.wctSlot >= 0;
+    }
+
+    public void setRecipe(NBTTagCompound recipe) {
+        this.recipe = recipe;
     }
 
     public void setResultStack(ItemStack resultStack) {

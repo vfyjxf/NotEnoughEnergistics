@@ -29,7 +29,7 @@ import java.util.*;
 public class PatternRecipeTransferHandler implements IRecipeTransferHandler<ContainerPatternTerm> {
 
     public static final String OUTPUT_KEY = "Outputs";
-    public static final String INPUT_KEY = "input";
+    public static final String INPUT_KEY = "#";
     public static Map<String, IGuiIngredient<ItemStack>> ingredients = new HashMap<>();
 
     public PatternRecipeTransferHandler() {
@@ -129,7 +129,9 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                 NotEnoughEnergistics.logger.info(recipeType);
             }
         } else {
-            return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout, (RecipesGui) Minecraft.getMinecraft().currentScreen), false);
+            if (Minecraft.getMinecraft().currentScreen != null) {
+                return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout, (RecipesGui) Minecraft.getMinecraft().currentScreen), false);
+            }
         }
 
         return null;

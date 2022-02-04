@@ -3,7 +3,7 @@ package com.github.vfyjxf.nee.network.packet;
 import appeng.container.ContainerOpenContext;
 import appeng.container.implementations.ContainerCraftingTerm;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
-import com.github.vfyjxf.nee.gui.NEEGuiHandler;
+import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -15,8 +15,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import static com.github.vfyjxf.nee.gui.NEEGuiHandler.CRAFTING_AMOUNT_ID;
-import static com.github.vfyjxf.nee.gui.NEEGuiHandler.CRAFTING_AMOUNT_WIRELESS_ID;
+import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_ID;
+import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_WIRELESS_ID;
 
 public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOpenCraftAmount, IMessage> {
 

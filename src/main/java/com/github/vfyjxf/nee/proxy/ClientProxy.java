@@ -17,6 +17,7 @@ import java.io.File;
 public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
+        super.init(event);
         ClientRegistry.registerKeyBinding(KeyBindings.recipeIngredientChange);
         ClientRegistry.registerKeyBinding(KeyBindings.stackCountChange);
         ClientRegistry.registerKeyBinding(KeyBindings.craftingHelperPreview);
@@ -27,6 +28,7 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
+        super.preInit(event);
         NEEConfig.initConfig(new File(event.getModConfigurationDirectory().getPath(), "NotEnoughEnergistics.cfg"));
         MinecraftForge.EVENT_BUS.register(NEEConfig.INSTANCE);
         NEENetworkHandler.init();

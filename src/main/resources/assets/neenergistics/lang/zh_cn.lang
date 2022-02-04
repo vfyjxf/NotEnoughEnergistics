@@ -13,6 +13,10 @@ gui.neenergistics.button.tooltip.combination=当前模式: %s
 gui.neenergistics.button.name.enabled=开启
 gui.neenergistics.button.name.disabled=关闭
 gui.neenergistics.button.name.whitelist=白名单
+gui.neenergistics.button.title.remove=删除
+gui.neenergistics.button.tooltip.remove=删除并取消当前配方
+
+tile.neenergistics.patterninterface.name=样板接口
 
 neenergistics.NotEnoughEnergistics=Not Enough Energistics
 

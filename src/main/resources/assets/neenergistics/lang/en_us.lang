@@ -13,5 +13,9 @@ gui.neenergistics.button.tooltip.combination=Current Mode: %s
 gui.neenergistics.button.name.enabled=Enabled
 gui.neenergistics.button.name.disabled=Disabled
 gui.neenergistics.button.name.whitelist=Whitelist
+gui.neenergistics.button.title.remove=Remove
+gui.neenergistics.button.tooltip.remove=Remove and cancel the current recipe
+
+tile.neenergistics.patterninterface.name=Pattern Interface
 
 neenergistics.NotEnoughEnergistics=Not Enough Energistics
