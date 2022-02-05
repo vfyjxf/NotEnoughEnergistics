@@ -14,6 +14,7 @@ import net.minecraftforge.common.MinecraftForge;
 public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
+        super.init(event);
         ClientCommandHandler.instance.registerCommand(new NEECommands());
         FMLCommonHandler.instance().bus().register(GuiEventHandler.instance);
         MinecraftForge.EVENT_BUS.register(GuiEventHandler.instance);

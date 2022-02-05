@@ -70,7 +70,8 @@ public class TilePatternInterface extends AENetworkInvTile implements IGridTicka
     private final boolean[] workStarted = new boolean[9];
 
     public TilePatternInterface() {
-        this.gridInv = new AppEngInternalInventory(this, 9 + 1, 1);
+        this.gridInv = new AppEngInternalInventory(this, 9 + 1 );
+        this.gridInv.setMaxStackSize(1);
         this.patterns = new AppEngInternalInventory(this, 9);
         this.ejectInv = new AppEngInternalInventory(this, 9);
         this.craftingList = new ArrayList<>();
