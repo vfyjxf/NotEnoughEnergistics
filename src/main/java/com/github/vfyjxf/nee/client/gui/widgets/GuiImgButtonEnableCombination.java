@@ -1,4 +1,4 @@
-package com.github.vfyjxf.nee.gui.widgets;
+package com.github.vfyjxf.nee.client.gui.widgets;
 
 import appeng.client.gui.widgets.ITooltip;
 import com.github.vfyjxf.nee.config.ItemCombination;
@@ -27,7 +27,11 @@ public class GuiImgButtonEnableCombination extends GuiButton implements ITooltip
             GL11.glPushMatrix();
             GL11.glTranslatef(this.xPosition, this.yPosition, 0.0F);
             GL11.glScalef(0.5f, 0.5f, 0.5f);
-            GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            if (this.enabled) {
+                GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            } else {
+                GL11.glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
+            }
             minecraft.renderEngine.bindTexture(new ResourceLocation("neenergistics", "textures/gui/states.png"));
             this.field_146123_n = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
             this.drawTexturedModalRect(0, 0, 0, 0, 16, 16);

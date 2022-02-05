@@ -2,7 +2,7 @@ package com.github.vfyjxf.nee.network.packet;
 
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
-import com.github.vfyjxf.nee.gui.NEEGuiHandler;
+import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;

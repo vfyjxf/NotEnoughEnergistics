@@ -1,5 +1,7 @@
 package com.github.vfyjxf.nee.utils;
 
+import appeng.client.gui.implementations.GuiCraftingTerm;
+import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.helpers.IContainerCraftingPacket;
 import net.minecraft.client.Minecraft;
@@ -99,6 +101,14 @@ public class GuiUtils {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static boolean isCraftingTerm(GuiScreen guiScreen) {
+        return guiScreen instanceof GuiCraftingTerm || isGuiWirelessCrafting(guiScreen);
+    }
+
+    public static boolean isPatternTerm(GuiScreen guiScreen) {
+        return guiScreen instanceof GuiPatternTerm || isPatternTermExGui(guiScreen);
     }
 
 }

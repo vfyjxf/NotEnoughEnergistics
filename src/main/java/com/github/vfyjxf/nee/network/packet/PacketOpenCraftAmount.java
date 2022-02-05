@@ -3,7 +3,7 @@ package com.github.vfyjxf.nee.network.packet;
 import appeng.container.ContainerOpenContext;
 import appeng.container.implementations.ContainerCraftingTerm;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
-import com.github.vfyjxf.nee.gui.NEEGuiHandler;
+import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -13,31 +13,33 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
-import static com.github.vfyjxf.nee.gui.NEEGuiHandler.CRAFTING_AMOUNT_ID;
-import static com.github.vfyjxf.nee.gui.NEEGuiHandler.CRAFTING_AMOUNT_WIRELESS_ID;
+import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_ID;
+import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_WIRELESS_ID;
 
 public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOpenCraftAmount, IMessage> {
 
-    private ItemStack resultStack;
+    private NBTTagCompound recipe;
 
     public PacketOpenCraftAmount() {
 
     }
 
-    public PacketOpenCraftAmount(ItemStack resultStack) {
-        this.resultStack = resultStack;
+    public PacketOpenCraftAmount(NBTTagCompound recipe) {
+        this.recipe = recipe;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.resultStack = ByteBufUtils.readItemStack(buf);
+        this.recipe = ByteBufUtils.readTag(buf);
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeItemStack(buf, this.resultStack);
+        ByteBufUtils.writeTag(buf, this.recipe);
     }
 
     @Override
@@ -53,9 +55,14 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
 
                 if (player.openContainer instanceof ContainerCraftingAmount) {
                     ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
-                    if (message.resultStack != null) {
-                        cca.setResultStack(message.resultStack);
-                        cca.getResultSlot().putStack(message.resultStack);
+                    if (message.recipe != null) {
+                        NBTTagCompound tag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                        ItemStack result = tag == null ? null : ItemStack.loadItemStackFromNBT(tag);
+                        if (result != null) {
+                            cca.setResultStack(result);
+                            cca.getResultSlot().putStack(result);
+                            cca.setRecipe(message.recipe);
+                        }
                     }
                     cca.detectAndSendChanges();
                 }
@@ -66,9 +73,12 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
 
             if (player.openContainer instanceof ContainerCraftingAmount) {
                 ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
-                if (message.resultStack != null) {
-                    cca.setResultStack(message.resultStack);
-                    cca.getResultSlot().putStack(message.resultStack);
+                if (message.recipe != null) {
+                    NBTTagCompound tag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                    ItemStack result = tag == null ? null : ItemStack.loadItemStackFromNBT(tag);
+                    cca.setResultStack(result);
+                    cca.getResultSlot().putStack(result);
+                    cca.setRecipe(message.recipe);
                 }
                 cca.detectAndSendChanges();
             }

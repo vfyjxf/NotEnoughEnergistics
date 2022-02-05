@@ -1,7 +1,7 @@
 package com.github.vfyjxf.nee;
 
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.gui.NEEGuiHandler;
+import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.proxy.CommonProxy;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -40,20 +40,21 @@ public class NotEnoughEnergistics {
     public static NotEnoughEnergistics instance;
 
     @EventHandler
-    public void preInit(FMLPreInitializationEvent e) {
+    public void preInit(FMLPreInitializationEvent event) {
+        proxy.preInit(event);
         NEENetworkHandler.init();
         NEEConfig.loadConfig(new File(Launch.minecraftHome, "config/NotEnoughEnergistics.cfg"));
         FMLCommonHandler.instance().bus().register(new NEEConfig());
     }
 
     @EventHandler
-    public void postInit(FMLPostInitializationEvent event) {
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, new NEEGuiHandler());
+    public void init(FMLInitializationEvent event) {
+        proxy.init(event);
     }
 
     @EventHandler
-    public void init(FMLInitializationEvent event) {
-        proxy.init(event);
+    public void postInit(FMLPostInitializationEvent event) {
+        NetworkRegistry.INSTANCE.registerGuiHandler(this, new NEEGuiHandler());
     }
 
 }

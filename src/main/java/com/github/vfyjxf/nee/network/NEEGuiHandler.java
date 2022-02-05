@@ -1,4 +1,4 @@
-package com.github.vfyjxf.nee.gui;
+package com.github.vfyjxf.nee.network;
 
 import appeng.api.AEApi;
 import appeng.api.implementations.guiobjects.IPortableCell;
@@ -7,9 +7,15 @@ import appeng.api.parts.IPartHost;
 import appeng.api.storage.ITerminalHost;
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
-import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.parts.reporting.PartCraftingTerminal;
+import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
+import com.github.vfyjxf.nee.client.gui.GuiCraftingAmount;
+import com.github.vfyjxf.nee.client.gui.GuiCraftingConfirm;
+import com.github.vfyjxf.nee.client.gui.GuiPatternInterface;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
+import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
+import com.github.vfyjxf.nee.container.ContainerPatternInterface;
+import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
 import com.github.vfyjxf.nee.utils.ModIDs;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional;
@@ -19,6 +25,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.p455w0rd.wirelesscraftingterminal.api.IWirelessCraftingTermHandler;
+import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm;
+import net.p455w0rd.wirelesscraftingterminal.common.container.ContainerCraftConfirm;
 import net.p455w0rd.wirelesscraftingterminal.common.utils.RandomUtils;
 import net.p455w0rd.wirelesscraftingterminal.helpers.WirelessTerminalGuiObject;
 
@@ -30,16 +38,18 @@ public class NEEGuiHandler implements IGuiHandler {
 
     public static final int CRAFTING_AMOUNT_ID = 0;
     public static final int CRAFTING_CONFIRM_ID = 1;
-    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 2;
+    public static final int PATTERN_INTERFACE_ID = 2;
+    public static final int CRAFTING_CONFIRM_WIRELESS_ID = 3;
+    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 4;
 
     @Nullable
     @Override
     public Object getServerGuiElement(int ordinal, EntityPlayer player, World world, int x, int y, int z) {
         final int guiId = ordinal >> 4;
-        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID) {
+        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID && guiId != CRAFTING_CONFIRM_WIRELESS_ID) {
             final ForgeDirection side = ForgeDirection.getOrientation(ordinal & 7);
+            TileEntity tile = world.getTileEntity(x, y, z);
             if (side != ForgeDirection.UNKNOWN) {
-                TileEntity tile = world.getTileEntity(x, y, z);
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
@@ -51,7 +61,7 @@ public class NEEGuiHandler implements IGuiHandler {
                             return null;
                         case CRAFTING_CONFIRM_ID:
                             if (part instanceof PartCraftingTerminal) {
-                                return updateGui(new ContainerCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                                return updateGui(new ContainerCraftingConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
                             return null;
 
@@ -59,12 +69,29 @@ public class NEEGuiHandler implements IGuiHandler {
                             break;
                     }
                 }
+            } else {
+                if (tile != null) {
+                    if (guiId == PATTERN_INTERFACE_ID) {
+                        if (tile instanceof TilePatternInterface) {
+                            return new ContainerPatternInterface(player.inventory, (TilePatternInterface) tile);
+                        }
+                    }
+                }
             }
         } else if (Loader.isModLoaded(ModIDs.WCT)) {
             final IPortableCell wirelessTerminal = getWirelessTerminalGui(player, world, x, y, z);
+
             if (wirelessTerminal != null) {
-                return new ContainerCraftingAmount(player.inventory, wirelessTerminal);
+                if (guiId == CRAFTING_AMOUNT_WIRELESS_ID) {
+                    return new ContainerCraftingAmount(player.inventory, wirelessTerminal);
+                } else {
+                    return new WCTContainerCraftingConfirm(player.inventory, wirelessTerminal);
+                }
+
+            } else {
+                return null;
             }
+
         }
         return null;
     }
@@ -73,10 +100,10 @@ public class NEEGuiHandler implements IGuiHandler {
     @Override
     public Object getClientGuiElement(int ordinal, EntityPlayer player, World world, int x, int y, int z) {
         final int guiId = ordinal >> 4;
-        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID) {
+        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID && guiId != CRAFTING_CONFIRM_WIRELESS_ID) {
             final ForgeDirection side = ForgeDirection.getOrientation(ordinal & 7);
+            TileEntity tile = world.getTileEntity(x, y, z);
             if (side != ForgeDirection.UNKNOWN) {
-                TileEntity tile = world.getTileEntity(x, y, z);
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
@@ -97,11 +124,28 @@ public class NEEGuiHandler implements IGuiHandler {
                     }
                 }
 
+            } else {
+                if (tile != null) {
+                    if (guiId == PATTERN_INTERFACE_ID) {
+                        if (tile instanceof TilePatternInterface) {
+                            return new GuiPatternInterface(player.inventory, (TilePatternInterface) tile);
+                        }
+                    }
+                }
             }
         } else if (Loader.isModLoaded(ModIDs.WCT)) {
+
             final IPortableCell wirelessTerminal = getWirelessTerminalGui(player, world, x, y, z);
+
             if (wirelessTerminal != null) {
-                return new GuiCraftingAmount(player.inventory, wirelessTerminal);
+                if (guiId == CRAFTING_AMOUNT_WIRELESS_ID) {
+                    return new GuiCraftingAmount(player.inventory, wirelessTerminal);
+                } else {
+                    return new GuiCraftConfirm(player.inventory, wirelessTerminal);
+                }
+
+            } else {
+                return null;
             }
         }
         return null;

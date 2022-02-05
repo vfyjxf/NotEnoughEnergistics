@@ -22,6 +22,8 @@ import org.lwjgl.input.Mouse;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.vfyjxf.nee.nei.NEECraftingHandler.INPUT_KEY;
+
 public class AppengHelper {
 
     /**
@@ -57,7 +59,7 @@ public class AppengHelper {
     private static void handleRecipeIngredientChange(GuiContainer gui, Slot currentSlot, int dWheel) {
         List<Integer> craftingSlots = new ArrayList<>();
         int currentSlotIndex = currentSlot.getSlotIndex();
-        PositionedStack currentIngredients = NEECraftingHandler.ingredients.get("input" + currentSlotIndex);
+        PositionedStack currentIngredients = NEECraftingHandler.ingredients.get(INPUT_KEY + currentSlotIndex);
         if (currentIngredients != null && currentIngredients.items.length > 1) {
             int currentStackIndex = ItemUtils.getIngredientIndex(currentSlot.getStack(), currentIngredients);
             if (currentStackIndex >= 0) {
@@ -76,7 +78,7 @@ public class AppengHelper {
                     if (NEEConfig.allowSynchronousSwitchIngredient) {
                         for (Slot slot : getCraftingSlots(gui)) {
 
-                            PositionedStack slotIngredients = NEECraftingHandler.ingredients.get("input" + slot.getSlotIndex());
+                            PositionedStack slotIngredients = NEECraftingHandler.ingredients.get(INPUT_KEY + slot.getSlotIndex());
 
                             boolean areItemStackEqual = currentSlot.getHasStack() &&
                                     slot.getHasStack() &&

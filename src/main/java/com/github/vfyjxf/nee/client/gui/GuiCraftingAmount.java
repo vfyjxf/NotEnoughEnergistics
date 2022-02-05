@@ -1,10 +1,9 @@
-package com.github.vfyjxf.nee.gui;
+package com.github.vfyjxf.nee.client.gui;
 
 import appeng.api.AEApi;
 import appeng.api.definitions.IDefinitions;
 import appeng.api.definitions.IParts;
 import appeng.api.storage.ITerminalHost;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.GuiNumberBox;
 import appeng.client.gui.widgets.GuiTabButton;
@@ -16,7 +15,6 @@ import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.helpers.Reflected;
 import appeng.parts.reporting.PartCraftingTerminal;
-import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
@@ -25,22 +23,17 @@ import com.github.vfyjxf.nee.utils.ModIDs;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Optional;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.p455w0rd.wirelesscraftingterminal.items.ItemEnum;
 import net.p455w0rd.wirelesscraftingterminal.reference.Reference;
-
-import java.util.Collections;
-
-import static com.github.vfyjxf.nee.nei.NEECraftingHelper.*;
 
 
 public class GuiCraftingAmount extends AEBaseGui {
     private GuiNumberBox amountToCraft;
     private GuiTabButton originalGuiBtn;
 
-    private GuiButton start;
+    private GuiButton next;
 
     private GuiButton plus1;
     private GuiButton plus10;
@@ -80,7 +73,7 @@ public class GuiCraftingAmount extends AEBaseGui {
         this.buttonList.add(this.minus100 = new GuiButton(0, this.guiLeft + 82, this.guiTop + 75, 32, 20, "-" + c));
         this.buttonList.add(this.minus1000 = new GuiButton(0, this.guiLeft + 120, this.guiTop + 75, 38, 20, "-" + d));
 
-        this.buttonList.add(this.start = new GuiButton(0, this.guiLeft + 128, this.guiTop + 51, 38, 20, GuiText.Next.getLocal()));
+        this.buttonList.add(this.next = new GuiButton(0, this.guiLeft + 128, this.guiTop + 51, 38, 20, GuiText.Next.getLocal()));
 
         ItemStack myIcon = null;
         final Object target = ((AEBaseContainer) this.inventorySlots).getTarget();
@@ -121,19 +114,16 @@ public class GuiCraftingAmount extends AEBaseGui {
 
     @Override
     public void drawBG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
-        this.start.displayString = isShiftKeyDown() ? GuiText.Start.getLocal() : GuiText.Next.getLocal();
+        this.next.displayString = isShiftKeyDown() ? GuiText.Start.getLocal() : GuiText.Next.getLocal();
 
         this.bindTexture("guis/craftAmt.png");
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
 
         try {
             Long.parseLong(this.amountToCraft.getText());
-            this.start.enabled = this.amountToCraft.getText().length() > 0;
+            this.next.enabled = this.amountToCraft.getText().length() > 0;
         } catch (final NumberFormatException e) {
-            this.start.enabled = false;
-        }
-        if (tracker.getRequireStacks().isEmpty()) {
-            this.start.enabled = false;
+            this.next.enabled = false;
         }
 
         this.amountToCraft.drawTextBox();
@@ -142,17 +132,13 @@ public class GuiCraftingAmount extends AEBaseGui {
     @Override
     public void drawScreen(int mouseX, int mouseY, float btn) {
         super.drawScreen(mouseX, mouseY, btn);
-        if (start.func_146115_a() && !start.enabled && start.visible && tracker.getRequireStacks().isEmpty()) {
-            //drawHoveringText
-            this.func_146283_a(Collections.singletonList(I18n.format("gui.neenergistics.button.without")), mouseX, mouseY);
-        }
     }
 
     @Override
     protected void keyTyped(final char character, final int key) {
         if (!this.checkHotbarKeys(key)) {
             if (key == 28) {
-                this.actionPerformed(this.start);
+                this.actionPerformed(this.next);
             }
             if ((key == 211 || key == 205 || key == 203 || key == 14 || character == '-' || Character.isDigit(character)) && this.amountToCraft.textboxKeyTyped(character, key)) {
                 try {
@@ -199,16 +185,8 @@ public class GuiCraftingAmount extends AEBaseGui {
                 }
             }
 
-            if (btn == this.start) {
-                int craftingAmount = Integer.parseInt(amountToCraft.getText());
-                tracker.setCraftingAmount(craftingAmount);
-                tracker.calculateIngredients();
-                if (!tracker.getRequireStacks().isEmpty()) {
-                    IAEItemStack stack = AEItemStack.create(tracker.getRequiredStack(0));
-                    noPreview = isShiftKeyDown();
-                    NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
-                    stackIndex = 1;
-                }
+            if (btn == this.next) {
+                NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(Integer.parseInt(this.amountToCraft.getText()), isShiftKeyDown()));
             }
         } catch (final NumberFormatException e) {
             // nope..

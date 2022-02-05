@@ -27,7 +27,7 @@ import java.util.*;
  */
 public class NEECraftingHandler implements IOverlayHandler {
 
-    public static final String INPUT_KEY = "input";
+    public static final String INPUT_KEY = "#";
     public static final String OUTPUT_KEY = "Outputs";
     public static Map<String, PositionedStack> ingredients = new HashMap<>();
 

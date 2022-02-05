@@ -32,7 +32,6 @@ public class NEEConfig {
     public static boolean enableNEIDragNDrop = true;
     public static boolean useStackSizeFromNEI = true;
     public static boolean keepGhostitems = true;
-    public static boolean enableCraftAmountSettingGui = false;
 
     public static int draggedStackDefaultSize = 1;
 
@@ -68,9 +67,6 @@ public class NEEConfig {
 
             drawHighlight = config.get(CATEGORY_CRAFTING_HELPER, "drawHighlight", true,
                     "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
-
-            enableCraftAmountSettingGui = config.get(CATEGORY_CRAFTING_HELPER, "enableCraftAmountSettingGui", false,
-                    "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
         }
 
         {
@@ -90,7 +86,9 @@ public class NEEConfig {
                     "The default size of the dragged ItemStack when it is put in slot(Used when useStackSizeFromNEI is false)", 1, 64).getInt();
         }
 
-        if (config.hasChanged()) config.save();
+        if (config.hasChanged()) {
+            config.save();
+        }
     }
 
     public static void reload() {
@@ -124,9 +122,6 @@ public class NEEConfig {
 
             drawHighlight = config.get(CATEGORY_CRAFTING_HELPER, "drawHighlight", true,
                     "if true,it will draw highlight for missing items and item which can autocraft in nei").getBoolean();
-
-            enableCraftAmountSettingGui = config.get(CATEGORY_CRAFTING_HELPER, "enableCraftAmountSettingGui", false,
-                    "If true, it will open a gui to set craft amount after ctrl + click [?] button").getBoolean();
         }
 
         {

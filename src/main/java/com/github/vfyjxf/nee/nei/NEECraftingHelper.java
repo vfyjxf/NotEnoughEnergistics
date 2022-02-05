@@ -22,8 +22,11 @@ import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import com.github.vfyjxf.nee.network.packet.PacketOpenCraftAmount;
+import com.github.vfyjxf.nee.network.packet.PacketSetRecipe;
+import com.github.vfyjxf.nee.network.packet.PacketValueConfigServer;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
+import com.github.vfyjxf.nee.utils.ItemUtils;
 import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.ReflectionHelper;
@@ -49,6 +52,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.github.vfyjxf.nee.nei.NEECraftingHandler.INPUT_KEY;
+import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
+
 
 public class NEECraftingHelper implements IOverlayHandler {
     public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
@@ -56,35 +62,82 @@ public class NEECraftingHelper implements IOverlayHandler {
     public static int stackIndex = 1;
     public static boolean noPreview = false;
 
+    private static boolean isPatternInterfaceExists = false;
+
+    public static final int RECIPE_LENGTH = 9;
+
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
-        boolean isCraftingGuiTerm = firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui);
-        if (isCraftingGuiTerm && NEECraftingHandler.isCraftingTableRecipe(recipe)) {
-            tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
+        if (GuiUtils.isCraftingTerm(firstGui) && NEECraftingHandler.isCraftingTableRecipe(recipe)) {
             boolean doCraftingHelp = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview")) || Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
             noPreview = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
             if (doCraftingHelp) {
-                if (noPreview) {
+
+                if (isPatternInterfaceExists) {
+//                    NEENetworkHandler.getInstance().sendToServer(new PacketSetRecipe(packCraftingRecipe(recipe, recipeIndex)));
+                    NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(packCraftingRecipe(recipe,recipeIndex)));
+                    isPatternInterfaceExists = false;
+
+                } else {
+                    tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
                     if (!tracker.getRequireStacks().isEmpty()) {
                         IAEItemStack stack = AEItemStack.create(tracker.getRequiredStack(0));
                         NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
+                        stackIndex = 1;
                     } else {
-                        moveItem(firstGui, recipe, recipeIndex);
+                        moveItems(firstGui, recipe, recipeIndex);
                     }
-                } else if (NEEConfig.enableCraftAmountSettingGui) {
-                    NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(recipe.getResultStack(recipeIndex).item));
+
                 }
-                stackIndex = 1;
+
             } else {
-                moveItem(firstGui, recipe, recipeIndex);
+                moveItems(firstGui, recipe, recipeIndex);
             }
         }
+    }
+
+    private NBTTagCompound packCraftingRecipe(IRecipeHandler recipeHandler, int recipeIndex) {
+        final NBTTagCompound recipe = new NBTTagCompound();
+        final List<PositionedStack> ingredients = recipeHandler.getIngredientStacks(recipeIndex);
+        for (final PositionedStack positionedStack : ingredients) {
+            final int col = (positionedStack.relx - 25) / 18;
+            final int row = (positionedStack.rely - 6) / 18;
+            int slotIndex = col + row * 3;
+            if (positionedStack.items != null && positionedStack.items.length > 0) {
+                final ItemStack[] currentStackList = positionedStack.items;
+                ItemStack stack = positionedStack.items[0];
+
+                ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
+                if (preferModItem != null) {
+                    stack = preferModItem;
+                }
+
+                for (ItemStack currentStack : currentStackList) {
+                    if (Platform.isRecipePrioritized(currentStack) || ItemUtils.isPreferItems(currentStack)) {
+                        stack = currentStack.copy();
+                    }
+                }
+
+                //Fix ItemStack with wrong meta
+                if (stack.getItemDamage() == 32767) {
+                    stack.setItemDamage(0);
+                }
+
+                recipe.setTag(INPUT_KEY + slotIndex, stack.writeToNBT(new NBTTagCompound()));
+            }
+        }
+
+        PositionedStack resultStack = recipeHandler.getResultStack(recipeIndex);
+        if (resultStack.item != null) {
+            recipe.setTag(OUTPUT_KEY, resultStack.item.writeToNBT(new NBTTagCompound()));
+        }
+        return recipe;
     }
 
     /**
      * Copied from GTNewHorizons/Applied-Energistics-2-Unofficial
      */
-    private void moveItem(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
+    private void moveItems(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex) {
         try {
             final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
             if (firstGui instanceof GuiCraftingTerm) {
@@ -241,4 +294,18 @@ public class NEECraftingHelper implements IOverlayHandler {
         }
     }
 
+    @SubscribeEvent
+    public void onInitGui(GuiScreenEvent.InitGuiEvent.Post event) {
+        if (event.gui instanceof GuiRecipe) {
+            GuiRecipe guiRecipe = (GuiRecipe) event.gui;
+            GuiContainer firstGui = guiRecipe.firstGui;
+            if (GuiUtils.isCraftingTerm(firstGui)) {
+                NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("PatternInterface.check"));
+            }
+        }
+    }
+
+    public static void setIsPatternInterfaceExists(boolean isPatternInterfaceExists) {
+        NEECraftingHelper.isPatternInterfaceExists = isPatternInterfaceExists;
+    }
 }

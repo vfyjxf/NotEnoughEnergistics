@@ -11,12 +11,14 @@ import appeng.tile.inventory.AppEngInternalInventory;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 public class ContainerCraftingAmount extends AEBaseContainer {
 
     private final Slot resultSlot;
     private ItemStack resultStack;
+    private NBTTagCompound recipe;
 
     public ContainerCraftingAmount(InventoryPlayer ip, Object anchor) {
         super(ip, anchor);
@@ -44,6 +46,10 @@ public class ContainerCraftingAmount extends AEBaseContainer {
         return new PlayerSource(this.getPlayerInv().player, (IActionHost) this.getTarget());
     }
 
+    public NBTTagCompound getRecipe() {
+        return recipe;
+    }
+
     public Slot getResultSlot() {
         return resultSlot;
     }
@@ -54,5 +60,9 @@ public class ContainerCraftingAmount extends AEBaseContainer {
 
     public void setResultStack(ItemStack resultStack) {
         this.resultStack = resultStack;
+    }
+
+    public void setRecipe(NBTTagCompound recipe) {
+        this.recipe = recipe;
     }
 }

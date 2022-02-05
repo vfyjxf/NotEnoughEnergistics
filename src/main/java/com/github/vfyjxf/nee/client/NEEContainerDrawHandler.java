@@ -93,37 +93,22 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                             Point point = guiRecipe.getRecipePosition(tracker.getRecipeIndex());
                             Slot currentSlot = guiRecipe.slotcontainer.getSlotWithStack(ingredient.getIngredient(), point.x, point.y);
                             if (slot.equals(currentSlot)) {
-                                if (!NEEConfig.enableCraftAmountSettingGui) {
-                                    GuiContainer firstGui = guiRecipe.firstGui;
-                                    boolean renderAutoAbleItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && ingredient.isCraftable() && ingredient.requiresToCraft();
-                                    boolean renderCraftableItems = (firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui)) && ingredient.isCraftable();
-                                    boolean renderMissingItems = (firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui)) && !ingredient.isCraftable() && ingredient.requiresToCraft();
-                                    if (renderAutoAbleItems || renderCraftableItems) {
-                                        Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
-                                        this.drawCraftableTooltip = renderCraftableItems;
-                                        this.drawRequestTooltip = renderAutoAbleItems;
-                                    }
-                                    if (renderMissingItems) {
-                                        Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
-                                        this.drawMissingTooltip = true;
-                                    }
-                                } else {
-
-                                    if (ingredient.isCraftable()) {
-                                        Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
-                                        this.drawRequestTooltip = true;
-                                    } else {
-                                        Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                                slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                                new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
-                                        this.drawMissingTooltip = true;
-                                    }
+                                GuiContainer firstGui = guiRecipe.firstGui;
+                                boolean renderAutoAbleItems = (GuiUtils.isCraftingTerm(firstGui)) && ingredient.isCraftable() && ingredient.requiresToCraft();
+                                boolean renderCraftableItems = (GuiUtils.isPatternTerm(firstGui)) && ingredient.isCraftable();
+                                boolean renderMissingItems = (GuiUtils.isCraftingTerm(firstGui)) && !ingredient.isCraftable() && ingredient.requiresToCraft();
+                                if (renderAutoAbleItems || renderCraftableItems) {
+                                    Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                            slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                            new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
+                                    this.drawCraftableTooltip = renderCraftableItems;
+                                    this.drawRequestTooltip = renderAutoAbleItems;
+                                }
+                                if (renderMissingItems) {
+                                    Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
+                                            slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
+                                            new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
+                                    this.drawMissingTooltip = true;
                                 }
                             }
                         }
@@ -138,8 +123,8 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         if (event.gui instanceof GuiRecipe) {
             GuiRecipe guiRecipe = (GuiRecipe) event.gui;
             GuiContainer firstGui = guiRecipe.firstGui;
-            boolean isGuiPatternTerm = firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(firstGui);
-            boolean isCraftingTerm = firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(firstGui);
+            boolean isGuiPatternTerm = GuiUtils.isPatternTerm(firstGui);
+            boolean isCraftingTerm = GuiUtils.isCraftingTerm(firstGui);
             if (isCraftingTerm || isGuiPatternTerm) {
                 if (overlayButtons.isEmpty()) {
                     setOverlayButtons(guiRecipe);
@@ -172,8 +157,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
 
     private void drawCraftingHelperTooltip(GuiRecipe guiRecipe, int mouseX, int mouseY) {
         List<String> tooltips = new ArrayList<>();
-        boolean isCraftingTerm = guiRecipe.firstGui instanceof GuiCraftingTerm || GuiUtils.isGuiWirelessCrafting(guiRecipe.firstGui);
-        if (isCraftingTerm) {
+        if (GuiUtils.isCraftingTerm(guiRecipe.firstGui)) {
             if (this.drawRequestTooltip) {
                 tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
                                 EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
@@ -183,8 +167,7 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
                 tooltips.add(EnumChatFormatting.RED + I18n.format("neenergistics.gui.tooltip.missing"));
             }
         }
-        boolean isPatternTerm = guiRecipe.firstGui instanceof GuiPatternTerm || GuiUtils.isPatternTermExGui(guiRecipe.firstGui);
-        if (this.drawCraftableTooltip && isPatternTerm) {
+        if (this.drawCraftableTooltip && GuiUtils.isPatternTerm(guiRecipe.firstGui)) {
             tooltips.add(EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.pattern"));
         }
         //drawHoveringText

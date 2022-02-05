@@ -130,45 +130,22 @@ public class IngredientTracker {
 
     public List<ItemStack> getRequireToCraftStacks() {
         List<ItemStack> requireToCraftStacks = new ArrayList<>();
-        if (NEEConfig.enableCraftAmountSettingGui) {
-            for (Ingredient ingredient : this.getIngredients()) {
-                boolean find = false;
-                if (ingredient.isCraftable()) {
-                    for (ItemStack stack : requireToCraftStacks) {
-                        boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
-                        if (areStackEqual) {
-                            stack.stackSize += ingredient.getRequireCount();
-                            find = true;
-                            break;
-                        }
-
+        for (Ingredient ingredient : this.getIngredients()) {
+            boolean find = false;
+            if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
+                for (ItemStack stack : requireToCraftStacks) {
+                    boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
+                    if (areStackEqual) {
+                        stack.stackSize = (int) (stack.stackSize + ingredient.getMissingCount());
+                        find = true;
                     }
 
-                    if (!find) {
-                        ItemStack requireStack = ingredient.getCraftableIngredient().copy();
-                        requireStack.stackSize = ((int) ingredient.getRequireCount());
-                        requireToCraftStacks.add(requireStack);
-                    }
                 }
-            }
-        } else {
-            for (Ingredient ingredient : this.getIngredients()) {
-                boolean find = false;
-                if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
-                    for (ItemStack stack : requireToCraftStacks) {
-                        boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
-                        if (areStackEqual) {
-                            stack.stackSize = (int) (stack.stackSize + ingredient.getMissingCount());
-                            find = true;
-                        }
 
-                    }
-
-                    if (!find) {
-                        ItemStack requireStack = ingredient.getCraftableIngredient().copy();
-                        requireStack.stackSize = ((int) ingredient.getMissingCount());
-                        requireToCraftStacks.add(requireStack);
-                    }
+                if (!find) {
+                    ItemStack requireStack = ingredient.getCraftableIngredient().copy();
+                    requireStack.stackSize = ((int) ingredient.getMissingCount());
+                    requireToCraftStacks.add(requireStack);
                 }
             }
         }
