@@ -22,12 +22,12 @@ import net.minecraft.world.World;
 public class BlockPatternInterface extends AEBaseTileBlock {
 
     public static BlockPatternInterface BLOCK_INSTANCE = new BlockPatternInterface();
-    public static Item ITEM_INSTANCE = new AEBaseItemBlock(BLOCK_INSTANCE).setRegistryName(NotEnoughEnergistics.MODID, "patterninterface").setTranslationKey(NotEnoughEnergistics.MODID + "." + "patterninterface");
+    public static Item ITEM_INSTANCE = new AEBaseItemBlock(BLOCK_INSTANCE).setRegistryName(NotEnoughEnergistics.MODID, "pattern_interface").setTranslationKey(NotEnoughEnergistics.MODID + "." + "pattern_interface");
 
     public BlockPatternInterface() {
         super(Material.IRON);
-        setRegistryName(NotEnoughEnergistics.MODID, "patterninterface");
-        setTranslationKey(NotEnoughEnergistics.MODID + "." + "patterninterface");
+        setRegistryName(NotEnoughEnergistics.MODID, "pattern_interface");
+        setTranslationKey(NotEnoughEnergistics.MODID + "." + "pattern_interface");
         setTileEntity(TilePatternInterface.class);
 
     }

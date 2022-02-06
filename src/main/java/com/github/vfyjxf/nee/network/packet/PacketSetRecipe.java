@@ -73,7 +73,7 @@ public class PacketSetRecipe implements IMessage, IMessageHandler<PacketSetRecip
 
                                 if (!patternStack.isEmpty()) {
 
-                                    if (tpi.putPattern(patternStack)) {
+                                    if (tpi.putPattern(patternStack) >=0) {
                                         return;
                                     }
                                 }

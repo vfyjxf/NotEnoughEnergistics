@@ -361,16 +361,16 @@ public class TilePatternInterface extends AENetworkInvTile implements IGridTicka
         return IntStream.range(0, this.patterns.getSlots()).anyMatch(slot -> patterns.getStackInSlot(slot).isEmpty());
     }
 
-    public boolean putPattern(ItemStack pattern) {
+    public int putPattern(ItemStack pattern) {
         for (int i = 0; i < this.patterns.getSlots(); i++) {
             ItemStack stack = patterns.getStackInSlot(i);
             if (stack.isEmpty()) {
                 patterns.setStackInSlot(i, pattern);
                 updateCraftingList();
-                return true;
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
     public void updateCraftingList() {

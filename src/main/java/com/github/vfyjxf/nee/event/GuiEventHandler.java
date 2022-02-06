@@ -1,26 +1,37 @@
 package com.github.vfyjxf.nee.event;
 
 import appeng.client.gui.AEBaseGui;
+import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.client.gui.implementations.GuiInterface;
 import appeng.client.gui.implementations.GuiPatternTerm;
+import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
 import com.github.vfyjxf.nee.client.KeyBindings;
 import com.github.vfyjxf.nee.client.gui.widgets.GuiImgButtonEnableCombination;
 import com.github.vfyjxf.nee.config.ItemCombination;
 import com.github.vfyjxf.nee.config.NEEConfig;
+import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
+import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
 import com.github.vfyjxf.nee.network.packet.PacketStackSizeChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
+import com.github.vfyjxf.nee.utils.ModIds;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -28,11 +39,54 @@ import org.lwjgl.input.Mouse;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.tracker;
 import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.INPUT_KEY;
 
 public class GuiEventHandler {
 
     private GuiImgButtonEnableCombination buttonCombination;
+
+    @SubscribeEvent
+    public void onGuiOpen(GuiOpenEvent event) {
+        GuiScreen old = Minecraft.getMinecraft().currentScreen;
+        GuiScreen next = event.getGui();
+        if (old != null) {
+            if (GuiUtils.isGuiCraftConfirm(old) && isContainerCraftConfirm(((GuiContainer) old).inventorySlots)) {
+                if (tracker != null) {
+                    if (GuiUtils.isGuiCraftingTerm(next)) {
+                        if (tracker.hasNext()) {
+                            tracker.requestNextIngredient();
+                        } else {
+                            tracker = null;
+                        }
+                    } else {
+                        if (tracker != null) {
+                            tracker = null;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    @SubscribeEvent
+    public void onCraftConfirmActionPerformed(GuiScreenEvent.ActionPerformedEvent.Post event) {
+
+        if (tracker != null) {
+            if (event.getGui() instanceof GuiCraftConfirm) {
+                if (getCancelButton((GuiCraftConfirm) event.getGui()) == event.getButton()) {
+                    tracker = null;
+                }
+            }
+
+            if (GuiUtils.isWirelessGuiCraftConfirm(event.getGui())) {
+                if (getCancelButton((p455w0rd.wct.client.gui.GuiCraftConfirm) event.getGui()) == event.getButton()) {
+                    tracker = null;
+                }
+            }
+        }
+    }
 
     @SubscribeEvent
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre event) {
@@ -152,5 +206,20 @@ public class GuiEventHandler {
             }
         }
     }
+
+    private boolean isContainerCraftConfirm(Container container) {
+        return (container instanceof ContainerCraftConfirm || GuiUtils.isContainerWirelessCraftingConfirm(container)) &&
+                !((container instanceof ContainerCraftingConfirm) || (container instanceof WCTContainerCraftingConfirm));
+    }
+
+    private GuiButton getCancelButton(GuiCraftConfirm gui) {
+        return ObfuscationReflectionHelper.getPrivateValue(GuiCraftConfirm.class, gui, "cancel");
+    }
+
+    @Optional.Method(modid = ModIds.WCT)
+    private GuiButton getCancelButton(p455w0rd.wct.client.gui.GuiCraftConfirm gui) {
+        return ObfuscationReflectionHelper.getPrivateValue(p455w0rd.wct.client.gui.GuiCraftConfirm.class, gui, "cancel");
+    }
+
 
 }

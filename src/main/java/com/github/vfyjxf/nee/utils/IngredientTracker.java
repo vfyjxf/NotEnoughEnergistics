@@ -8,7 +8,10 @@ import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.me.ItemRepo;
 import appeng.container.AEBaseContainer;
 import appeng.helpers.IContainerCraftingPacket;
+import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.config.NEEConfig;
+import com.github.vfyjxf.nee.network.NEENetworkHandler;
+import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.gui.recipes.RecipesGui;
@@ -22,14 +25,16 @@ import p455w0rd.wct.client.gui.GuiWCT;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.noPreview;
+
 public class IngredientTracker {
 
     private final List<Ingredient> ingredients = new ArrayList<>();
-    private int craftingAmount = 1;
     private AEBaseContainer termContainer;
     private final GuiScreen parentScreen;
     private EntityPlayer player;
     private List<ItemStack> requireStacks;
+    private int currentIndex = 0;
 
 
     /**
@@ -123,51 +128,6 @@ public class IngredientTracker {
 
     public List<ItemStack> getRequireToCraftStacks() {
         List<ItemStack> requireToCraftStacks = new ArrayList<>();
-        /*
-        if (NEEConfig.enableCraftAmountSettingGui) {
-            for (Ingredient ingredient : this.getIngredients()) {
-                boolean find = false;
-                if (ingredient.isCraftable()) {
-                    for (ItemStack stack : requireToCraftStacks) {
-                        boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
-                        if (areStackEqual) {
-                            stack.setCount((int) (stack.getCount() + ingredient.getRequireCount()));
-                            find = true;
-                            break;
-                        }
-                    }
-
-                    if (!find) {
-                        ItemStack requireStack = ingredient.getCraftableIngredient().copy();
-                        requireStack.setCount((int) ingredient.getRequireCount());
-                        requireToCraftStacks.add(requireStack);
-                    }
-                }
-            }
-        } else {
-            for (Ingredient ingredient : this.getIngredients()) {
-                boolean find = false;
-                if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
-                    for (ItemStack stack : requireToCraftStacks) {
-                        boolean areStackEqual = stack.isItemEqual(ingredient.getCraftableIngredient()) && ItemStack.areItemStackTagsEqual(stack, ingredient.getCraftableIngredient());
-                        if (areStackEqual) {
-                            stack.setCount((int) (stack.getCount() + ingredient.getMissingCount()));
-                            find = true;
-                            break;
-                        }
-
-                    }
-
-                    if (!find) {
-                        ItemStack requireStack = ingredient.getCraftableIngredient().copy();
-                        requireStack.setCount((int) ingredient.getMissingCount());
-                        requireToCraftStacks.add(requireStack);
-                    }
-                }
-            }
-        }
-
-         */
         for (Ingredient ingredient : this.getIngredients()) {
             boolean find = false;
             if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
@@ -208,12 +168,20 @@ public class IngredientTracker {
         return false;
     }
 
-    public List<Ingredient> getIngredients() {
-        return ingredients;
+    public boolean hasNext() {
+        return currentIndex < getRequireStacks().size();
     }
 
-    public void setCraftingAmount(int craftingAmount) {
-        this.craftingAmount = craftingAmount;
+    public void requestNextIngredient() {
+        IAEItemStack stack = AEItemStack.fromItemStack(this.getRequiredStack(currentIndex));
+        if (stack != null) {
+            NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
+        }
+        currentIndex++;
+    }
+
+    public List<Ingredient> getIngredients() {
+        return ingredients;
     }
 
     public void addAvailableStack(ItemStack stack) {
@@ -249,12 +217,6 @@ public class IngredientTracker {
     }
 
     public void calculateIngredients() {
-
-        //set requireCount and reset currentCount
-        for (Ingredient ingredient : ingredients) {
-            ingredient.setRequireCount(ingredient.getDefaultRequireCount() * craftingAmount);
-            ingredient.setCurrentCount(0);
-        }
 
         List<IAEItemStack> stacks = NEEConfig.matchOtherItems ? getStorageStacks() : getCraftableStacks();
         for (Ingredient ingredient : this.ingredients) {

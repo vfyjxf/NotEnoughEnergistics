@@ -63,9 +63,7 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
                         cpc.setSelectedSlotIndex(slot.slotNumber);
                     }
                 }
-            }
-
-            if ("Gui.PatternInterface".equals(message.name)) {
+            } else if ("Gui.PatternInterface".equals(message.name)) {
                 if (container instanceof ContainerPatternInterface) {
                     ContainerPatternInterface cpc = (ContainerPatternInterface) container;
                     TilePatternInterface tile = (TilePatternInterface) cpc.getTileEntity();
@@ -73,9 +71,7 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
                     cpc.removeCurrentRecipe();
                     tile.updateCraftingList();
                 }
-            }
-
-            if ("PatternInterface.check".equals(message.name)) {
+            } else if ("PatternInterface.check".equals(message.name)) {
                 if (container instanceof AEBaseContainer) {
                     AEBaseContainer abc = (AEBaseContainer) container;
                     IGrid grid = getNetwork(abc);

@@ -9,18 +9,20 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
+import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.OUTPUT_KEY;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_ID;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_WIRELESS_ID;
 
 public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOpenCraftAmount, IMessage> {
 
-    private ItemStack resultStack;
+    private NBTTagCompound recipe;
     private boolean isWirelessTerm;
     private boolean isBauble;
     private int wctSlot = -1;
@@ -29,19 +31,19 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
 
     }
 
-    public PacketOpenCraftAmount(ItemStack resultStack) {
-        this.resultStack = resultStack;
+    public PacketOpenCraftAmount(NBTTagCompound recipe) {
+        this.recipe = recipe;
     }
 
-    public PacketOpenCraftAmount(ItemStack resultStack, boolean isBauble, int wctSlot) {
-        this.resultStack = resultStack;
+    public PacketOpenCraftAmount(NBTTagCompound recipe, boolean isBauble, int wctSlot) {
+        this.recipe = recipe;
         this.isBauble = isBauble;
         this.wctSlot = wctSlot;
     }
 
     @Override
     public void fromBytes(ByteBuf buf) {
-        this.resultStack = ByteBufUtils.readItemStack(buf);
+        this.recipe = ByteBufUtils.readTag(buf);
         this.isWirelessTerm = buf.readBoolean();
         if (isWirelessTerm) {
             this.isBauble = buf.readBoolean();
@@ -51,7 +53,7 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
 
     @Override
     public void toBytes(ByteBuf buf) {
-        ByteBufUtils.writeItemStack(buf, this.resultStack);
+        ByteBufUtils.writeTag(buf, this.recipe);
         if (this.wctSlot >= 0) {
             buf.writeBoolean(true);
             buf.writeBoolean(this.isBauble);
@@ -75,9 +77,12 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
 
                     if (player.openContainer instanceof ContainerCraftingAmount) {
                         ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
-                        if (message.resultStack != null && !message.resultStack.isEmpty()) {
-                            cca.setResultStack(message.resultStack);
-                            cca.getResultSlot().putStack(message.resultStack);
+                        if (message.recipe != null && !message.recipe.isEmpty()) {
+                            NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                            ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
+                            cca.setResultStack(result);
+                            cca.getResultSlot().putStack(result);
+                            cca.setRecipe(message.recipe);
                         }
                         cca.detectAndSendChanges();
                     }
@@ -88,9 +93,12 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
 
                 if (player.openContainer instanceof ContainerCraftingAmount) {
                     ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
-                    if (message.resultStack != null) {
-                        cca.setResultStack(message.resultStack);
-                        cca.getResultSlot().putStack(message.resultStack);
+                    if (message.recipe != null) {
+                        NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                        ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
+                        cca.setResultStack(result);
+                        cca.getResultSlot().putStack(result);
+                        cca.setRecipe(message.recipe);
                     }
                     if (message.isWirelessTerm) {
                         cca.setBauble(message.isBauble);

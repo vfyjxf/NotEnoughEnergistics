@@ -1,8 +1,12 @@
 package com.github.vfyjxf.nee.utils;
 
+import appeng.client.gui.implementations.GuiCraftConfirm;
+import appeng.client.gui.implementations.GuiCraftingTerm;
+import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.slot.AppEngSlot;
 import appeng.helpers.IContainerCraftingPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.items.IItemHandler;
@@ -64,6 +68,18 @@ public class GuiUtils {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    public static boolean isContainerCraftingTerm(Container container) {
+        return container instanceof ContainerCraftingTerm || isWirelessCraftingTermContainer(container);
+    }
+
+    public static boolean isGuiCraftingTerm(GuiScreen gui) {
+        return gui instanceof GuiCraftingTerm || isGuiWirelessCrafting(gui);
+    }
+
+    public static boolean isGuiCraftConfirm(GuiScreen gui) {
+        return gui instanceof GuiCraftConfirm || isWirelessGuiCraftConfirm(gui);
     }
 
 }

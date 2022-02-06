@@ -49,7 +49,9 @@ public class GuiPatternInterface extends AEBaseGui {
     protected void actionPerformed(GuiButton button) throws IOException {
         super.actionPerformed(button);
         if (button == this.removeButton) {
-            NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("Gui.PatternInterface"));
+            if(container.getSelectedSlot() != null) {
+                NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("Gui.PatternInterface"));
+            }
         }
     }
 

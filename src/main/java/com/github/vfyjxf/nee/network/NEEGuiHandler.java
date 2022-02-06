@@ -6,16 +6,17 @@ import appeng.api.parts.IPartHost;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.AEPartLocation;
+import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
-import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.parts.reporting.PartCraftingTerminal;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import com.github.vfyjxf.nee.client.gui.GuiCraftingAmount;
-import com.github.vfyjxf.nee.client.gui.GuiCraftingConfirm;
 import com.github.vfyjxf.nee.client.gui.GuiPatternInterface;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
+import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
 import com.github.vfyjxf.nee.container.ContainerPatternInterface;
+import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
 import com.github.vfyjxf.nee.utils.ModIds;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -45,17 +46,18 @@ public class NEEGuiHandler implements IGuiHandler {
     public static final int CRAFTING_AMOUNT_ID = 0;
     public static final int CRAFTING_CONFIRM_ID = 1;
     public static final int PATTERN_INTERFACE_ID = 2;
-    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 3;
+    public static final int CRAFTING_CONFIRM_WIRELESS_ID = 3;
+    public static final int CRAFTING_AMOUNT_WIRELESS_ID = 4;
 
     @Nullable
     @Override
     public Object getServerGuiElement(int ordinal, EntityPlayer player, World world, int x, int y, int z) {
         final int guiId = ordinal >> 4;
-        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID) {
+        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID && guiId != CRAFTING_CONFIRM_WIRELESS_ID) {
             final AEPartLocation side = AEPartLocation.fromOrdinal(ordinal & 7);
             //There should be no crafting terminal in the center of the block, right?
+            TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
             if (side != AEPartLocation.INTERNAL) {
-                TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
@@ -67,7 +69,7 @@ public class NEEGuiHandler implements IGuiHandler {
                             return null;
                         case CRAFTING_CONFIRM_ID:
                             if (part instanceof PartCraftingTerminal) {
-                                return updateGui(new ContainerCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                                return updateGui(new ContainerCraftingConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
                             return null;
 
@@ -77,7 +79,6 @@ public class NEEGuiHandler implements IGuiHandler {
 
                 }
             } else {
-                TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
                 if (tile != null) {
                     if (guiId == PATTERN_INTERFACE_ID) {
                         if (tile instanceof TilePatternInterface) {
@@ -87,12 +88,18 @@ public class NEEGuiHandler implements IGuiHandler {
                 }
             }
         } else if (Loader.isModLoaded(ModIds.WCT)) {
-            final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
-            Container container = player.openContainer;
-            if (craftingTerminal != null && container instanceof ContainerWCT) {
-                return new ContainerCraftingAmount(player.inventory, craftingTerminal);
-            }
 
+            final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
+            if (craftingTerminal != null) {
+                if (guiId == CRAFTING_AMOUNT_WIRELESS_ID) {
+                    Container container = player.openContainer;
+                    if (container instanceof ContainerWCT) {
+                        return new ContainerCraftingAmount(player.inventory, craftingTerminal);
+                    }
+                } else {
+                    return new WCTContainerCraftingConfirm(player.inventory, craftingTerminal, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
+                }
+            }
         }
         return null;
     }
@@ -101,11 +108,11 @@ public class NEEGuiHandler implements IGuiHandler {
     @Override
     public Object getClientGuiElement(int ordinal, EntityPlayer player, World world, int x, int y, int z) {
         final int guiId = ordinal >> 4;
-        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID) {
+        if (guiId != CRAFTING_AMOUNT_WIRELESS_ID && guiId != CRAFTING_CONFIRM_WIRELESS_ID) {
             final AEPartLocation side = AEPartLocation.fromOrdinal(ordinal & 7);
             //There should be no crafting terminal in the center of the block, right?
+            TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
             if (side != AEPartLocation.INTERNAL) {
-                TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
                 if (tile instanceof IPartHost) {
                     IPartHost partHost = (IPartHost) tile;
                     IPart part = partHost.getPart(side);
@@ -118,7 +125,7 @@ public class NEEGuiHandler implements IGuiHandler {
                             return null;
                         case CRAFTING_CONFIRM_ID:
                             if (part instanceof PartCraftingTerminal) {
-                                return updateGui(new GuiCraftingConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                                return updateGui(new GuiCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
                             return null;
 
@@ -128,7 +135,6 @@ public class NEEGuiHandler implements IGuiHandler {
                 }
 
             } else {
-                TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
                 if (tile != null) {
                     if (guiId == PATTERN_INTERFACE_ID) {
                         if (tile instanceof TilePatternInterface) {
@@ -139,10 +145,19 @@ public class NEEGuiHandler implements IGuiHandler {
             }
         } else if (Loader.isModLoaded(ModIds.WCT)) {
             final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
-            Container container = player.openContainer;
-            if (craftingTerminal != null && container instanceof ContainerWCT) {
-                return new GuiCraftingAmount(player.inventory, craftingTerminal, (ContainerWCT) container);
+            if (craftingTerminal != null) {
+                if (guiId == CRAFTING_AMOUNT_WIRELESS_ID) {
+                    Container container = player.openContainer;
+                    if (container instanceof ContainerWCT) {
+                        return new GuiCraftingAmount(player.inventory, craftingTerminal, (ContainerWCT) container);
+                    }
+                } else {
+
+                    return new p455w0rd.wct.client.gui.GuiCraftConfirm(player.inventory, craftingTerminal, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
+                }
             }
+
+
         }
         return null;
     }
