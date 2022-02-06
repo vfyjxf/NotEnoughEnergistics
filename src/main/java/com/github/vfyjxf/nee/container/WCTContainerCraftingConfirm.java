@@ -20,10 +20,10 @@ public class WCTContainerCraftingConfirm extends ContainerCraftConfirm {
 
     @Override
     public void startJob() {
-        super.startJob();
         if (Platform.isServer() && this.tile != null) {
             hasWorkCommitted = true;
         }
+        super.startJob();
     }
 
     @Override
@@ -31,6 +31,7 @@ public class WCTContainerCraftingConfirm extends ContainerCraftConfirm {
         super.onContainerClosed(entityPlayer);
         if (Platform.isServer() && this.tile != null && !hasWorkCommitted) {
             this.tile.getPatternInventory().setStackInSlot(patternIndex, ItemStack.EMPTY);
+            this.tile.updateCraftingList();
         }
     }
 

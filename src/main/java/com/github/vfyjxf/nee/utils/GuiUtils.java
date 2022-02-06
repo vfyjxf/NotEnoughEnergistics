@@ -61,6 +61,15 @@ public class GuiUtils {
         }
     }
 
+    public static boolean isWCTContainerCraftingConfirm(Container container) {
+        try {
+            Class<?> wctContainerCrafting = Class.forName("com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm");
+            return wctContainerCrafting.isInstance(container);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     public static boolean isWirelessTerminalGuiObject(Object guiObj) {
         try {
             Class<?> wirelessTerminalGuiObjClass = Class.forName("p455w0rd.ae2wtlib.api.WTGuiObject");

@@ -1,7 +1,6 @@
-jei.tooltip.nee.helper.crafting=点击以请求缺失的物品
+jei.tooltip.nee.helper.crafting.text1=点击来请求缺失的物品。
+jei.tooltip.nee.helper.crafting.text2=点击来请求配方成品。
 jei.tooltip.nee.helper.pattern=自动合成已可用
-jei.tooltip.nee.need.crating=你必须设置样板终端为合成中模式。
-jei.tooltip.nee.need.processing=你必须设置样板终端为处理中模式。
 
 key.neenergistics.crafting.helper.preview=合成帮助
 key.neenergistics.crafting.helper.noPreview=合成帮助(无预览)

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.github.vfyjxf.nee.client.KeyBindings.craftingHelperPreview;
+import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.isIsPatternInterfaceExists;
 import static mezz.jei.api.recipe.transfer.IRecipeTransferError.Type.USER_FACING;
 
 public class CraftingHelperTooltipError implements IRecipeTransferError {
@@ -24,7 +25,6 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
 
     private IngredientTracker tracker;
     private boolean isCraftingTerm;
-    private boolean hasPatternCrafter;
 
     public CraftingHelperTooltipError() {
     }
@@ -48,12 +48,18 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
         List<String> tooltips = new ArrayList<>();
         for (Ingredient ingredient : tracker.getIngredients()) {
             if (isCraftingTerm) {
-                if (ingredient.requiresToCraft() && ingredient.isCraftable()) {
-                    drawTooltipInCraftingTerm = true;
-                    ingredient.getIngredient().drawHighlight(minecraft, craftableColor, recipeX, recipeY);
-                } else if (ingredient.requiresToCraft()) {
-                    drawMissingItemTooltip = true;
-                    ingredient.getIngredient().drawHighlight(minecraft, missingColor, recipeX, recipeY);
+                if (!isIsPatternInterfaceExists()) {
+                    if (ingredient.requiresToCraft() && ingredient.isCraftable()) {
+                        drawTooltipInCraftingTerm = true;
+                        ingredient.getIngredient().drawHighlight(minecraft, craftableColor, recipeX, recipeY);
+                    } else if (ingredient.requiresToCraft()) {
+                        drawMissingItemTooltip = true;
+                        ingredient.getIngredient().drawHighlight(minecraft, missingColor, recipeX, recipeY);
+                    }
+                } else {
+                    if (ingredient.isCraftable()) {
+                        ingredient.getIngredient().drawHighlight(minecraft, craftableColor, recipeX, recipeY);
+                    }
                 }
             } else {
                 if (ingredient.isCraftable()) {
@@ -64,7 +70,7 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
         }
         if (drawTooltipInCraftingTerm) {
             tooltips.add(String.format("%s" + TextFormatting.GRAY + " + " +
-                            TextFormatting.BLUE + I18n.format("jei.tooltip.nee.helper.crafting"),
+                            TextFormatting.BLUE + I18n.format("jei.tooltip.nee.helper.crafting.text1"),
                     TextFormatting.YELLOW + Keyboard.getKeyName(craftingHelperPreview.getKeyCode())));
         }
         if (drawTooltipInPattenTerm) {
@@ -73,10 +79,13 @@ public class CraftingHelperTooltipError implements IRecipeTransferError {
         if (drawMissingItemTooltip) {
             tooltips.add(TextFormatting.RED + I18n.format("jei.tooltip.error.recipe.transfer.missing"));
         }
+        if(isIsPatternInterfaceExists()){
+            tooltips.add(String.format("%s" + TextFormatting.GRAY + " + " +
+                            TextFormatting.BLUE + I18n.format("jei.tooltip.nee.helper.crafting.text2"),
+                    TextFormatting.YELLOW + Keyboard.getKeyName(craftingHelperPreview.getKeyCode())));
+        }
+
         TooltipRenderer.drawHoveringText(minecraft, tooltips, mouseX, mouseY);
     }
 
-    public void setHasPatternCrafter(boolean hasPatternCrafter) {
-        this.hasPatternCrafter = hasPatternCrafter;
-    }
 }

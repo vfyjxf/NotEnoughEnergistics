@@ -97,7 +97,11 @@ public class CraftingHelperTransferHandler<C extends AEBaseContainer> implements
                         moveItems(container, recipeLayout);
                     }
                 } else {
-                    return new CraftingHelperTooltipError(new IngredientTracker(container, recipeLayout, player, recipesGui), true);
+                    if (isPatternInterfaceExists) {
+                        return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout, recipesGui), true);
+                    } else {
+                        return new CraftingHelperTooltipError(new IngredientTracker(container, recipeLayout, player, recipesGui), true);
+                    }
                 }
             }
         }

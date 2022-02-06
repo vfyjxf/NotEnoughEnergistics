@@ -12,7 +12,6 @@ import com.github.vfyjxf.nee.client.gui.widgets.GuiImgButtonEnableCombination;
 import com.github.vfyjxf.nee.config.ItemCombination;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
-import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
 import com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
@@ -209,7 +208,7 @@ public class GuiEventHandler {
 
     private boolean isContainerCraftConfirm(Container container) {
         return (container instanceof ContainerCraftConfirm || GuiUtils.isContainerWirelessCraftingConfirm(container)) &&
-                !((container instanceof ContainerCraftingConfirm) || (container instanceof WCTContainerCraftingConfirm));
+                !((container instanceof ContainerCraftingConfirm) || (GuiUtils.isWCTContainerCraftingConfirm(container)));
     }
 
     private GuiButton getCancelButton(GuiCraftConfirm gui) {

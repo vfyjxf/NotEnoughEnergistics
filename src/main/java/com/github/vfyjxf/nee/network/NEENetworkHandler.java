@@ -7,9 +7,6 @@ import net.minecraftforge.fml.relauncher.Side;
 
 public class NEENetworkHandler {
 
-
-//    private static final FMLEventChannel CHANNEL = NetworkRegistry.INSTANCE.newEventDrivenChannel(NotEnoughEnergistics.MODID);
-
     private static final SimpleNetworkWrapper INSTANCE = new SimpleNetworkWrapper(NotEnoughEnergistics.MODID);
     private static int packId = 0;
 
