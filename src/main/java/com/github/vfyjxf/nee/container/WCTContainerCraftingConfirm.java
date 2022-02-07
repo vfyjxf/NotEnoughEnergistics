@@ -1,6 +1,7 @@
 package com.github.vfyjxf.nee.container;
 
 import appeng.api.storage.ITerminalHost;
+import appeng.util.Platform;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -18,14 +19,16 @@ public class WCTContainerCraftingConfirm extends ContainerCraftConfirm {
 
     @Override
     public void startJob() {
+        if (Platform.isServer()) {
+            hasWorkCommitted = true;
+        }
         super.startJob();
-        hasWorkCommitted = true;
     }
 
     @Override
     public void onContainerClosed(EntityPlayer par1EntityPlayer) {
         super.onContainerClosed(par1EntityPlayer);
-        if (tile != null && !hasWorkCommitted) {
+        if (Platform.isServer() && tile != null && !hasWorkCommitted) {
             this.tile.getPatternInventory().setInventorySlotContents(patternIndex, null);
             this.tile.updateCraftingList();
         }

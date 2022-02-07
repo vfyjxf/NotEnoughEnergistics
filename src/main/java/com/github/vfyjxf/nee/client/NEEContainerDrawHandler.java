@@ -1,20 +1,18 @@
 package com.github.vfyjxf.nee.client;
 
-import appeng.client.gui.implementations.GuiCraftingTerm;
-import appeng.client.gui.implementations.GuiPatternTerm;
+import codechicken.lib.gui.GuiDraw;
 import codechicken.nei.NEIClientConfig;
-import codechicken.nei.guihook.IContainerDrawHandler;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
+import com.github.vfyjxf.nee.nei.NEECraftingHandler;
+import com.github.vfyjxf.nee.nei.NEECraftingHelper;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.Ingredient;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.ReflectionHelper;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.EnumChatFormatting;
@@ -31,15 +29,20 @@ import java.util.*;
 /**
  * Please note the difference between the GTNH NEI and the official NEI
  */
-public class NEEContainerDrawHandler implements IContainerDrawHandler {
+public class NEEContainerDrawHandler {
 
     public static NEEContainerDrawHandler instance = new NEEContainerDrawHandler();
 
-    public static final Map<String, IngredientTracker> trackerMap = new HashMap<>();
+    private static final Color craftableColor = new Color(0.0f, 0.0f, 1.0f, 0.4f);
+    private static final Color missingColor = new Color(1.0f, 0.0f, 0.0f, 0.4f);
 
-    public static boolean isGtnhNei;
-
+    public boolean isGtnhNei;
     private final List<GuiButton> overlayButtons = new ArrayList<>();
+    private final Map<Integer, IngredientTracker> trackerMap = new HashMap<>();
+    private boolean isCraftingTerm;
+    private boolean isPatternTerm;
+    private int oldPage;
+    private int oldType;
 
     public Field overlayButtonsField;
     public Method recipesPerPageMethod;
@@ -60,166 +63,178 @@ public class NEEContainerDrawHandler implements IContainerDrawHandler {
         }
     }
 
-    @Override
-    public void onPreDraw(GuiContainer gui) {
+    @SubscribeEvent
+    public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
+        if (NEEConfig.drawHighlight && event.gui instanceof GuiRecipe) {
+            GuiRecipe guiRecipe = (GuiRecipe) event.gui;
+            this.isCraftingTerm = GuiUtils.isGuiCraftingTerm(guiRecipe.firstGui);
+            this.isPatternTerm = GuiUtils.isPatternTerm(guiRecipe.firstGui);
 
-    }
-
-    @Override
-    public void renderObjects(GuiContainer gui, int mouseX, int mouseY) {
-
-    }
-
-    @Override
-    public void postRenderObjects(GuiContainer gui, int mouseX, int mouseY) {
-
-    }
-
-    @Override
-    public void renderSlotUnderlay(GuiContainer gui, Slot slot) {
-
-    }
-
-    @SuppressWarnings("ALL")
-    @Override
-    public void renderSlotOverlay(GuiContainer gui, Slot slot) {
-        if (NEEConfig.drawHighlight && gui instanceof GuiRecipe && !overlayButtons.isEmpty()) {
-            GuiRecipe guiRecipe = (GuiRecipe) gui;
-            for (GuiButton overlayButton : overlayButtons) {
-                if (GuiUtils.isMouseOverButton(overlayButton)) {
-                    IngredientTracker tracker = trackerMap.get("button" + overlayButton.id);
-                    if (tracker != null) {
-                        for (Ingredient ingredient : tracker.getIngredients()) {
-                            Point point = guiRecipe.getRecipePosition(tracker.getRecipeIndex());
-                            Slot currentSlot = guiRecipe.slotcontainer.getSlotWithStack(ingredient.getIngredient(), point.x, point.y);
-                            if (slot.equals(currentSlot)) {
-                                GuiContainer firstGui = guiRecipe.firstGui;
-                                boolean renderAutoAbleItems = (GuiUtils.isCraftingTerm(firstGui)) && ingredient.isCraftable() && ingredient.requiresToCraft();
-                                boolean renderCraftableItems = (GuiUtils.isPatternTerm(firstGui)) && ingredient.isCraftable();
-                                boolean renderMissingItems = (GuiUtils.isCraftingTerm(firstGui)) && !ingredient.isCraftable() && ingredient.requiresToCraft();
-                                if (renderAutoAbleItems || renderCraftableItems) {
-                                    Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                            slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                            new Color(0.0f, 0.0f, 1.0f, 0.4f).getRGB());
-                                    this.drawCraftableTooltip = renderCraftableItems;
-                                    this.drawRequestTooltip = renderAutoAbleItems;
-                                }
-                                if (renderMissingItems) {
-                                    Gui.drawRect(slot.xDisplayPosition, slot.yDisplayPosition,
-                                            slot.xDisplayPosition + 16, slot.yDisplayPosition + 16,
-                                            new Color(1.0f, 0.0f, 0.0f, 0.4f).getRGB());
-                                    this.drawMissingTooltip = true;
-                                }
-                            }
-                        }
-                    }
-                }
+            if (this.isCraftingTerm || this.isPatternTerm) {
+                this.oldPage = guiRecipe.page;
+                this.oldType = guiRecipe.recipetype;
+                setOverlayButton(guiRecipe);
             }
+
         }
     }
 
     @SubscribeEvent
     public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (event.gui instanceof GuiRecipe) {
-            GuiRecipe guiRecipe = (GuiRecipe) event.gui;
-            GuiContainer firstGui = guiRecipe.firstGui;
-            boolean isGuiPatternTerm = GuiUtils.isPatternTerm(firstGui);
-            boolean isCraftingTerm = GuiUtils.isCraftingTerm(firstGui);
-            if (isCraftingTerm || isGuiPatternTerm) {
-                if (overlayButtons.isEmpty()) {
-                    setOverlayButtons(guiRecipe);
-                }
+        if (NEEConfig.drawHighlight && event.gui instanceof GuiRecipe) {
+            if (this.isCraftingTerm || this.isPatternTerm) {
+                GuiRecipe gui = (GuiRecipe) event.gui;
 
-                if (!checkTracker()) {
-                    trackerMap.clear();
-                    for (GuiButton button : overlayButtons) {
-                        if (GuiUtils.isMouseOverButton(button)) {
-                            trackerMap.put("button" + button.id, getTracker(guiRecipe, button, isCraftingTerm));
-                        }
-                    }
-                }
+                if (gui.getHandler() != null && NEECraftingHandler.isCraftingTableRecipe(gui.getHandler())) {
 
-                if (this.drawCraftableTooltip || this.drawRequestTooltip || this.drawMissingTooltip) {
-                    for (GuiButton button : overlayButtons) {
-                        if (button.visible && button.enabled && GuiUtils.isMouseOverButton(button)) {
-                            drawCraftingHelperTooltip(guiRecipe, event.mouseX, event.mouseY);
-                            this.drawCraftableTooltip = false;
-                            this.drawRequestTooltip = false;
-                            this.drawMissingTooltip = false;
-                        }
+                    if (this.trackerMap.isEmpty()) {
+                        initIngredientTracker(gui);
                     }
 
+                    if (this.oldPage != gui.page) {
+                        this.oldPage = gui.page;
+                        setOverlayButton(gui);
+                        initIngredientTracker(gui);
+                    }
+
+                    if (this.oldType != gui.recipetype) {
+                        this.oldType = gui.recipetype;
+                        setOverlayButton(gui);
+                        initIngredientTracker(gui);
+                    }
+
+                    for (GuiButton button : overlayButtons) {
+                        if (isMouseOverButton(button, event.mouseX, event.mouseY)) {
+                            if (!trackerMap.isEmpty()) {
+                                IngredientTracker tracker = trackerMap.get(button.id);
+                                if (tracker != null) {
+                                    Point offset = gui.getRecipePosition(tracker.getRecipeIndex());
+                                    for (int i = 0; i < tracker.getIngredients().size(); i++) {
+                                        Ingredient ingredient = tracker.getIngredients().get(i);
+                                        Slot slot = gui.slotcontainer.getSlotWithStack(ingredient.getIngredient(), offset.x, offset.y);
+                                        if (slot != null) {
+                                            if (this.isCraftingTerm) {
+
+                                                if (ingredient.isCraftable() && ingredient.requiresToCraft()) {
+                                                    GuiDraw.drawRect(slot.xDisplayPosition + gui.guiLeft, slot.yDisplayPosition + gui.guiTop,
+                                                            16, 16,
+                                                            craftableColor.getRGB());
+                                                    this.drawRequestTooltip = true;
+                                                }
+
+                                                if (ingredient.requiresToCraft() && !ingredient.isCraftable()) {
+                                                    GuiDraw.drawRect(slot.xDisplayPosition + gui.guiLeft, slot.yDisplayPosition + gui.guiTop,
+                                                            16, 16,
+                                                            missingColor.getRGB());
+                                                    this.drawMissingTooltip = true;
+                                                }
+
+                                            } else if (this.isPatternTerm) {
+                                                if (ingredient.isCraftable()) {
+                                                    GuiDraw.drawRect(slot.xDisplayPosition + gui.guiLeft, slot.yDisplayPosition + gui.guiTop,
+                                                            16, 16,
+                                                            craftableColor.getRGB());
+                                                    this.drawCraftableTooltip = true;
+                                                }
+                                            }
+                                        }
+
+                                    }
+
+                                    drawCraftingHelperTooltip((GuiRecipe) event.gui, event.mouseX, event.mouseY);
+                                }
+                            }
+                        }
+                    }
+
                 }
+
             }
         }
     }
 
+    private void setOverlayButton(GuiRecipe guiRecipe) {
+        //get all overlay buttons.
+        overlayButtons.clear();
+        trackerMap.clear();
+        List<GuiButton> overlayButtonList = null;
+
+        if (isGtnhNei) {
+            try {
+                overlayButtonList = new ArrayList<>(Arrays.asList((GuiButton[]) NEEContainerDrawHandler.instance.overlayButtonsField.get(guiRecipe)));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        } else {
+            overlayButtonList = new ArrayList<>();
+            overlayButtonList.add(ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay1"));
+            overlayButtonList.add(ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay2"));
+        }
+
+        if (overlayButtonList != null) {
+            overlayButtons.addAll(overlayButtonList);
+        }
+    }
+
+    private void initIngredientTracker(GuiRecipe gui) {
+        for (int i = 0; i < overlayButtons.size(); i++) {
+            GuiButton overlayButton = overlayButtons.get(i);
+            if (overlayButton.visible) {
+                IRecipeHandler handler = gui.currenthandlers.get(gui.recipetype);
+                int recipeIndex = -1;
+                if (isGtnhNei) {
+                    try {
+                        int OVERLAY_BUTTON_ID_START = 4;
+                        recipeIndex = gui.page * (int) recipesPerPageMethod.invoke(gui) + overlayButton.id - OVERLAY_BUTTON_ID_START;
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    recipeIndex = gui.page * handler.recipiesPerPage() + i;
+                }
+
+                if (recipeIndex >= 0 && handler != null) {
+                    IngredientTracker tracker = this.isCraftingTerm ? new IngredientTracker(gui.firstGui, handler, recipeIndex) : new IngredientTracker(gui, handler, recipeIndex);
+                    trackerMap.put(overlayButton.id, tracker);
+                }
+            }
+
+        }
+    }
 
     private void drawCraftingHelperTooltip(GuiRecipe guiRecipe, int mouseX, int mouseY) {
         List<String> tooltips = new ArrayList<>();
-        if (GuiUtils.isCraftingTerm(guiRecipe.firstGui)) {
+        if (this.isCraftingTerm) {
             if (this.drawRequestTooltip) {
-                tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
-                                EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting"),
-                        EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
+                if (NEECraftingHelper.isIsPatternInterfaceExists()) {
+                    tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
+                                    EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting.text1"),
+                            EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
+                } else {
+                    tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
+                                    EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting.text2"),
+                            EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
+                }
             }
             if (this.drawMissingTooltip) {
                 tooltips.add(EnumChatFormatting.RED + I18n.format("neenergistics.gui.tooltip.missing"));
             }
         }
-        if (this.drawCraftableTooltip && GuiUtils.isPatternTerm(guiRecipe.firstGui)) {
+        if (this.drawCraftableTooltip && this.isPatternTerm) {
             tooltips.add(EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.pattern"));
         }
         //drawHoveringText
         guiRecipe.func_146283_a(tooltips, mouseX, mouseY);
+        this.drawCraftableTooltip = false;
+        this.drawRequestTooltip = false;
+        this.drawMissingTooltip = false;
     }
 
-    private void setOverlayButtons(GuiRecipe guiRecipe) {
-        List<GuiButton> overlayButtons = null;
-        if (isGtnhNei) {
-            try {
-                overlayButtons = new ArrayList<>(Arrays.asList((GuiButton[]) NEEContainerDrawHandler.instance.overlayButtonsField.get(guiRecipe)));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        } else {
-            overlayButtons = new ArrayList<>();
-            GuiButton overlay1 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay1");
-            GuiButton overlay2 = ReflectionHelper.getPrivateValue(GuiRecipe.class, guiRecipe, "overlay2");
-            overlayButtons.add(overlay1);
-            overlayButtons.add(overlay2);
-        }
-        if (overlayButtons != null) {
-            this.overlayButtons.addAll(overlayButtons);
-        }
+    private boolean isMouseOverButton(GuiButton button, int mouseX, int mouseY) {
+        return mouseX >= button.xPosition &&
+                mouseY >= button.yPosition &&
+                mouseX < button.xPosition + button.width &&
+                mouseY < button.yPosition + button.height;
     }
 
-    private boolean checkTracker() {
-        for (GuiButton overlayButton : overlayButtons) {
-            if (trackerMap.get("button" + overlayButton.id) != null) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private IngredientTracker getTracker(GuiRecipe guiRecipe, GuiButton overlayButton, boolean isCraftingTerm) {
-        if (overlayButton.enabled && overlayButton.visible) {
-            final int OVERLAY_BUTTON_ID_START = 4;
-            IRecipeHandler handler = guiRecipe.currenthandlers.get(guiRecipe.recipetype);
-            int recipesPerPage = 2;
-            if (isGtnhNei) {
-                try {
-                    recipesPerPage = (int) NEEContainerDrawHandler.instance.recipesPerPageMethod.invoke(guiRecipe);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (recipesPerPage >= 0 && handler != null) {
-                int recipeIndex = guiRecipe.page * recipesPerPage + overlayButton.id - OVERLAY_BUTTON_ID_START;
-                return isCraftingTerm ? new IngredientTracker(guiRecipe.firstGui, handler, recipeIndex) : new IngredientTracker(guiRecipe, handler, recipeIndex);
-            }
-        }
-        return null;
-    }
 }

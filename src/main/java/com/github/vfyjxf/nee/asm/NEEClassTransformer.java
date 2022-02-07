@@ -96,9 +96,9 @@ public class NEEClassTransformer implements IClassTransformer {
             for (MethodNode methodNode : classNode.methods) {
                 if (TARGET_METHOD_MAPPING.matches(methodNode)) {
                     NotEnoughEnergistics.logger.info("Transforming : " + internalName + methodNode.name + methodNode.desc);
-                    AbstractInsnNode aLoad = methodNode.instructions.getLast().getPrevious();
-                    while (aLoad.getOpcode() != ALOAD) {
-                        aLoad = aLoad.getPrevious();
+                    AbstractInsnNode aLoad = methodNode.instructions.getFirst();
+                    while (aLoad.getOpcode() != ILOAD) {
+                        aLoad = aLoad.getNext();
                     }
                     InsnList insnList = new InsnList();
                     insnList.add(new VarInsnNode(ILOAD, 1));

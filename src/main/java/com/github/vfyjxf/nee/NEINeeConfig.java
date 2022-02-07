@@ -41,10 +41,6 @@ public class NEINeeConfig implements IConfigureNEI {
 
         registerGuiHandler();
 
-        if (NEEConfig.drawHighlight) {
-            GuiContainerManager.addDrawHandler(NEEContainerDrawHandler.instance);
-        }
-
         Set<String> defaultIdentifiers = new HashSet<>(
                 Arrays.asList("crafting", "crafting2x2", "brewing", "smelting", "fuel", null)
         );

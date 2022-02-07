@@ -1,6 +1,5 @@
 package com.github.vfyjxf.nee.nei;
 
-import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.slot.SlotCraftingMatrix;
@@ -10,7 +9,6 @@ import appeng.core.sync.AppEngPacket;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketNEIRecipe;
 import appeng.util.Platform;
-import appeng.util.item.AEItemStack;
 import codechicken.nei.NEIClientConfig;
 import codechicken.nei.NEIClientUtils;
 import codechicken.nei.PositionedStack;
@@ -20,9 +18,7 @@ import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import com.github.vfyjxf.nee.network.packet.PacketOpenCraftAmount;
-import com.github.vfyjxf.nee.network.packet.PacketSetRecipe;
 import com.github.vfyjxf.nee.network.packet.PacketValueConfigServer;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.IngredientTracker;
@@ -59,7 +55,6 @@ import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 public class NEECraftingHelper implements IOverlayHandler {
     public static final NEECraftingHelper INSTANCE = new NEECraftingHelper();
     public static IngredientTracker tracker = null;
-    public static int stackIndex = 1;
     public static boolean noPreview = false;
 
     private static boolean isPatternInterfaceExists = false;
@@ -68,22 +63,18 @@ public class NEECraftingHelper implements IOverlayHandler {
 
     @Override
     public void overlayRecipe(GuiContainer firstGui, IRecipeHandler recipe, int recipeIndex, boolean shift) {
-        if (GuiUtils.isCraftingTerm(firstGui) && NEECraftingHandler.isCraftingTableRecipe(recipe)) {
+        if (GuiUtils.isGuiCraftingTerm(firstGui) && NEECraftingHandler.isCraftingTableRecipe(recipe)) {
             boolean doCraftingHelp = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.preview")) || Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
             noPreview = Keyboard.isKeyDown(NEIClientConfig.getKeyBinding("nee.nopreview"));
             if (doCraftingHelp) {
 
                 if (isPatternInterfaceExists) {
-//                    NEENetworkHandler.getInstance().sendToServer(new PacketSetRecipe(packCraftingRecipe(recipe, recipeIndex)));
-                    NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(packCraftingRecipe(recipe,recipeIndex)));
+                    NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(packCraftingRecipe(recipe, recipeIndex)));
                     isPatternInterfaceExists = false;
-
                 } else {
                     tracker = new IngredientTracker(firstGui, recipe, recipeIndex);
                     if (!tracker.getRequireStacks().isEmpty()) {
-                        IAEItemStack stack = AEItemStack.create(tracker.getRequiredStack(0));
-                        NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
-                        stackIndex = 1;
+                        tracker.requestNextIngredient();
                     } else {
                         moveItems(firstGui, recipe, recipeIndex);
                     }
@@ -299,7 +290,7 @@ public class NEECraftingHelper implements IOverlayHandler {
         if (event.gui instanceof GuiRecipe) {
             GuiRecipe guiRecipe = (GuiRecipe) event.gui;
             GuiContainer firstGui = guiRecipe.firstGui;
-            if (GuiUtils.isCraftingTerm(firstGui)) {
+            if (GuiUtils.isGuiCraftingTerm(firstGui)) {
                 NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("PatternInterface.check"));
             }
         }
@@ -307,5 +298,9 @@ public class NEECraftingHelper implements IOverlayHandler {
 
     public static void setIsPatternInterfaceExists(boolean isPatternInterfaceExists) {
         NEECraftingHelper.isPatternInterfaceExists = isPatternInterfaceExists;
+    }
+
+    public static boolean isIsPatternInterfaceExists() {
+        return isPatternInterfaceExists;
     }
 }

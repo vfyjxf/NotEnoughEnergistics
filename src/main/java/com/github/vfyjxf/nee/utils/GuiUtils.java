@@ -1,5 +1,6 @@
 package com.github.vfyjxf.nee.utils;
 
+import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.container.implementations.ContainerPatternTerm;
@@ -7,11 +8,9 @@ import appeng.helpers.IContainerCraftingPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
-import org.lwjgl.input.Mouse;
 
 /**
  * @author vfyjxf
@@ -51,20 +50,6 @@ public class GuiUtils {
         }
     }
 
-    public static boolean isMouseOverButton(GuiButton button) {
-        Minecraft mc = Minecraft.getMinecraft();
-        final ScaledResolution scaledresolution = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-        int i = scaledresolution.getScaledWidth();
-        int j = scaledresolution.getScaledHeight();
-        final int mouseX = Mouse.getX() * i / mc.displayWidth;
-        final int mouseY = j - Mouse.getY() * j / mc.displayHeight - 1;
-
-        return mouseX >= button.xPosition &&
-                mouseY >= button.yPosition &&
-                mouseX < button.xPosition + button.width &&
-                mouseY < button.yPosition + button.height;
-    }
-
     public static boolean isGuiWirelessCrafting(GuiScreen gui) {
 
         try {
@@ -94,6 +79,24 @@ public class GuiUtils {
         }
     }
 
+    public static boolean isContainerWirelessCraftingConfirm(Container container) {
+        try {
+            Class<?> wirelessCraftingConfirmClass = Class.forName("net.p455w0rd.wirelesscraftingterminal.common.container.ContainerCraftConfirm");
+            return wirelessCraftingConfirmClass.isInstance(container);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    public static boolean isWCTContainerCraftingConfirm(Container container) {
+        try {
+            Class<?> wctCraftingConfirmClass = Class.forName("com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm");
+            return wctCraftingConfirmClass.isInstance(container);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     public static boolean isWirelessTerminalGuiObject(Object guiObj) {
         try {
             Class<?> wirelessTerminalGuiObjClass = Class.forName("net.p455w0rd.wirelesscraftingterminal.helpers.WirelessTerminalGuiObject");
@@ -103,12 +106,16 @@ public class GuiUtils {
         }
     }
 
-    public static boolean isCraftingTerm(GuiScreen guiScreen) {
+    public static boolean isGuiCraftingTerm(GuiScreen guiScreen) {
         return guiScreen instanceof GuiCraftingTerm || isGuiWirelessCrafting(guiScreen);
     }
 
     public static boolean isPatternTerm(GuiScreen guiScreen) {
         return guiScreen instanceof GuiPatternTerm || isPatternTermExGui(guiScreen);
+    }
+
+    public static boolean isGuiCraftConfirm(GuiScreen gui) {
+        return gui instanceof GuiCraftConfirm || isWirelessGuiCraftConfirm(gui);
     }
 
 }

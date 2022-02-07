@@ -9,7 +9,6 @@ import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 
 public class PacketValueConfigClient implements IMessage, IMessageHandler<PacketValueConfigClient, IMessage> {
@@ -50,7 +49,7 @@ public class PacketValueConfigClient implements IMessage, IMessageHandler<Packet
         if ("PatternInterface.check".equals(message.name) && Boolean.parseBoolean(message.value)) {
             if (gui instanceof GuiRecipe) {
                 GuiRecipe guiRecipe = (GuiRecipe) gui;
-                if (GuiUtils.isCraftingTerm(guiRecipe.firstGui)) {
+                if (GuiUtils.isGuiCraftingTerm(guiRecipe.firstGui)) {
                     NEECraftingHelper.setIsPatternInterfaceExists(true);
                 }
             }

@@ -5,12 +5,12 @@ import appeng.api.implementations.guiobjects.IPortableCell;
 import appeng.api.parts.IPart;
 import appeng.api.parts.IPartHost;
 import appeng.api.storage.ITerminalHost;
+import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.container.AEBaseContainer;
 import appeng.container.ContainerOpenContext;
 import appeng.parts.reporting.PartCraftingTerminal;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import com.github.vfyjxf.nee.client.gui.GuiCraftingAmount;
-import com.github.vfyjxf.nee.client.gui.GuiCraftingConfirm;
 import com.github.vfyjxf.nee.client.gui.GuiPatternInterface;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
@@ -25,8 +25,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.p455w0rd.wirelesscraftingterminal.api.IWirelessCraftingTermHandler;
-import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm;
-import net.p455w0rd.wirelesscraftingterminal.common.container.ContainerCraftConfirm;
 import net.p455w0rd.wirelesscraftingterminal.common.utils.RandomUtils;
 import net.p455w0rd.wirelesscraftingterminal.helpers.WirelessTerminalGuiObject;
 
@@ -115,7 +113,7 @@ public class NEEGuiHandler implements IGuiHandler {
                             return null;
                         case CRAFTING_CONFIRM_ID:
                             if (part instanceof PartCraftingTerminal) {
-                                return updateGui(new GuiCraftingConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
+                                return updateGui(new GuiCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
                             return null;
 
@@ -141,7 +139,7 @@ public class NEEGuiHandler implements IGuiHandler {
                 if (guiId == CRAFTING_AMOUNT_WIRELESS_ID) {
                     return new GuiCraftingAmount(player.inventory, wirelessTerminal);
                 } else {
-                    return new GuiCraftConfirm(player.inventory, wirelessTerminal);
+                    return new net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm(player.inventory, wirelessTerminal);
                 }
 
             } else {

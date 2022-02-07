@@ -9,7 +9,6 @@ import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -37,12 +36,12 @@ public class BlockPatternInterface extends AEBaseTileBlock {
             return false;
         }
 
-        if (!world.isRemote) {
-            TilePatternInterface tile = this.getTileEntity(world,x, y, z);
-            if (tile != null) {
+        TilePatternInterface tile = this.getTileEntity(world, x, y, z);
+        if (tile != null) {
+            if (!world.isRemote) {
                 NEEGuiHandler.openGui(player, NEEGuiHandler.PATTERN_INTERFACE_ID, tile, ForgeDirection.UNKNOWN);
-                return true;
             }
+            return true;
         }
 
         return false;
