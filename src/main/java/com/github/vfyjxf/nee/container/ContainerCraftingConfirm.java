@@ -28,11 +28,9 @@ public class ContainerCraftingConfirm extends ContainerCraftConfirm {
     @Override
     public void onContainerClosed(EntityPlayer par1EntityPlayer) {
         super.onContainerClosed(par1EntityPlayer);
-        if(Platform.isServer()) {
-            if (tile != null && !hasWorkCommitted) {
-                this.tile.getPatternInventory().setInventorySlotContents(patternIndex, null);
-                this.tile.updateCraftingList();
-            }
+        if (Platform.isServer() && tile != null && !hasWorkCommitted) {
+            this.tile.getPatternInventory().setInventorySlotContents(patternIndex, null);
+            this.tile.updateCraftingList();
         }
     }
 

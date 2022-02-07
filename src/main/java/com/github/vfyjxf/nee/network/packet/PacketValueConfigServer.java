@@ -8,6 +8,7 @@ import appeng.container.slot.SlotRestrictedInput;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import com.github.vfyjxf.nee.container.ContainerPatternInterface;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
+import com.github.vfyjxf.nee.utils.GuiUtils;
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -16,6 +17,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
+import net.p455w0rd.wirelesscraftingterminal.common.container.ContainerWirelessCraftingTerminal;
+import net.p455w0rd.wirelesscraftingterminal.helpers.WirelessTerminalGuiObject;
 
 public class PacketValueConfigServer implements IMessage, IMessageHandler<PacketValueConfigServer, IMessage> {
 
@@ -62,7 +65,7 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
                     cpc.setSelectedSlotIndex(slot.slotNumber);
                 }
             }
-        }else if ("Gui.PatternInterface".equals(message.name)) {
+        } else if ("Gui.PatternInterface".equals(message.name)) {
             if (container instanceof ContainerPatternInterface) {
                 ContainerPatternInterface cpc = (ContainerPatternInterface) container;
                 TilePatternInterface tile = (TilePatternInterface) cpc.getTileEntity();
@@ -70,11 +73,11 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
                 cpc.removeCurrentRecipe();
                 tile.updateCraftingList();
             }
-        }else if ("PatternInterface.check".equals(message.name)) {
-            if (container instanceof AEBaseContainer) {
-                AEBaseContainer abc = (AEBaseContainer) container;
-                IGrid grid = getNetwork(abc);
+        } else if ("PatternInterface.check".equals(message.name)) {
+            if (container instanceof AEBaseContainer || GuiUtils.isWirelessCraftingTermContainer(container)) {
+                IGrid grid = container instanceof AEBaseContainer ? getNetwork((AEBaseContainer) container) : getNetwork((ContainerWirelessCraftingTerminal) container);
                 if (grid != null) {
+
                     for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
 
                         if (gridNode.getMachine() instanceof TilePatternInterface) {
@@ -97,6 +100,15 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
             IGridNode gn = ah.getActionableNode();
             return gn.getGrid();
         }
+        return null;
+    }
+
+    private IGrid getNetwork(ContainerWirelessCraftingTerminal container) {
+
+        if (container.getTarget() instanceof WirelessTerminalGuiObject) {
+            return ((WirelessTerminalGuiObject) container.getTarget()).getTargetGrid();
+        }
+
         return null;
     }
 

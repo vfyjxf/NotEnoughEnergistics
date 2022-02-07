@@ -1,32 +1,43 @@
 package com.github.vfyjxf.nee.client;
 
 import appeng.client.gui.AEBaseGui;
+import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.client.gui.implementations.GuiPatternTerm;
+import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
 import codechicken.nei.VisiblityData;
 import codechicken.nei.api.INEIGuiHandler;
 import codechicken.nei.api.TaggedInventoryArea;
+import com.github.vfyjxf.nee.client.gui.widgets.GuiImgButtonEnableCombination;
 import com.github.vfyjxf.nee.config.ItemCombination;
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.client.gui.widgets.GuiImgButtonEnableCombination;
+import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
+import com.github.vfyjxf.nee.utils.ModIDs;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ObfuscationReflectionHelper;
+import cpw.mods.fml.common.Optional;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import org.lwjgl.input.Mouse;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static com.github.vfyjxf.nee.config.NEEConfig.draggedStackDefaultSize;
 import static com.github.vfyjxf.nee.config.NEEConfig.useStackSizeFromNEI;
+import static com.github.vfyjxf.nee.nei.NEECraftingHelper.tracker;
 
 public class GuiEventHandler implements INEIGuiHandler {
 
@@ -34,6 +45,63 @@ public class GuiEventHandler implements INEIGuiHandler {
 
     private GuiImgButtonEnableCombination buttonCombination;
     private boolean hasDoubleBtn = true;
+
+    @SubscribeEvent
+    public void onGuiOpen(GuiOpenEvent event) {
+        GuiScreen old = Minecraft.getMinecraft().currentScreen;
+        GuiScreen next = event.gui;
+        if (old != null) {
+            if (GuiUtils.isGuiCraftConfirm(old) && isContainerCraftConfirm(((GuiContainer) old).inventorySlots)) {
+                if (tracker != null) {
+                    if (GuiUtils.isGuiCraftingTerm(next)) {
+                        if (tracker.hasNext()) {
+                            tracker.requestNextIngredient();
+                        } else {
+                            tracker = null;
+                        }
+                    } else {
+                        if (tracker != null) {
+                            tracker = null;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    @SubscribeEvent
+    public void onCraftConfirmActionPerformed(GuiScreenEvent.ActionPerformedEvent.Post event) {
+        if (tracker != null) {
+            if (event.gui instanceof GuiCraftConfirm) {
+                if (getCancelButton((GuiCraftConfirm) event.gui) == event.button) {
+                    tracker = null;
+                }
+            }
+
+            if (GuiUtils.isWirelessGuiCraftConfirm(event.gui)) {
+                assert event.gui instanceof net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm;
+                if (getCancelButton((net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm) event.gui) == event.button) {
+                    tracker = null;
+                }
+            }
+        }
+    }
+
+    private GuiButton getCancelButton(GuiCraftConfirm gui) {
+        return ObfuscationReflectionHelper.getPrivateValue(GuiCraftConfirm.class, gui, "cancel");
+    }
+
+    @Optional.Method(modid = ModIDs.WCT)
+    private GuiButton getCancelButton(net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm gui) {
+        return ObfuscationReflectionHelper.getPrivateValue(net.p455w0rd.wirelesscraftingterminal.client.gui.GuiCraftConfirm.class, gui, "cancel");
+    }
+
+    private boolean isContainerCraftConfirm(Container container) {
+        return (container instanceof ContainerCraftConfirm || GuiUtils.isContainerWirelessCraftingConfirm(container)) &&
+                !((container instanceof ContainerCraftingConfirm) || (GuiUtils.isWCTContainerCraftingConfirm(container)));
+    }
+
 
     @SuppressWarnings("unchecked")
     @SubscribeEvent
@@ -86,17 +154,6 @@ public class GuiEventHandler implements INEIGuiHandler {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Slot> getCraftingSlots(GuiContainer gui) {
-        List<Slot> craftingSlots = new ArrayList<>();
-        for (Slot slot : (List<Slot>) gui.inventorySlots.inventorySlots) {
-            if (GuiUtils.isCraftingSlot(slot)) {
-                craftingSlots.add(slot);
-            }
-        }
-        return craftingSlots;
-    }
-
     @Override
     public VisiblityData modifyVisiblity(GuiContainer gui, VisiblityData currentVisibility) {
         return null;
@@ -115,7 +172,7 @@ public class GuiEventHandler implements INEIGuiHandler {
     @Override
     public boolean handleDragNDrop(GuiContainer gui, int mouseX, int mouseY, ItemStack draggedStack, int button) {
         //When NEIAddons exist, give them to NEIAddons to handle
-        if(Loader.isModLoaded("NEIAddons") && NEEConfig.useNEIDragFromNEIAddons){
+        if (Loader.isModLoaded("NEIAddons") && NEEConfig.useNEIDragFromNEIAddons) {
             return false;
         }
 

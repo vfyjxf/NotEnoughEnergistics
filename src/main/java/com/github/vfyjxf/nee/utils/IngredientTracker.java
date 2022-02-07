@@ -4,10 +4,13 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.me.ItemRepo;
+import appeng.util.item.AEItemStack;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.recipe.GuiRecipe;
 import codechicken.nei.recipe.IRecipeHandler;
 import com.github.vfyjxf.nee.config.NEEConfig;
+import com.github.vfyjxf.nee.network.NEENetworkHandler;
+import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -18,16 +21,18 @@ import net.p455w0rd.wirelesscraftingterminal.client.gui.GuiWirelessCraftingTermi
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.vfyjxf.nee.nei.NEECraftingHelper.noPreview;
+
 public class IngredientTracker {
 
     private final List<Ingredient> ingredients = new ArrayList<>();
-    private int craftingAmount = 1;
     private final GuiContainer termGui;
     private List<ItemStack> requireStacks;
     private final int recipeIndex;
+    private int currentIndex = 0;
 
     /**
-     * For NEECraftingHelper
+     * For {@link com.github.vfyjxf.nee.nei.NEECraftingHelper}
      */
     public IngredientTracker(GuiContainer termGui, IRecipeHandler recipe, int recipeIndex) {
         this.termGui = termGui;
@@ -49,6 +54,9 @@ public class IngredientTracker {
         this.calculateIngredients();
     }
 
+    /**
+     * For {@link com.github.vfyjxf.nee.client.NEEContainerDrawHandler}
+     */
     public IngredientTracker(GuiRecipe guiRecipe, IRecipeHandler recipe, int recipeIndex) {
         this.termGui = guiRecipe.firstGui;
         this.recipeIndex = recipeIndex;
@@ -68,7 +76,6 @@ public class IngredientTracker {
         }
 
     }
-
 
     @SuppressWarnings("unchecked")
     private List<IAEItemStack> getCraftableStacks() {
@@ -156,16 +163,24 @@ public class IngredientTracker {
         return requireStacks;
     }
 
+    public boolean hasNext() {
+        return currentIndex < getRequireStacks().size();
+    }
+
+    public void requestNextIngredient() {
+        IAEItemStack stack = AEItemStack.create(this.getRequiredStack(currentIndex));
+        if (stack != null) {
+            NEENetworkHandler.getInstance().sendToServer(new PacketCraftingRequest(stack, noPreview));
+        }
+        currentIndex++;
+    }
+
     public ItemStack getRequiredStack(int index) {
         return this.getRequireStacks().get(index);
     }
 
     public int getRecipeIndex() {
         return recipeIndex;
-    }
-
-    public void setCraftingAmount(int craftingAmount) {
-        this.craftingAmount = craftingAmount;
     }
 
     public void addAvailableStack(ItemStack stack) {
@@ -201,12 +216,6 @@ public class IngredientTracker {
 
     @SuppressWarnings("unchecked")
     public void calculateIngredients() {
-
-        //set requireCount and reset currentCount
-        for (Ingredient ingredient : this.getIngredients()) {
-            ingredient.setRequireCount(ingredient.getDefaultRequireCount() * craftingAmount);
-            ingredient.setCurrentCount(0);
-        }
 
         List<IAEItemStack> stacks = NEEConfig.matchOtherItems ? getStorageStacks() : getCraftableStacks();
         for (Ingredient ingredient : this.ingredients) {

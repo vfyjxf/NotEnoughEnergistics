@@ -1,4 +1,5 @@
-neenergistics.gui.tooltip.helper.crafting=click to request missing items
+neenergistics.gui.tooltip.helper.crafting.text1=click to request missing items
+neenergistics.gui.tooltip.helper.crafting.text2=click to request the recipe result.
 neenergistics.gui.tooltip.missing=Missing Items
 neenergistics.gui.tooltip.helper.pattern=Autocrafting available
 

@@ -1,4 +1,4 @@
-neenergistics.gui.tooltip.helper.crafting=Нажмите, чтобы запоросить отсутсвующие предметы
+neenergistics.gui.tooltip.helper.crafting.text1=Нажмите, чтобы запоросить отсутсвующие предметы
 neenergistics.gui.tooltip.missing=Отсутствуют требуемые предметы
 neenergistics.gui.tooltip.helper.pattern=Автокрафт доступен
 nei.options.keys.nee=NotEnoughEnergistics

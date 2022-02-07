@@ -50,12 +50,15 @@ public class GuiPatternInterface extends AEBaseGui {
     protected void actionPerformed(GuiButton button) {
         super.actionPerformed(button);
         if (button == this.removeButton) {
-            NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("Gui.PatternInterface"));
+            //We shouldn't delete a null, right?
+            if (container.getSelectedSlot() != null) {
+                NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("Gui.PatternInterface"));
+            }
         }
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int btn)  {
+    protected void mouseClicked(int mouseX, int mouseY, int btn) {
         if (btn == 0 && this.theSlot instanceof SlotRestrictedInput) {
             SlotRestrictedInput slot = (SlotRestrictedInput) this.theSlot;
             NEENetworkHandler.getInstance().sendToServer(new PacketValueConfigServer("Container.selectedSlot", Integer.toString(slot.slotNumber)));
