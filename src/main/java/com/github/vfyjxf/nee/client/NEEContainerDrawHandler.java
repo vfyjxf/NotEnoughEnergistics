@@ -85,7 +85,9 @@ public class NEEContainerDrawHandler {
             if (this.isCraftingTerm || this.isPatternTerm) {
                 GuiRecipe gui = (GuiRecipe) event.gui;
 
-                if (gui.getHandler() != null && NEECraftingHandler.isCraftingTableRecipe(gui.getHandler())) {
+                IRecipeHandler currentHandler = gui.currenthandlers.get(gui.recipetype);
+
+                if (NEECraftingHandler.isCraftingTableRecipe(currentHandler)) {
 
                     if (this.trackerMap.isEmpty()) {
                         initIngredientTracker(gui);
@@ -208,11 +210,11 @@ public class NEEContainerDrawHandler {
             if (this.drawRequestTooltip) {
                 if (NEECraftingHelper.isIsPatternInterfaceExists()) {
                     tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
-                                    EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting.text1"),
+                                    EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting.text2"),
                             EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
                 } else {
                     tooltips.add(String.format("%s" + EnumChatFormatting.GRAY + " + " +
-                                    EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting.text2"),
+                                    EnumChatFormatting.BLUE + I18n.format("neenergistics.gui.tooltip.helper.crafting.text1"),
                             EnumChatFormatting.YELLOW + Keyboard.getKeyName(NEIClientConfig.getKeyBinding("nee.preview"))));
                 }
             }

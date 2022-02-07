@@ -34,9 +34,13 @@ public class NEECraftingHandler implements IOverlayHandler {
     public static final NEECraftingHandler INSTANCE = new NEECraftingHandler();
 
     public static boolean isCraftingTableRecipe(IRecipeHandler recipe) {
-        TemplateRecipeHandler templateRecipeHandler = (TemplateRecipeHandler) recipe;
-        String overlayIdentifier = templateRecipeHandler.getOverlayIdentifier();
-        return "crafting".equals(overlayIdentifier) || "crafting2x2".equals(overlayIdentifier);
+        if (recipe instanceof TemplateRecipeHandler) {
+            TemplateRecipeHandler templateRecipeHandler = (TemplateRecipeHandler) recipe;
+            String overlayIdentifier = templateRecipeHandler.getOverlayIdentifier();
+            return "crafting".equals(overlayIdentifier) || "crafting2x2".equals(overlayIdentifier);
+        } else {
+            return false;
+        }
     }
 
     @Override
