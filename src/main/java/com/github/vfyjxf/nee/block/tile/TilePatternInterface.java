@@ -172,8 +172,10 @@ public class TilePatternInterface extends AENetworkInvTile implements IGridTicka
 
                 if (te instanceof IInterfaceHost) {
                     try {
-                        if (this.sameGrid(this.getProxy().getGrid())) {
-                            continue;
+                        if (te instanceof AENetworkInvTile) {
+                            if (this.sameGrid(((AENetworkInvTile) te).getProxy().getGrid())) {
+                                continue;
+                            }
                         }
                     } catch (final GridAccessException e) {
                         continue;

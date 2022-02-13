@@ -13,6 +13,7 @@ import mezz.jei.api.IModRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.collect.Table;
+import mezz.jei.config.Constants;
 import mezz.jei.recipes.RecipeTransferRegistry;
 import mezz.jei.util.ErrorUtil;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
@@ -64,6 +65,7 @@ public class NEEJEIPlugin implements IModPlugin {
         public V put(R row, C col, V val) {
 
             if (row == ContainerPatternTerm.class && !(val instanceof PatternRecipeTransferHandler)) {
+                col = (C) Constants.UNIVERSAL_RECIPE_TRANSFER_UID;
                 val = (V) new PatternRecipeTransferHandler();
                 NotEnoughEnergistics.logger.info("AE2 PatternRecipeTransfeHandler Replaced Successfully (Overwrite Denied)");
             }

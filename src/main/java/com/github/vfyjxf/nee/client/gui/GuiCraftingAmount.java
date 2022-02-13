@@ -102,14 +102,8 @@ public class GuiCraftingAmount extends AEBaseGui {
             this.originalGui = GuiBridge.GUI_CRAFTING_TERMINAL;
         }
 
-        if (Loader.isModLoaded(ModIds.WCT) && GuiUtils.isWirelessTerminalGuiObject(target) && this.wctObj instanceof ContainerWCT) {
-            ContainerWCT wct = (ContainerWCT) this.wctObj;
-            if (wct.getWirelessTerminal() != null) {
-                myIcon = new ItemStack(wct.getWirelessTerminal().getItem());
-            } else {
-                myIcon = new ItemStack(ModItems.WCT);
-            }
-            this.isWirelessCrafting = true;
+        if (Loader.isModLoaded(ModIds.WCT) && GuiUtils.isWirelessTerminalGuiObject(target) && this.wctObj != null) {
+            myIcon = getIcon();
         }
 
         if (this.originalGui != null && myIcon != null && !myIcon.isEmpty()) {
@@ -255,6 +249,21 @@ public class GuiCraftingAmount extends AEBaseGui {
         } catch (final NumberFormatException e) {
             // :P
         }
+    }
+
+    @Optional.Method(modid = ModIds.WCT)
+    private ItemStack getIcon() {
+        if (wctObj instanceof ContainerWCT) {
+            ContainerWCT wct = (ContainerWCT) this.wctObj;
+            if (wct.getWirelessTerminal() != null) {
+                this.isWirelessCrafting = true;
+                return new ItemStack(wct.getWirelessTerminal().getItem());
+            } else {
+                this.isWirelessCrafting = true;
+                return new ItemStack(ModItems.WCT);
+            }
+        }
+        return null;
     }
 
     @Optional.Method(modid = ModIds.WCT)

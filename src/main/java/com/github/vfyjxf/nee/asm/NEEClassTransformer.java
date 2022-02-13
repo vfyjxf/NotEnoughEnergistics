@@ -1,5 +1,6 @@
 package com.github.vfyjxf.nee.asm;
 
+import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -26,6 +27,7 @@ public class NEEClassTransformer implements IClassTransformer {
             classReader.accept(classNode, 0);
             for (MethodNode methodNode : classNode.methods) {
                 if (methodNode.name.equals(METHOD_NAME) && methodNode.desc.equals(METHOD_TARGET)) {
+                    NotEnoughEnergistics.logger.info("Transforming : " + internalName + methodNode.name + methodNode.desc);
                     InsnList insnList = new InsnList();
                     for (AbstractInsnNode instruction : methodNode.instructions.toArray()) {
                         int opcode = instruction.getOpcode();

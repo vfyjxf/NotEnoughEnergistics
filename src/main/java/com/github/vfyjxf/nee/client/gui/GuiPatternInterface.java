@@ -66,6 +66,6 @@ public class GuiPatternInterface extends AEBaseGui {
     }
 
     private ResourceLocation getBackground() {
-        return new ResourceLocation(NotEnoughEnergistics.MODID, "textures/gui/patterncrafter.png");
+        return new ResourceLocation(NotEnoughEnergistics.MODID, "textures/gui/pattern_interface.png");
     }
 }
