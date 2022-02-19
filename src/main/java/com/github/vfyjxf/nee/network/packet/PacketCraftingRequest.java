@@ -57,7 +57,7 @@ import static com.github.vfyjxf.nee.nei.NEECraftingHandler.INPUT_KEY;
 import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 import static com.github.vfyjxf.nee.nei.NEECraftingHelper.RECIPE_LENGTH;
 
-public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCraftingRequest, IMessage> {
+public class PacketCraftingRequest implements IMessage{
 
 
     private IAEItemStack requireToCraftStack;
@@ -120,38 +120,40 @@ public class PacketCraftingRequest implements IMessage, IMessageHandler<PacketCr
         buf.writeInt(this.craftAmount);
     }
 
-    @Override
-    public IMessage onMessage(PacketCraftingRequest message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-        Container container = player.openContainer;
+    public static final class Handler implements IMessageHandler<PacketCraftingRequest, IMessage>{
+        @Override
+        public IMessage onMessage(PacketCraftingRequest message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+            Container container = player.openContainer;
 
-        if (container instanceof AEBaseContainer) {
-            AEBaseContainer baseContainer = (AEBaseContainer) container;
-            Object target = baseContainer.getTarget();
-            if (target instanceof IGridHost) {
-                final IGridHost gh = (IGridHost) target;
-                final IGridNode gn = gh.getGridNode(ForgeDirection.UNKNOWN);
-                if (gn != null) {
-                    final IGrid grid = gn.getGrid();
-                    if (grid != null) {
-                        final ISecurityGrid security = grid.getCache(ISecurityGrid.class);
-                        if (security != null && security.hasPermission(player, SecurityPermissions.CRAFT)) {
-                            if (container instanceof ContainerCraftingTerm) {
-                                handlerCraftingTermRequest((ContainerCraftingTerm) container, message, grid, player);
-                            }
+            if (container instanceof AEBaseContainer) {
+                AEBaseContainer baseContainer = (AEBaseContainer) container;
+                Object target = baseContainer.getTarget();
+                if (target instanceof IGridHost) {
+                    final IGridHost gh = (IGridHost) target;
+                    final IGridNode gn = gh.getGridNode(ForgeDirection.UNKNOWN);
+                    if (gn != null) {
+                        final IGrid grid = gn.getGrid();
+                        if (grid != null) {
+                            final ISecurityGrid security = grid.getCache(ISecurityGrid.class);
+                            if (security != null && security.hasPermission(player, SecurityPermissions.CRAFT)) {
+                                if (container instanceof ContainerCraftingTerm) {
+                                    message.handlerCraftingTermRequest((ContainerCraftingTerm) container, message, grid, player);
+                                }
 
-                            if (container instanceof ContainerCraftingAmount) {
-                                handlerCraftingAmountRequest((ContainerCraftingAmount) container, message, grid, player);
+                                if (container instanceof ContainerCraftingAmount) {
+                                    message.handlerCraftingAmountRequest((ContainerCraftingAmount) container, message, grid, player);
+                                }
                             }
                         }
                     }
                 }
+            } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
+                message.handlerWirelessCraftingRequest((ContainerWirelessCraftingTerminal) container, message, player);
             }
-        } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
-            handlerWirelessCraftingRequest((ContainerWirelessCraftingTerminal) container, message, player);
-        }
 
-        return null;
+            return null;
+        }
     }
 
     private void handlerCraftingTermRequest(ContainerCraftingTerm container, PacketCraftingRequest message, IGrid grid, EntityPlayerMP player) {

@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 /**
  * @author vfyjxf
  */
-public class PacketStackCountChange implements IMessage, IMessageHandler<PacketStackCountChange, IMessage> {
+public class PacketStackCountChange implements IMessage {
 
     private int slotIndex;
     private int changeCount;
@@ -48,32 +48,35 @@ public class PacketStackCountChange implements IMessage, IMessageHandler<PacketS
         buf.writeInt(this.changeCount);
     }
 
-    @Override
-    public IMessage onMessage(PacketStackCountChange message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-        Container container = player.openContainer;
-        if (container instanceof AEBaseContainer) {
-            handleMessage(message, container);
-        }
-        return null;
-    }
-
-    private void handleMessage(PacketStackCountChange message, Container container) {
-
-        if (container instanceof ContainerPatternTerm && ((ContainerPatternTerm) container).isCraftingMode()) {
-            return;
+    public static final class Handler implements IMessageHandler<PacketStackCountChange, IMessage> {
+        @Override
+        public IMessage onMessage(PacketStackCountChange message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+            Container container = player.openContainer;
+            if (container instanceof AEBaseContainer) {
+                handleMessage(message, container);
+            }
+            return null;
         }
 
-        Slot currentSlot = container.getSlot(message.getSlotIndex());
-        for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
-            int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().stackSize + 1 : currentSlot.getStack().stackSize - 1;
-            if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
-                ItemStack nextStack = currentSlot.getStack().copy();
-                nextStack.stackSize = currentStackSize;
-                currentSlot.putStack(nextStack);
-            } else {
-                break;
+        private void handleMessage(PacketStackCountChange message, Container container) {
+
+            if (container instanceof ContainerPatternTerm && ((ContainerPatternTerm) container).isCraftingMode()) {
+                return;
+            }
+
+            Slot currentSlot = container.getSlot(message.getSlotIndex());
+            for (int i = 0; i < Math.abs(message.getChangeCount()); i++) {
+                int currentStackSize = message.getChangeCount() > 0 ? currentSlot.getStack().stackSize + 1 : currentSlot.getStack().stackSize - 1;
+                if (currentStackSize <= currentSlot.getStack().getMaxStackSize() && currentStackSize > 0) {
+                    ItemStack nextStack = currentSlot.getStack().copy();
+                    nextStack.stackSize = currentStackSize;
+                    currentSlot.putStack(nextStack);
+                } else {
+                    break;
+                }
             }
         }
     }
+
 }

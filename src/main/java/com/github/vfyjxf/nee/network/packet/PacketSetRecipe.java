@@ -26,7 +26,7 @@ import static com.github.vfyjxf.nee.nei.NEECraftingHandler.INPUT_KEY;
 import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 import static com.github.vfyjxf.nee.nei.NEECraftingHelper.RECIPE_LENGTH;
 
-public class PacketSetRecipe implements IMessage, IMessageHandler<PacketSetRecipe, IMessage> {
+public class PacketSetRecipe implements IMessage{
 
     private NBTTagCompound recipe;
 
@@ -48,42 +48,46 @@ public class PacketSetRecipe implements IMessage, IMessageHandler<PacketSetRecip
         ByteBufUtils.writeTag(buf, this.recipe);
     }
 
-    @Override
-    public IMessage onMessage(PacketSetRecipe message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-        Container container = player.openContainer;
+    public static final class Handler implements IMessageHandler<PacketSetRecipe, IMessage>{
 
-        if (container instanceof AEBaseContainer) {
-            AEBaseContainer aeContainer = (AEBaseContainer) container;
-            IGrid grid = getNetwork(aeContainer);
-            if (grid != null) {
-                for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
+        @Override
+        public IMessage onMessage(PacketSetRecipe message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+            Container container = player.openContainer;
 
-                    if (gridNode.getMachine() instanceof TilePatternInterface) {
+            if (container instanceof AEBaseContainer) {
+                AEBaseContainer aeContainer = (AEBaseContainer) container;
+                IGrid grid = message.getNetwork(aeContainer);
+                if (grid != null) {
+                    for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
 
-                        TilePatternInterface tpi = (TilePatternInterface) gridNode.getMachine();
-                        NBTTagCompound currentTag = message.recipe.getCompoundTag(OUTPUT_KEY);
-                        ItemStack result = currentTag == null ? null : ItemStack.loadItemStackFromNBT(currentTag);
+                        if (gridNode.getMachine() instanceof TilePatternInterface) {
 
-                        if (tpi.getProxy().isActive() && tpi.canPutPattern(result)) {
+                            TilePatternInterface tpi = (TilePatternInterface) gridNode.getMachine();
+                            NBTTagCompound currentTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                            ItemStack result = currentTag == null ? null : ItemStack.loadItemStackFromNBT(currentTag);
 
-                            ItemStack patternStack = getPatternStack(player, message.recipe);
+                            if (tpi.getProxy().isActive() && tpi.canPutPattern(result)) {
 
-                            if (patternStack != null) {
+                                ItemStack patternStack = message.getPatternStack(player, message.recipe);
+
+                                if (patternStack != null) {
 
 //                                if (tpi.putPattern(patternStack)) {
 //                                    return null;
 //                                }
+                                }
+
                             }
 
                         }
-
                     }
                 }
             }
+
+            return null;
         }
 
-        return null;
     }
 
     private IGrid getNetwork(AEBaseContainer container) {
