@@ -64,7 +64,7 @@ public class NEECraftingHandler implements IOverlayHandler {
     private PacketNEIPatternRecipe packProcessRecipe(IRecipeHandler recipe, int recipeIndex) {
         final NBTTagCompound recipeInputs = new NBTTagCompound();
         NBTTagCompound recipeOutputs = new NBTTagCompound();
-        String identifier = ((TemplateRecipeHandler) recipe).getOverlayIdentifier();
+        String identifier = recipe.getOverlayIdentifier();
         int inputIndex = 0;
         int outputIndex = 0;
         //get all recipe inputs and other stacks,use first item
@@ -76,7 +76,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 List<PositionedStack> tInputs = new ArrayList<>();
 
                 if (!inputs.isEmpty() && !outputs.isEmpty()) {
-
+                    NEECraftingHandler.ingredients.clear();
                     for (PositionedStack positionedStack : inputs) {
                         ItemStack currentStack = positionedStack.items[0];
                         boolean find = false;
@@ -152,6 +152,7 @@ public class NEECraftingHandler implements IOverlayHandler {
     private PacketNEIPatternRecipe packCraftingTableRecipe(IRecipeHandler recipe, int recipeIndex) {
         final NBTTagCompound recipeInputs = new NBTTagCompound();
         final List<PositionedStack> ingredients = recipe.getIngredientStacks(recipeIndex);
+        NEECraftingHandler.ingredients.clear();
         for (final PositionedStack positionedStack : ingredients) {
             final int col = (positionedStack.relx - 25) / 18;
             final int row = (positionedStack.rely - 6) / 18;

@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * @author vfyjxf
  */
-public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSlotStackChange, IMessage> {
+public class PacketSlotStackChange implements IMessage{
 
     private ItemStack stack;
     private List<Integer> craftingSlots;
@@ -57,18 +57,21 @@ public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSl
         }
     }
 
-    @Override
-    public IMessage onMessage(PacketSlotStackChange message, MessageContext ctx) {
-        Container container = ctx.getServerHandler().playerEntity.openContainer;
-        ItemStack nextStack = message.getStack();
-        if (nextStack != null) {
-            for (Integer craftingSlot : message.getCraftingSlots()) {
-                Slot currentSlot = container.getSlot(craftingSlot);
-                if (currentSlot != null) {
-                    currentSlot.putStack(nextStack);
+    public static final class Handler implements IMessageHandler<PacketSlotStackChange, IMessage>{
+        @Override
+        public IMessage onMessage(PacketSlotStackChange message, MessageContext ctx) {
+            Container container = ctx.getServerHandler().playerEntity.openContainer;
+            ItemStack nextStack = message.getStack();
+            if (nextStack != null) {
+                for (Integer craftingSlot : message.getCraftingSlots()) {
+                    Slot currentSlot = container.getSlot(craftingSlot);
+                    if (currentSlot != null) {
+                        currentSlot.putStack(nextStack);
+                    }
                 }
             }
+            return null;
         }
-        return null;
     }
+
 }

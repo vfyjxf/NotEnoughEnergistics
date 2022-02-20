@@ -23,7 +23,7 @@ import javax.annotation.Nonnull;
 import static com.github.vfyjxf.nee.nei.NEECraftingHandler.OUTPUT_KEY;
 
 
-public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketNEIPatternRecipe, IMessage> {
+public class PacketNEIPatternRecipe implements IMessage{
 
     NBTTagCompound input;
     NBTTagCompound output;
@@ -56,21 +56,24 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
         }
     }
 
-    @Override
-    public IMessage onMessage(PacketNEIPatternRecipe message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-        Container container = player.openContainer;
-        if (container instanceof ContainerPatternTerm && message.output == null) {
-            ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(true);
-            message.craftingTableRecipeHandler((ContainerPatternTerm) container, message);
-        } else if (container instanceof ContainerPatternTerm) {
-            ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(false);
-            message.processRecipeHandler((ContainerPatternTerm) container, message);
-        } else if (container instanceof ContainerPatternTermEx && message.output != null) {
-            ((ContainerPatternTermEx) container).getPatternTerminal().setInverted(false);
-            message.processRecipeHandler((ContainerPatternTermEx) container, message);
+    public static final class Handler implements IMessageHandler<PacketNEIPatternRecipe, IMessage> {
+        @Override
+        public IMessage onMessage(PacketNEIPatternRecipe message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+            Container container = player.openContainer;
+            if (container instanceof ContainerPatternTerm && message.output == null) {
+                ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(true);
+                message.craftingTableRecipeHandler((ContainerPatternTerm) container, message);
+            } else if (container instanceof ContainerPatternTerm) {
+                ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(false);
+                message.processRecipeHandler((ContainerPatternTerm) container, message);
+            } else if (container instanceof ContainerPatternTermEx && message.output != null) {
+                ((ContainerPatternTermEx) container).getPatternTerminal().setInverted(false);
+                message.processRecipeHandler((ContainerPatternTermEx) container, message);
+            }
+            return null;
         }
-        return null;
+
     }
 
     private void craftingTableRecipeHandler(ContainerPatternTerm container, PacketNEIPatternRecipe message) {
@@ -210,5 +213,6 @@ public class PacketNEIPatternRecipe implements IMessage, IMessageHandler<PacketN
             }
         }
     }
+
 
 }

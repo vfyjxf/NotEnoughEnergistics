@@ -20,7 +20,7 @@ import net.minecraft.inventory.Slot;
 import net.p455w0rd.wirelesscraftingterminal.common.container.ContainerWirelessCraftingTerminal;
 import net.p455w0rd.wirelesscraftingterminal.helpers.WirelessTerminalGuiObject;
 
-public class PacketValueConfigServer implements IMessage, IMessageHandler<PacketValueConfigServer, IMessage> {
+public class PacketValueConfigServer implements IMessage{
 
     private String name;
     private String value;
@@ -51,47 +51,51 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
         ByteBufUtils.writeUTF8String(buf, this.value);
     }
 
-    @Override
-    public IMessage onMessage(PacketValueConfigServer message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-        Container container = player.openContainer;
+    public static final class Handler implements IMessageHandler<PacketValueConfigServer, IMessage> {
+        @Override
+        public IMessage onMessage(PacketValueConfigServer message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+            Container container = player.openContainer;
 
-        if ("Container.selectedSlot".equals(message.name)) {
-            if (container instanceof ContainerPatternInterface) {
-                ContainerPatternInterface cpc = (ContainerPatternInterface) container;
-                int slotIndex = Integer.parseInt(message.value);
-                Slot slot = container.getSlot(slotIndex);
-                if (slot instanceof SlotRestrictedInput) {
-                    cpc.setSelectedSlotIndex(slot.slotNumber);
+            if ("Container.selectedSlot".equals(message.name)) {
+                if (container instanceof ContainerPatternInterface) {
+                    ContainerPatternInterface cpc = (ContainerPatternInterface) container;
+                    int slotIndex = Integer.parseInt(message.value);
+                    Slot slot = container.getSlot(slotIndex);
+                    if (slot instanceof SlotRestrictedInput) {
+                        cpc.setSelectedSlotIndex(slot.slotNumber);
+                    }
                 }
-            }
-        } else if ("Gui.PatternInterface".equals(message.name)) {
-            if (container instanceof ContainerPatternInterface) {
-                ContainerPatternInterface cpc = (ContainerPatternInterface) container;
-                TilePatternInterface tile = (TilePatternInterface) cpc.getTileEntity();
-                tile.cancelWork(cpc.getSelectedSlotIndex());
-                cpc.removeCurrentRecipe();
-                tile.updateCraftingList();
-            }
-        } else if ("PatternInterface.check".equals(message.name)) {
-            if (container instanceof AEBaseContainer || GuiUtils.isWirelessCraftingTermContainer(container)) {
-                IGrid grid = container instanceof AEBaseContainer ? getNetwork((AEBaseContainer) container) : getNetwork((ContainerWirelessCraftingTerminal) container);
-                if (grid != null) {
+            } else if ("Gui.PatternInterface".equals(message.name)) {
+                if (container instanceof ContainerPatternInterface) {
+                    ContainerPatternInterface cpc = (ContainerPatternInterface) container;
+                    TilePatternInterface tile = (TilePatternInterface) cpc.getTileEntity();
+                    tile.cancelWork(cpc.getSelectedSlotIndex());
+                    cpc.removeCurrentRecipe();
+                    tile.updateCraftingList();
+                }
+            } else if ("PatternInterface.check".equals(message.name)) {
+                if (container instanceof AEBaseContainer || GuiUtils.isWirelessCraftingTermContainer(container)) {
+                    IGrid grid = container instanceof AEBaseContainer ? message.getNetwork((AEBaseContainer) container) : message.getNetwork((ContainerWirelessCraftingTerminal) container);
+                    if (grid != null) {
 
-                    for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
+                        for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
 
-                        if (gridNode.getMachine() instanceof TilePatternInterface) {
-                            NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "true"), player);
-                            return null;
+                            if (gridNode.getMachine() instanceof TilePatternInterface) {
+                                NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "true"), player);
+                                return null;
+                            }
+
                         }
 
-                    }
+                        NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "false"), player);
 
+                    }
                 }
             }
-        }
 
-        return null;
+            return null;
+        }
     }
 
     private IGrid getNetwork(AEBaseContainer container) {
