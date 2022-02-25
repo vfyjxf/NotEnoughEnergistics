@@ -44,7 +44,9 @@ public class IngredientTracker {
         this.parentScreen = recipesGui.getParentScreen();
         for (IGuiIngredient<ItemStack> guiIngredient : recipeLayout.getItemStacks().getGuiIngredients().values()) {
             if (guiIngredient.isInput() && !guiIngredient.getAllIngredients().isEmpty()) {
-                ingredients.add(new Ingredient(guiIngredient));
+                if (guiIngredient.getAllIngredients().stream().anyMatch(stack -> stack != null && !stack.isEmpty())) {
+                    ingredients.add(new Ingredient(guiIngredient));
+                }
             }
         }
 
@@ -70,7 +72,9 @@ public class IngredientTracker {
 
         for (IGuiIngredient<ItemStack> guiIngredient : recipeLayout.getItemStacks().getGuiIngredients().values()) {
             if (guiIngredient.isInput() && !guiIngredient.getAllIngredients().isEmpty()) {
-                ingredients.add(new Ingredient(guiIngredient));
+                if (guiIngredient.getAllIngredients().stream().anyMatch(stack -> stack != null && !stack.isEmpty())) {
+                    ingredients.add(new Ingredient(guiIngredient));
+                }
             }
         }
 

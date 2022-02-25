@@ -70,6 +70,9 @@ public final class ItemUtils {
     }
 
     public static boolean isPreferItems(ItemStack itemStack, String recipeType) {
+        if (itemStack == null || itemStack.isEmpty()) {
+            return false;
+        }
         ItemStack stack = itemStack.copy();
         stack.setCount(1);
         for (StackProcessor stackProcessor : getTransformItemPriorityList()) {
@@ -135,17 +138,36 @@ public final class ItemUtils {
     }
 
     public static int getIngredientIndex(ItemStack stack, List<ItemStack> currentIngredients) {
-        ItemStack stackInput = stack.copy();
-        stackInput.setCount(1);
         for (int i = 0; i < currentIngredients.size(); i++) {
-            ItemStack currentStack = currentIngredients.get(i).copy();
-            currentStack.setCount(1);
-            if (ItemStack.areItemStacksEqual(stackInput, currentStack)) {
+
+            if (currentIngredients.get(i) == null) {
+                continue;
+            }
+
+            if (ItemUtils.areItemStacksEqual(stack, currentIngredients.get(i))) {
                 return i;
             }
         }
         return -1;
     }
+
+    public static boolean areItemStacksEqual(ItemStack stack1, ItemStack stack2) {
+
+        if (stack1 == null && stack2 == null) {
+            return true;
+        }
+
+        if (stack1 != null && stack2 != null) {
+            ItemStack copyStack1 = stack1.copy();
+            ItemStack copyStack2 = stack2.copy();
+            copyStack1.setCount(1);
+            copyStack2.setCount(1);
+            return ItemStack.areItemStacksEqual(copyStack1, copyStack2);
+        }
+
+        return false;
+    }
+
 
     public static String toItemJsonString(ItemStack currentStack) {
         String nbtString = currentStack.hasTagCompound() ? ",\"nbt\":" + "\"" + currentStack.getTagCompound().toString() + "\"" : "";

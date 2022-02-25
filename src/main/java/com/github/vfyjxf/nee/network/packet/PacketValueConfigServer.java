@@ -84,7 +84,7 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
                             }
 
                         }
-
+                        NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "false"), player);
                     }
                 }
             }

@@ -47,9 +47,9 @@ public class PacketValueConfigClient implements IMessage, IMessageHandler<Packet
         EntityPlayerSP player = Minecraft.getMinecraft().player;
         Container container = player.openContainer;
         Minecraft.getMinecraft().addScheduledTask(() -> {
-            if ("PatternInterface.check".equals(message.name) && Boolean.parseBoolean(message.value)) {
+            if ("PatternInterface.check".equals(message.name)) {
                 if (container instanceof AEBaseContainer) {
-                    CraftingHelperTransferHandler.setIsPatternInterfaceExists(true);
+                    CraftingHelperTransferHandler.setIsPatternInterfaceExists(Boolean.parseBoolean(message.value));
                 }
             }
         });

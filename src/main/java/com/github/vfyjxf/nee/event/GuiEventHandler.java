@@ -19,7 +19,6 @@ import com.github.vfyjxf.nee.network.packet.PacketStackSizeChange;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import com.github.vfyjxf.nee.utils.ModIds;
-import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -113,10 +112,9 @@ public class GuiEventHandler {
     }
 
     private void handleRecipeIngredientChange(GuiContainer gui, Slot currentSlot, int dWheel) {
-        IGuiIngredient<ItemStack> ingredient = PatternRecipeTransferHandler.ingredients.get(INPUT_KEY + currentSlot.getSlotIndex());
+        List<ItemStack> currentIngredients = PatternRecipeTransferHandler.ingredients.get(INPUT_KEY + currentSlot.getSlotIndex());
         List<Integer> craftingSlots = new ArrayList<>();
-        if (ingredient != null && ingredient.getDisplayedIngredient() != null) {
-            List<ItemStack> currentIngredients = ingredient.getAllIngredients();
+        if (currentIngredients != null && !currentIngredients.isEmpty()) {
             int currentStackIndex = ItemUtils.getIngredientIndex(currentSlot.getStack(), currentIngredients);
             if (currentStackIndex >= 0) {
                 int nextStackIndex = dWheel / 120;
@@ -127,20 +125,21 @@ public class GuiEventHandler {
                     } else if (currentStackIndex < 0) {
                         currentStackIndex = currentIngredients.size() - 1;
                     }
+
                     ItemStack currentIngredientStack = currentIngredients.get(currentStackIndex).copy();
                     currentIngredientStack.setCount(currentSlot.getStack().getCount());
 
                     if (NEEConfig.allowSynchronousSwitchIngredient) {
                         for (Slot slot : getCraftingSlots(gui)) {
-                            IGuiIngredient<ItemStack> slotIngredients = PatternRecipeTransferHandler.ingredients.get(INPUT_KEY + slot.getSlotIndex());
+                            List<ItemStack> slotIngredients = PatternRecipeTransferHandler.ingredients.get(INPUT_KEY + slot.getSlotIndex());
                             boolean areItemStackEqual = currentSlot.getHasStack() &&
                                     slot.getHasStack() &&
                                     currentSlot.getStack().isItemEqual(slot.getStack()) &&
                                     ItemStack.areItemStackTagsEqual(currentSlot.getStack(), slot.getStack());
 
                             boolean areIngredientEqual = slotIngredients != null &&
-                                    slotIngredients.getAllIngredients().size() > 0 &&
-                                    ItemUtils.getIngredientIndex(slotIngredients.getAllIngredients().get(0), currentIngredients) >= 0;
+                                    !slotIngredients.isEmpty() &&
+                                    ItemUtils.getIngredientIndex(slotIngredients.get(0), currentIngredients) >= 0;
 
                             if (areItemStackEqual && areIngredientEqual) {
                                 craftingSlots.add(slot.slotNumber);

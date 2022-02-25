@@ -20,6 +20,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -30,19 +31,20 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
 
     public static final String OUTPUT_KEY = "Outputs";
     public static final String INPUT_KEY = "#";
-    public static Map<String, IGuiIngredient<ItemStack>> ingredients = new HashMap<>();
+    public static Map<String, List<ItemStack>> ingredients = new HashMap<>();
 
     public PatternRecipeTransferHandler() {
     }
 
     @Override
+    @Nonnull
     public Class<ContainerPatternTerm> getContainerClass() {
         return ContainerPatternTerm.class;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(ContainerPatternTerm container, IRecipeLayout recipeLayout, EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
+    public IRecipeTransferError transferRecipe(@Nonnull ContainerPatternTerm container, IRecipeLayout recipeLayout, @Nonnull EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         String recipeType = recipeLayout.getRecipeCategory().getUid();
         boolean isCraftingRecipe = isCraftingRecipe(recipeType);
         if (doTransfer) {
@@ -57,8 +59,8 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                 if (ingredient != null) {
                     //get itemstack from ingredient
                     ItemStack displayedIngredient = ingredient.getDisplayedIngredient() == null ? ItemStack.EMPTY : ingredient.getDisplayedIngredient().copy();
-                    ItemStack firstIngredient = ingredient.getAllIngredients().isEmpty() ? ItemStack.EMPTY : ingredient.getAllIngredients().get(0).copy();
-                    ItemStack currentStack = NEEConfig.useDisplayedIngredient ? displayedIngredient : firstIngredient;
+                    ItemStack firstIngredient = this.getFirstStack(ingredient);
+                    ItemStack currentStack = (NEEConfig.useDisplayedIngredient && !displayedIngredient.isEmpty()) ? displayedIngredient : firstIngredient;
 
                     if (ingredient.isInput()) {
                         if (isCraftingRecipe) {
@@ -98,7 +100,7 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                 }
 
             }
-
+            PatternRecipeTransferHandler.ingredients.clear();
             for (StackProcessor currentIngredient : tInputs) {
                 ItemStack currentStack = currentIngredient.getCurrentStack();
                 ItemStack preferModItem = ItemUtils.isPreferModItem(currentStack) ? currentStack : ItemUtils.getPreferModItem(currentIngredient.getIngredient());
@@ -121,7 +123,9 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                     continue;
                 }
                 recipeInputs.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-                PatternRecipeTransferHandler.ingredients.put(INPUT_KEY + inputIndex, currentIngredient.getIngredient());
+                List<ItemStack> ingredientList = new ArrayList<>(currentIngredient.getIngredient().getAllIngredients());
+                ingredientList.removeIf(stack -> stack == null || stack.isEmpty());
+                PatternRecipeTransferHandler.ingredients.put(INPUT_KEY + inputIndex, ingredientList);
                 inputIndex++;
             }
             NEENetworkHandler.getInstance().sendToServer(new PacketRecipeTransfer(recipeInputs, recipeOutputs, isCraftingRecipe));
@@ -129,7 +133,7 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
                 NotEnoughEnergistics.logger.info(recipeType);
             }
         } else {
-            if (Minecraft.getMinecraft().currentScreen != null) {
+            if (Minecraft.getMinecraft().currentScreen instanceof RecipesGui) {
                 return new CraftingHelperTooltipError(new IngredientTracker(recipeLayout, (RecipesGui) Minecraft.getMinecraft().currentScreen), false);
             }
         }
@@ -142,6 +146,18 @@ public class PatternRecipeTransferHandler implements IRecipeTransferHandler<Cont
             return recipeType.equals(VanillaRecipeCategoryUid.CRAFTING);
         }
         return false;
+    }
+
+    private ItemStack getFirstStack(IGuiIngredient<ItemStack> ingredient) {
+        if (!ingredient.getAllIngredients().isEmpty()) {
+            return ingredient.getAllIngredients()
+                    .stream()
+                    .filter(stack -> stack != null && !stack.isEmpty())
+                    .findFirst()
+                    .map(ItemStack::copy)
+                    .orElse(ItemStack.EMPTY);
+        }
+        return ItemStack.EMPTY;
     }
 
 }
