@@ -6,10 +6,8 @@ import appeng.api.networking.security.ISecurityGrid;
 import appeng.api.networking.storage.IStorageGrid;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.helpers.IContainerCraftingPacket;
-import appeng.util.Platform;
 import appeng.util.helpers.ItemHandlerUtil;
 import appeng.util.inv.WrapperInvItemHandler;
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -81,61 +79,56 @@ public class PacketRecipeTransfer implements IMessage, IMessageHandler<PacketRec
     public IMessage onMessage(PacketRecipeTransfer message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().player;
         Container container = player.openContainer;
-        if(Platform.isServer()) {
-            NotEnoughEnergistics.logger.info("This is Server side");
-            player.getServerWorld().addScheduledTask(() -> {
-                if (container instanceof ContainerPatternTerm) {
-                    ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(message.getCraftingMode());
-                    ItemStack[] recipeInputs = new ItemStack[9];
-                    ItemStack[] recipeOutputs = null;
-                    NBTTagCompound currentStack;
+        player.getServerWorld().addScheduledTask(() -> {
+            if (container instanceof ContainerPatternTerm) {
+                ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(message.getCraftingMode());
+                ItemStack[] recipeInputs = new ItemStack[9];
+                ItemStack[] recipeOutputs = null;
+                NBTTagCompound currentStack;
 
-                    for (int i = 0; i < recipeInputs.length; i++) {
-                        currentStack = message.getInput().getCompoundTag("#" + i);
-                        recipeInputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
-                    }
+                for (int i = 0; i < recipeInputs.length; i++) {
+                    currentStack = message.getInput().getCompoundTag("#" + i);
+                    recipeInputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
+                }
 
-                    if (!message.output.isEmpty()) {
-                        recipeOutputs = new ItemStack[3];
-                        for (int i = 0; i < recipeOutputs.length; i++) {
-                            currentStack = message.getOutput().getCompoundTag(OUTPUT_KEY + i);
-                            recipeOutputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
-                        }
-                    }
-                    final IContainerCraftingPacket cct = (IContainerCraftingPacket) container;
-                    final IGridNode node = cct.getNetworkNode();
-                    if (node == null) {
-                        return;
-                    }
-                    final IGrid grid = node.getGrid();
-                    final IStorageGrid inv = grid.getCache(IStorageGrid.class);
-                    final ISecurityGrid security = grid.getCache(ISecurityGrid.class);
-                    final IItemHandler craftMatrix = cct.getInventoryByName("crafting");
-                    if (message.input != null) {
-                        for (int i = 0; i < craftMatrix.getSlots(); i++) {
-                            ItemStack currentItem = ItemStack.EMPTY;
-                            if (recipeInputs[i] != null) {
-                                currentItem = recipeInputs[i].copy();
-                            }
-                            ItemHandlerUtil.setStackInSlot(craftMatrix, i, currentItem);
-                        }
-                        if (recipeOutputs != null && !message.getCraftingMode()) {
-                            final IItemHandler outputMatrix = cct.getInventoryByName("output");
-                            for (int i = 0; i < outputMatrix.getSlots(); i++) {
-                                ItemStack currentItem = ItemStack.EMPTY;
-                                if (recipeOutputs[i] != null) {
-                                    currentItem = recipeOutputs[i].copy();
-                                }
-                                ItemHandlerUtil.setStackInSlot(outputMatrix, i, currentItem);
-                            }
-                        }
-                        container.onCraftMatrixChanged(new WrapperInvItemHandler(craftMatrix));
+                if (!message.output.isEmpty()) {
+                    recipeOutputs = new ItemStack[3];
+                    for (int i = 0; i < recipeOutputs.length; i++) {
+                        currentStack = message.getOutput().getCompoundTag(OUTPUT_KEY + i);
+                        recipeOutputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
                     }
                 }
-            });
-        }else {
-            NotEnoughEnergistics.logger.info("This is Client side");
-        }
+                final IContainerCraftingPacket cct = (IContainerCraftingPacket) container;
+                final IGridNode node = cct.getNetworkNode();
+                if (node == null) {
+                    return;
+                }
+                final IGrid grid = node.getGrid();
+                final IStorageGrid inv = grid.getCache(IStorageGrid.class);
+                final ISecurityGrid security = grid.getCache(ISecurityGrid.class);
+                final IItemHandler craftMatrix = cct.getInventoryByName("crafting");
+                if (message.input != null) {
+                    for (int i = 0; i < craftMatrix.getSlots(); i++) {
+                        ItemStack currentItem = ItemStack.EMPTY;
+                        if (recipeInputs[i] != null) {
+                            currentItem = recipeInputs[i].copy();
+                        }
+                        ItemHandlerUtil.setStackInSlot(craftMatrix, i, currentItem);
+                    }
+                    if (recipeOutputs != null && !message.getCraftingMode()) {
+                        final IItemHandler outputMatrix = cct.getInventoryByName("output");
+                        for (int i = 0; i < outputMatrix.getSlots(); i++) {
+                            ItemStack currentItem = ItemStack.EMPTY;
+                            if (recipeOutputs[i] != null) {
+                                currentItem = recipeOutputs[i].copy();
+                            }
+                            ItemHandlerUtil.setStackInSlot(outputMatrix, i, currentItem);
+                        }
+                    }
+                    container.onCraftMatrixChanged(new WrapperInvItemHandler(craftMatrix));
+                }
+            }
+        });
         return null;
     }
 

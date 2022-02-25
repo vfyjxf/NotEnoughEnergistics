@@ -123,7 +123,9 @@ public class IngredientTracker {
             }
             if (repo != null) {
                 for (IAEItemStack stack : (IItemList<IAEItemStack>) ObfuscationReflectionHelper.getPrivateValue(ItemRepo.class, repo, "list")) {
-                    craftableStacks.add(stack.copy());
+                    if(stack.isCraftable()) {
+                        craftableStacks.add(stack.copy());
+                    }
                 }
             }
         }
