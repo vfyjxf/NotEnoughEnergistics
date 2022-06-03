@@ -8,8 +8,15 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class ForestryRecipeProcessor implements IRecipeProcessor {
+
+    @Nonnull
+    @Override
+    public Set<String> getAllOverlayIdentifier() {
+        return Collections.singleton(RecipeProcessor.NULL_IDENTIFIER);
+    }
 
     @Nonnull
     @Override

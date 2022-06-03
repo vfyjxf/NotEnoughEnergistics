@@ -176,7 +176,7 @@ public class GuiEventHandler implements INEIGuiHandler {
             return false;
         }
 
-        if (NEEConfig.enableNEIDragNDrop) {
+        if (NEEConfig.enableNEIDragDrop) {
             if (gui instanceof AEBaseGui) {
                 if (draggedStack != null) {
                     Slot currentSlot = gui.getSlotAtPosition(mouseX, mouseY);

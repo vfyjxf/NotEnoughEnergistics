@@ -22,6 +22,8 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.*;
 
+import static com.github.vfyjxf.nee.processor.RecipeProcessor.NULL_IDENTIFIER;
+
 /**
  * @author vfyjxf
  */
@@ -64,7 +66,10 @@ public class NEECraftingHandler implements IOverlayHandler {
     private PacketNEIPatternRecipe packProcessRecipe(IRecipeHandler recipe, int recipeIndex) {
         final NBTTagCompound recipeInputs = new NBTTagCompound();
         NBTTagCompound recipeOutputs = new NBTTagCompound();
-        String identifier = recipe instanceof TemplateRecipeHandler ? ((TemplateRecipeHandler) recipe).getOverlayIdentifier() : "";
+        String identifier = recipe instanceof TemplateRecipeHandler ? ((TemplateRecipeHandler) recipe).getOverlayIdentifier() : NULL_IDENTIFIER;
+        if (identifier == null){
+            identifier = NULL_IDENTIFIER;
+        }
         int inputIndex = 0;
         int outputIndex = 0;
         //get all recipe inputs and other stacks,use first item

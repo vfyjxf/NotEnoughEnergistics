@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecipeProcessor {
+
+    public static final String NULL_IDENTIFIER = "null";
     public static List<IRecipeProcessor> recipeProcessors = new ArrayList<>();
 
     public static void init() {
