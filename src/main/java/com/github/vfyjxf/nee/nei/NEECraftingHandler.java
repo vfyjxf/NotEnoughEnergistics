@@ -19,6 +19,7 @@ import com.github.vfyjxf.nee.utils.ItemUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.oredict.OreDictionary;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                 List<PositionedStack> inputs = processor.getRecipeInput(recipe, recipeIndex, identifier);
                 List<PositionedStack> outputs = processor.getRecipeOutput(recipe, recipeIndex, identifier);
                 String recipeProcessorId = processor.getRecipeProcessorId();
-                List<PositionedStack> tInputs = new ArrayList<>();
+                List<PositionedStack> mergedInputs = new ArrayList<>();
 
                 if (!inputs.isEmpty() && !outputs.isEmpty()) {
                     NEECraftingHandler.ingredients.clear();
@@ -86,10 +87,10 @@ public class NEECraftingHandler implements IOverlayHandler {
                         ItemStack currentStack = positionedStack.items[0];
                         boolean find = false;
                         ItemCombination currentValue = ItemCombination.valueOf(NEEConfig.itemCombinationMode);
-                        if (currentValue != ItemCombination.DISABLED) {
+                        if (currentValue != ItemCombination.DISABLED && processor.mergeStacks(recipe, recipeIndex, identifier)) {
                             boolean isWhitelist = currentValue == ItemCombination.WHITELIST && Arrays.asList(NEEConfig.itemCombinationWhitelist).contains(identifier);
                             if (currentValue == ItemCombination.ENABLED || isWhitelist) {
-                                for (PositionedStack storedStack : tInputs) {
+                                for (PositionedStack storedStack : mergedInputs) {
                                     ItemStack firstStack = storedStack.items[0];
                                     boolean areItemStackEqual = firstStack.isItemEqual(currentStack) && ItemStack.areItemStackTagsEqual(firstStack, currentStack);
                                     if (areItemStackEqual && (firstStack.stackSize + currentStack.stackSize) <= firstStack.getMaxStackSize()) {
@@ -100,10 +101,10 @@ public class NEECraftingHandler implements IOverlayHandler {
                             }
                         }
                         if (!find) {
-                            tInputs.add(positionedStack.copy());
+                            mergedInputs.add(positionedStack.copy());
                         }
                     }
-                    for (PositionedStack positionedStack : tInputs) {
+                    for (PositionedStack positionedStack : mergedInputs) {
                         ItemStack currentStack = positionedStack.items[0];
                         ItemStack preferModItem = ItemUtils.getPreferModItem(positionedStack.items);
 
@@ -123,8 +124,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                             continue;
                         }
 
-                        //Fix ItemStack with wrong meta
-                        if (currentStack.getItemDamage() == 32767) {
+                        if (currentStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
                             currentStack.setItemDamage(0);
                         }
 
@@ -139,8 +139,7 @@ public class NEECraftingHandler implements IOverlayHandler {
                         }
 
                         ItemStack outputStack = positionedStack.item.copy();
-                        //Fix ItemStack with wrong meta(maybe ?)
-                        if (outputStack.getItemDamage() == 32767) {
+                        if (outputStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
                             outputStack.setItemDamage(0);
                         }
 
@@ -177,8 +176,9 @@ public class NEECraftingHandler implements IOverlayHandler {
                     }
                 }
 
-                //Fix ItemStack with wrong meta
-                if (stack.getItemDamage() == 32767) {
+                ItemUtils.transformGTTool(stack);
+
+                if (stack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
                     stack.setItemDamage(0);
                 }
 
