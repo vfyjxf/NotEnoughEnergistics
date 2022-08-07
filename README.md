@@ -1,4 +1,4 @@
-[中文](READNE_CN.md)
+[中文](README_CN.md)
 
 # Not Enough Energistics
 
@@ -46,6 +46,7 @@ This mod removes that functionality and allows the player to use NEI's transfer 
 - [x]  BuildCraft
 - [x]  Avaritiaddons (auto extreme crafting table support)
 - [x]  GT++
+- [x]  Botania
 
 If you want other Mod support, see [RecipeProcessor](./src/main/java/com/github/vfyjxf/nee/processor/RecipeProcessor.java) and [Mod support Issue](https://github.com/vfyjxf/NotEnoughEnergistics/issues/1)
 
