@@ -165,7 +165,7 @@ public class NEEConfig {
 
     public static void setTransformPriorityList(String[] transformPriorityList) {
         NEEConfig.transformPriorityList = transformPriorityList;
-        config.get("client", "transformPriorityModList", new String[0],
+        config.get("client", "transformItemPriorityList", new String[0],
                 "if oredict has this mod's item, use it first").set(transformPriorityList);
         config.save();
     }
