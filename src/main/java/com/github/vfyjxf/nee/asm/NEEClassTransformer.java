@@ -14,9 +14,9 @@ public class NEEClassTransformer implements IClassTransformer {
     private final static String METHOD_NAME = "init";
     private final static String METHOD_TARGET = "(Lnet/minecraft/inventory/Container;Lnet/minecraft/entity/player/EntityPlayer;)V";
 
-    private final static String HELPER_CLASS_NAME = "com/github/vfyjxf/nee/asm/JEIHelper";
+    private final static String HELPER_CLASS_NAME = "com/github/vfyjxf/nee/asm/JeiHooks";
     private final static String HELPER_METHOD_NAME = "setButtonEnable";
-    private final static String HELPER_METHOD_TARGET = "(Lnet/minecraft/client/gui/GuiButton;)V";
+    private final static String HELPER_METHOD_TARGET = "(Lnet/minecraft/client/gui/GuiButton;Lmezz/jei/api/recipe/transfer/IRecipeTransferError;)V";
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
@@ -28,21 +28,20 @@ public class NEEClassTransformer implements IClassTransformer {
             for (MethodNode methodNode : classNode.methods) {
                 if (methodNode.name.equals(METHOD_NAME) && methodNode.desc.equals(METHOD_TARGET)) {
                     NotEnoughEnergistics.logger.info("Transforming : " + internalName + methodNode.name + methodNode.desc);
+                    /*
+                     *Add: JEIHelper.setButtonEnable(this, error);
+                     */
                     InsnList insnList = new InsnList();
                     for (AbstractInsnNode instruction : methodNode.instructions.toArray()) {
                         int opcode = instruction.getOpcode();
                         if (opcode == RETURN) {
                             insnList.add(new VarInsnNode(ALOAD, 0));
+                            insnList.add(new VarInsnNode(ALOAD, 0));
                             insnList.add(new FieldInsnNode(GETFIELD,
                                     "mezz/jei/gui/recipes/RecipeTransferButton",
                                     "recipeTransferError",
                                     "Lmezz/jei/api/recipe/transfer/IRecipeTransferError;"));
-                            insnList.add(new TypeInsnNode(INSTANCEOF, "com/github/vfyjxf/nee/jei/CraftingHelperTooltipError"));
-                            LabelNode label = new LabelNode();
-                            insnList.add(new JumpInsnNode(IFEQ, label));
-                            insnList.add(new VarInsnNode(ALOAD, 0));
                             insnList.add(new MethodInsnNode(INVOKESTATIC, HELPER_CLASS_NAME, HELPER_METHOD_NAME, HELPER_METHOD_TARGET, false));
-                            insnList.add(label);
                             methodNode.instructions.insertBefore(instruction, insnList);
                         }
                     }

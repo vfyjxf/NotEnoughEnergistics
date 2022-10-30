@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class PacketValueConfigServer implements IMessage, IMessageHandler<PacketValueConfigServer, IMessage> {
+public class PacketValueConfigServer implements IMessage {
 
     private String name;
     private String value;
@@ -48,59 +48,62 @@ public class PacketValueConfigServer implements IMessage, IMessageHandler<Packet
         ByteBufUtils.writeUTF8String(buf, this.value);
     }
 
+    public static class Handler implements IMessageHandler<PacketValueConfigServer, IMessage> {
 
-    @Override
-    public IMessage onMessage(PacketValueConfigServer message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().player;
-        Container container = player.openContainer;
-        player.getServerWorld().addScheduledTask(() -> {
-            if ("Container.selectedSlot".equals(message.name)) {
-                if (container instanceof ContainerPatternInterface) {
-                    ContainerPatternInterface cpc = (ContainerPatternInterface) container;
-                    int slotIndex = Integer.parseInt(message.value);
-                    Slot slot = container.getSlot(slotIndex);
-                    if (slot instanceof SlotRestrictedInput) {
-                        cpc.setSelectedSlotIndex(slot.slotNumber);
-                    }
-                }
-            } else if ("Gui.PatternInterface".equals(message.name)) {
-                if (container instanceof ContainerPatternInterface) {
-                    ContainerPatternInterface cpc = (ContainerPatternInterface) container;
-                    TilePatternInterface tile = (TilePatternInterface) cpc.getTileEntity();
-                    tile.cancelWork(cpc.getSelectedSlotIndex());
-                    cpc.removeCurrentRecipe();
-                    tile.updateCraftingList();
-                }
-            } else if ("PatternInterface.check".equals(message.name)) {
-                if (container instanceof AEBaseContainer) {
-                    AEBaseContainer abc = (AEBaseContainer) container;
-                    IGrid grid = getNetwork(abc);
-                    if (grid != null) {
-                        for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
-
-                            if (gridNode.getMachine() instanceof TilePatternInterface) {
-                                NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "true"), player);
-                                return;
-                            }
-
+        @Override
+        public IMessage onMessage(PacketValueConfigServer message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            Container container = player.openContainer;
+            player.getServerWorld().addScheduledTask(() -> {
+                if ("Container.selectedSlot".equals(message.name)) {
+                    if (container instanceof ContainerPatternInterface) {
+                        ContainerPatternInterface cpc = (ContainerPatternInterface) container;
+                        int slotIndex = Integer.parseInt(message.value);
+                        Slot slot = container.getSlot(slotIndex);
+                        if (slot instanceof SlotRestrictedInput) {
+                            cpc.setSelectedSlotIndex(slot.slotNumber);
                         }
-                        NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "false"), player);
+                    }
+                } else if ("Gui.PatternInterface".equals(message.name)) {
+                    if (container instanceof ContainerPatternInterface) {
+                        ContainerPatternInterface cpc = (ContainerPatternInterface) container;
+                        TilePatternInterface tile = (TilePatternInterface) cpc.getTileEntity();
+                        tile.cancelWork(cpc.getSelectedSlotIndex());
+                        cpc.removeCurrentRecipe();
+                        tile.updateCraftingList();
+                    }
+                } else if ("PatternInterface.check".equals(message.name)) {
+                    if (container instanceof AEBaseContainer) {
+                        AEBaseContainer abc = (AEBaseContainer) container;
+                        IGrid grid = getNetwork(abc);
+                        if (grid != null) {
+                            for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
+
+                                if (gridNode.getMachine() instanceof TilePatternInterface) {
+                                    NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "true"), player);
+                                    return;
+                                }
+
+                            }
+                            NEENetworkHandler.getInstance().sendTo(new PacketValueConfigClient("PatternInterface.check", "false"), player);
+                        }
                     }
                 }
-            }
 
 
-        });
-        return null;
-    }
-
-    private IGrid getNetwork(AEBaseContainer container) {
-        if (container.getTarget() instanceof IActionHost) {
-            IActionHost ah = (IActionHost) container.getTarget();
-            IGridNode gn = ah.getActionableNode();
-            return gn.getGrid();
+            });
+            return null;
         }
-        return null;
+
+        private IGrid getNetwork(AEBaseContainer container) {
+            if (container.getTarget() instanceof IActionHost) {
+                IActionHost ah = (IActionHost) container.getTarget();
+                IGridNode gn = ah.getActionableNode();
+                return gn.getGrid();
+            }
+            return null;
+        }
+
     }
 
 }

@@ -16,11 +16,11 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.jei.PatternTransferHandler.OUTPUT_KEY;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_ID;
-import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_WIRELESS_ID;
+import static com.github.vfyjxf.nee.network.NEEGuiHandler.WIRELESS_CRAFTING_AMOUNT_ID;
 
-public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOpenCraftAmount, IMessage> {
+public class PacketOpenCraftAmount implements IMessage {
 
     private NBTTagCompound recipe;
     private boolean isWirelessTerm;
@@ -63,51 +63,56 @@ public class PacketOpenCraftAmount implements IMessage, IMessageHandler<PacketOp
         }
     }
 
-    @Override
-    public IMessage onMessage(PacketOpenCraftAmount message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().player;
-        Container container = player.openContainer;
-        player.getServerWorld().addScheduledTask(() -> {
-            if (container instanceof ContainerCraftingTerm) {
-                final ContainerOpenContext context = ((ContainerCraftingTerm) container).getOpenContext();
-                if (context != null) {
-                    final TileEntity tile = context.getTile();
+    public static class Handler implements IMessageHandler<PacketOpenCraftAmount, IMessage> {
 
-                    NEEGuiHandler.openGui(player, CRAFTING_AMOUNT_ID, tile, context.getSide());
+        @Override
+        public IMessage onMessage(PacketOpenCraftAmount message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            Container container = player.openContainer;
+            player.getServerWorld().addScheduledTask(() -> {
+                if (container instanceof ContainerCraftingTerm) {
+                    final ContainerOpenContext context = ((ContainerCraftingTerm) container).getOpenContext();
+                    if (context != null) {
+                        final TileEntity tile = context.getTile();
+
+                        NEEGuiHandler.openGui(player, CRAFTING_AMOUNT_ID, tile, context.getSide());
+
+                        if (player.openContainer instanceof ContainerCraftingAmount) {
+                            ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
+                            if (message.recipe != null && !message.recipe.isEmpty()) {
+                                NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                                ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
+                                cca.setResultStack(result);
+                                cca.getResultSlot().putStack(result);
+                                cca.setRecipe(message.recipe);
+                            }
+                            cca.detectAndSendChanges();
+                        }
+
+                    }
+                } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
+                    NEEGuiHandler.openGui(player, WIRELESS_CRAFTING_AMOUNT_ID, player.world);
 
                     if (player.openContainer instanceof ContainerCraftingAmount) {
                         ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
-                        if (message.recipe != null && !message.recipe.isEmpty()) {
+                        if (message.recipe != null) {
                             NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
                             ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
                             cca.setResultStack(result);
                             cca.getResultSlot().putStack(result);
                             cca.setRecipe(message.recipe);
                         }
+                        if (message.isWirelessTerm) {
+                            cca.setBauble(message.isBauble);
+                            cca.setWctSlot(message.wctSlot);
+                        }
                         cca.detectAndSendChanges();
                     }
-
                 }
-            } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
-                NEEGuiHandler.openGui(player, CRAFTING_AMOUNT_WIRELESS_ID, player.world);
+            });
+            return null;
+        }
 
-                if (player.openContainer instanceof ContainerCraftingAmount) {
-                    ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
-                    if (message.recipe != null) {
-                        NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
-                        ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
-                        cca.setResultStack(result);
-                        cca.getResultSlot().putStack(result);
-                        cca.setRecipe(message.recipe);
-                    }
-                    if (message.isWirelessTerm) {
-                        cca.setBauble(message.isBauble);
-                        cca.setWctSlot(message.wctSlot);
-                    }
-                    cca.detectAndSendChanges();
-                }
-            }
-        });
-        return null;
     }
+
 }

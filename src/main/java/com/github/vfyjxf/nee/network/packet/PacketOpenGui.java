@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 
-public class PacketOpenGui implements IMessage, IMessageHandler<PacketOpenGui, IMessage> {
+public class PacketOpenGui implements IMessage {
 
     private int guiId;
 
@@ -34,19 +34,25 @@ public class PacketOpenGui implements IMessage, IMessageHandler<PacketOpenGui, I
         buf.writeInt(this.guiId);
     }
 
-    @Override
-    public IMessage onMessage(PacketOpenGui message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().player;
-        Container container = player.openContainer;
-        if (container instanceof AEBaseContainer) {
-            player.getServerWorld().addScheduledTask(() -> {
-                final ContainerOpenContext context = ((AEBaseContainer) container).getOpenContext();
-                if (context != null) {
-                    final TileEntity tile = context.getTile();
-                    NEEGuiHandler.openGui(player, message.guiId, tile, context.getSide());
-                }
-            });
+    public static class Handler implements IMessageHandler<PacketOpenGui, IMessage> {
+
+        @Override
+        public IMessage onMessage(PacketOpenGui message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            Container container = player.openContainer;
+            if (container instanceof AEBaseContainer) {
+                player.getServerWorld().addScheduledTask(() -> {
+                    final ContainerOpenContext context = ((AEBaseContainer) container).getOpenContext();
+                    if (context != null) {
+                        final TileEntity tile = context.getTile();
+                        NEEGuiHandler.openGui(player, message.guiId, tile, context.getSide());
+                    }
+                });
+            }
+            return null;
+
+
         }
-        return null;
+
     }
 }

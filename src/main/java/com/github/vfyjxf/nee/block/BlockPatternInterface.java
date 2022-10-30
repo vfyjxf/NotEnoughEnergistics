@@ -3,9 +3,9 @@ package com.github.vfyjxf.nee.block;
 import appeng.api.util.AEPartLocation;
 import appeng.block.AEBaseItemBlock;
 import appeng.block.AEBaseTileBlock;
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import com.github.vfyjxf.nee.network.NEEGuiHandler;
+import com.github.vfyjxf.nee.utils.Gobals;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -22,12 +22,12 @@ import net.minecraft.world.World;
 public class BlockPatternInterface extends AEBaseTileBlock {
 
     public static BlockPatternInterface BLOCK_INSTANCE = new BlockPatternInterface();
-    public static Item ITEM_INSTANCE = new AEBaseItemBlock(BLOCK_INSTANCE).setRegistryName(NotEnoughEnergistics.MODID, "pattern_interface").setTranslationKey(NotEnoughEnergistics.MODID + "." + "pattern_interface");
+    public static Item ITEM_INSTANCE = new AEBaseItemBlock(BLOCK_INSTANCE).setRegistryName(Gobals.MOD_ID, "pattern_interface").setTranslationKey(Gobals.MOD_ID + "." + "pattern_interface");
 
     public BlockPatternInterface() {
         super(Material.IRON);
-        setRegistryName(NotEnoughEnergistics.MODID, "pattern_interface");
-        setTranslationKey(NotEnoughEnergistics.MODID + "." + "pattern_interface");
+        setRegistryName(Gobals.MOD_ID, "pattern_interface");
+        setTranslationKey(Gobals.MOD_ID + "." + "pattern_interface");
         setTileEntity(TilePatternInterface.class);
 
     }

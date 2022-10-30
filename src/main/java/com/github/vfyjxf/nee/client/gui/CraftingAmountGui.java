@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
-public class GuiCraftingAmount extends AEBaseGui {
+public class CraftingAmountGui extends AEBaseGui {
     private GuiNumberBox amountToCraft;
     private GuiTabButton originalGuiBtn;
 
@@ -56,7 +56,7 @@ public class GuiCraftingAmount extends AEBaseGui {
     private boolean isWirelessCrafting;
 
     @Reflected
-    public GuiCraftingAmount(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
+    public CraftingAmountGui(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         super(new ContainerCraftingAmount(inventoryPlayer, te));
     }
 
@@ -64,7 +64,7 @@ public class GuiCraftingAmount extends AEBaseGui {
      * For wireless crafting terminal
      */
     @Reflected
-    public GuiCraftingAmount(final InventoryPlayer inventoryPlayer, final ITerminalHost te, @Nonnull ContainerWCT wct) {
+    public CraftingAmountGui(final InventoryPlayer inventoryPlayer, final ITerminalHost te, @Nonnull ContainerWCT wct) {
         super(new ContainerCraftingAmount(inventoryPlayer, te));
         this.wctObj = wct;
     }

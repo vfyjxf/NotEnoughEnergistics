@@ -17,12 +17,12 @@ import java.util.List;
 /**
  * @author vfyjxf
  */
-public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSlotStackChange, IMessage> {
+public class PacketSlotStackSwitch implements IMessage {
 
     private ItemStack stack;
     private List<Integer> slots;
 
-    public PacketSlotStackChange() {
+    public PacketSlotStackSwitch() {
 
     }
 
@@ -34,7 +34,7 @@ public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSl
         return slots;
     }
 
-    public PacketSlotStackChange(ItemStack stack, List<Integer> craftingSlots) {
+    public PacketSlotStackSwitch(ItemStack stack, List<Integer> craftingSlots) {
         this.stack = stack;
         this.slots = craftingSlots;
     }
@@ -59,21 +59,28 @@ public class PacketSlotStackChange implements IMessage, IMessageHandler<PacketSl
         }
     }
 
-    @Override
-    public IMessage onMessage(PacketSlotStackChange message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().player;
-        Container container = player.openContainer;
-        player.getServerWorld().addScheduledTask(() -> {
-            if (container instanceof AEBaseContainer) {
-                ItemStack nextStack = message.getStack();
-                if (nextStack != null) {
-                    for (Integer craftingSlot : message.getSlots()) {
-                        Slot currentSlot = container.getSlot(craftingSlot);
-                        currentSlot.putStack(nextStack);
+    public static class Handler implements IMessageHandler<PacketSlotStackSwitch, IMessage> {
+
+        @Override
+        public IMessage onMessage(PacketSlotStackSwitch message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            Container container = player.openContainer;
+            player.getServerWorld().addScheduledTask(() -> {
+                if (container instanceof AEBaseContainer) {
+                    ItemStack nextStack = message.getStack();
+                    if (nextStack != null) {
+                        for (Integer craftingSlot : message.getSlots()) {
+                            Slot currentSlot = container.getSlot(craftingSlot);
+                            ItemStack next = nextStack.copy();
+                            next.setCount(currentSlot.getStack().getCount());
+                            currentSlot.putStack(next);
+                        }
                     }
                 }
-            }
-        });
-        return null;
+            });
+            return null;
+        }
+
     }
+
 }

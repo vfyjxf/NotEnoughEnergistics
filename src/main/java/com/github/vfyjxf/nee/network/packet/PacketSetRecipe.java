@@ -24,11 +24,11 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import java.util.Optional;
 
-import static com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler.RECIPE_LENGTH;
-import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.INPUT_KEY;
-import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.jei.CraftingTransferHandler.RECIPE_LENGTH;
+import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
+import static com.github.vfyjxf.nee.jei.PatternTransferHandler.OUTPUT_KEY;
 
-public class PacketSetRecipe implements IMessage, IMessageHandler<PacketSetRecipe, IMessage> {
+public class PacketSetRecipe implements IMessage {
 
     private NBTTagCompound recipe;
 
@@ -50,99 +50,104 @@ public class PacketSetRecipe implements IMessage, IMessageHandler<PacketSetRecip
         ByteBufUtils.writeTag(buf, this.recipe);
     }
 
-    @Override
-    public IMessage onMessage(PacketSetRecipe message, MessageContext ctx) {
-        EntityPlayerMP player = ctx.getServerHandler().player;
-        Container container = player.openContainer;
-        player.getServerWorld().addScheduledTask(() -> {
-            if (container instanceof AEBaseContainer) {
-                AEBaseContainer aeContainer = (AEBaseContainer) container;
-                IGrid grid = getNetwork(aeContainer);
-                if (grid != null) {
-                    for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
+    public static class Handler implements IMessageHandler<PacketSetRecipe, IMessage> {
 
-                        if (gridNode.getMachine() instanceof TilePatternInterface) {
+        @Override
+        public IMessage onMessage(PacketSetRecipe message, MessageContext ctx) {
+            EntityPlayerMP player = ctx.getServerHandler().player;
+            Container container = player.openContainer;
+            player.getServerWorld().addScheduledTask(() -> {
+                if (container instanceof AEBaseContainer) {
+                    AEBaseContainer aeContainer = (AEBaseContainer) container;
+                    IGrid grid = getNetwork(aeContainer);
+                    if (grid != null) {
+                        for (IGridNode gridNode : grid.getMachines(TilePatternInterface.class)) {
 
-                            TilePatternInterface tpi = (TilePatternInterface) gridNode.getMachine();
-                            NBTTagCompound currentTag = message.recipe.getCompoundTag(OUTPUT_KEY);
-                            ItemStack result = currentTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentTag);
+                            if (gridNode.getMachine() instanceof TilePatternInterface) {
 
-                            if (tpi.getProxy().isActive() && tpi.canPutPattern(result)) {
+                                TilePatternInterface tpi = (TilePatternInterface) gridNode.getMachine();
+                                NBTTagCompound currentTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                                ItemStack result = currentTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentTag);
 
-                                ItemStack patternStack = getPatternStack(player, message.recipe);
+                                if (tpi.getProxy().isActive() && tpi.canPutPattern(result)) {
 
-                                if (!patternStack.isEmpty()) {
+                                    ItemStack patternStack = getPatternStack(player, message.recipe);
 
-                                    if (tpi.putPattern(patternStack) >=0) {
-                                        return;
+                                    if (!patternStack.isEmpty()) {
+
+                                        if (tpi.putPattern(patternStack) >= 0) {
+                                            return;
+                                        }
                                     }
+
                                 }
 
                             }
-
                         }
                     }
                 }
+            });
+            return null;
+        }
+
+        private IGrid getNetwork(AEBaseContainer container) {
+            if (container.getTarget() instanceof IActionHost) {
+                IActionHost ah = (IActionHost) container.getTarget();
+                IGridNode gn = ah.getActionableNode();
+                return gn.getGrid();
             }
-        });
-        return null;
-    }
-
-    private IGrid getNetwork(AEBaseContainer container) {
-        if (container.getTarget() instanceof IActionHost) {
-            IActionHost ah = (IActionHost) container.getTarget();
-            IGridNode gn = ah.getActionableNode();
-            return gn.getGrid();
-        }
-        return null;
-    }
-
-    private ItemStack getPatternStack(EntityPlayer player, NBTTagCompound recipe) {
-        ItemStack[] recipeInputs = new ItemStack[RECIPE_LENGTH];
-        NBTTagCompound currentStack;
-        for (int i = 0; i < recipeInputs.length; i++) {
-            currentStack = recipe.getCompoundTag(INPUT_KEY + i);
-            recipeInputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
-        }
-        InventoryCrafting ic = new InventoryCrafting(new ContainerNull(), 3, 3);
-        for (int i = 0; i < RECIPE_LENGTH; i++) {
-            ic.setInventorySlotContents(i, recipeInputs[i]);
+            return null;
         }
 
-        IRecipe iRecipe = CraftingManager.findMatchingRecipe(ic, player.world);
-        if (iRecipe != null) {
-            ItemStack outputStack = iRecipe.getCraftingResult(ic);
-            if (!outputStack.isEmpty()) {
-                ItemStack patternStack = null;
-                Optional<ItemStack> maybePattern = AEApi.instance().definitions().items().encodedPattern().maybeStack(1);
-                if (maybePattern.isPresent()) {
-                    patternStack = maybePattern.get();
-                }
-                if (patternStack != null && !patternStack.isEmpty()) {
-                    final NBTTagCompound patternValue = new NBTTagCompound();
-                    final NBTTagList tagIn = new NBTTagList();
-                    for (ItemStack stack : recipeInputs) {
-                        tagIn.appendTag(crateItemTag(stack));
+        private ItemStack getPatternStack(EntityPlayer player, NBTTagCompound recipe) {
+            ItemStack[] recipeInputs = new ItemStack[RECIPE_LENGTH];
+            NBTTagCompound currentStack;
+            for (int i = 0; i < recipeInputs.length; i++) {
+                currentStack = recipe.getCompoundTag(INPUT_KEY + i);
+                recipeInputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
+            }
+            InventoryCrafting ic = new InventoryCrafting(new ContainerNull(), 3, 3);
+            for (int i = 0; i < RECIPE_LENGTH; i++) {
+                ic.setInventorySlotContents(i, recipeInputs[i]);
+            }
+
+            IRecipe iRecipe = CraftingManager.findMatchingRecipe(ic, player.world);
+            if (iRecipe != null) {
+                ItemStack outputStack = iRecipe.getCraftingResult(ic);
+                if (!outputStack.isEmpty()) {
+                    ItemStack patternStack = null;
+                    Optional<ItemStack> maybePattern = AEApi.instance().definitions().items().encodedPattern().maybeStack(1);
+                    if (maybePattern.isPresent()) {
+                        patternStack = maybePattern.get();
                     }
-                    patternValue.setTag("in", tagIn);
-                    patternValue.setTag("out", outputStack.writeToNBT(new NBTTagCompound()));
-                    patternValue.setBoolean("crafting", true);
-                    patternValue.setBoolean("substitute", false);
+                    if (patternStack != null && !patternStack.isEmpty()) {
+                        final NBTTagCompound patternValue = new NBTTagCompound();
+                        final NBTTagList tagIn = new NBTTagList();
+                        for (ItemStack stack : recipeInputs) {
+                            tagIn.appendTag(crateItemTag(stack));
+                        }
+                        patternValue.setTag("in", tagIn);
+                        patternValue.setTag("out", outputStack.writeToNBT(new NBTTagCompound()));
+                        patternValue.setBoolean("crafting", true);
+                        patternValue.setBoolean("substitute", false);
 
-                    patternStack.setTagCompound(patternValue);
-                    return patternStack;
+                        patternStack.setTagCompound(patternValue);
+                        return patternStack;
+                    }
                 }
             }
+
+            return ItemStack.EMPTY;
         }
 
-        return ItemStack.EMPTY;
+        private NBTTagCompound crateItemTag(ItemStack itemStack) {
+            NBTTagCompound tag = new NBTTagCompound();
+            if (!itemStack.isEmpty()) {
+                itemStack.writeToNBT(tag);
+            }
+            return tag;
+        }
+
     }
 
-    private NBTTagCompound crateItemTag(ItemStack itemStack) {
-        NBTTagCompound tag = new NBTTagCompound();
-        if (!itemStack.isEmpty()) {
-            itemStack.writeToNBT(tag);
-        }
-        return tag;
-    }
 }

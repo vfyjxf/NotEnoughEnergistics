@@ -1,7 +1,7 @@
 package com.github.vfyjxf.nee.network.packet;
 
 import appeng.container.AEBaseContainer;
-import com.github.vfyjxf.nee.jei.CraftingHelperTransferHandler;
+import com.github.vfyjxf.nee.jei.CraftingTransferHandler;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class PacketValueConfigClient implements IMessage, IMessageHandler<PacketValueConfigClient, IMessage> {
+public class PacketValueConfigClient implements IMessage {
 
     private String name;
     private String value;
@@ -42,17 +42,22 @@ public class PacketValueConfigClient implements IMessage, IMessageHandler<Packet
         ByteBufUtils.writeUTF8String(buf, this.value);
     }
 
-    @Override
-    public IMessage onMessage(PacketValueConfigClient message, MessageContext ctx) {
-        EntityPlayerSP player = Minecraft.getMinecraft().player;
-        Container container = player.openContainer;
-        Minecraft.getMinecraft().addScheduledTask(() -> {
-            if ("PatternInterface.check".equals(message.name)) {
-                if (container instanceof AEBaseContainer) {
-                    CraftingHelperTransferHandler.setIsPatternInterfaceExists(Boolean.parseBoolean(message.value));
+    public static class Handler implements IMessageHandler<PacketValueConfigClient, IMessage> {
+
+        @Override
+        public IMessage onMessage(PacketValueConfigClient message, MessageContext ctx) {
+            EntityPlayerSP player = Minecraft.getMinecraft().player;
+            Container container = player.openContainer;
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                if ("PatternInterface.check".equals(message.name)) {
+                    if (container instanceof AEBaseContainer) {
+                        CraftingTransferHandler.setIsPatternInterfaceExists(Boolean.parseBoolean(message.value));
+                    }
                 }
-            }
-        });
-        return null;
+            });
+            return null;
+        }
+
     }
+
 }

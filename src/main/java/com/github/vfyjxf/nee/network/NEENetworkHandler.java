@@ -1,33 +1,33 @@
 package com.github.vfyjxf.nee.network;
 
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.network.packet.*;
+import com.github.vfyjxf.nee.utils.Gobals;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class NEENetworkHandler {
 
-    private static final SimpleNetworkWrapper INSTANCE = new SimpleNetworkWrapper(NotEnoughEnergistics.MODID);
+    private static final SimpleNetworkWrapper INSTANCE = new SimpleNetworkWrapper(Gobals.MOD_ID);
     private static int packId = 0;
 
     public static SimpleNetworkWrapper getInstance() {
         return INSTANCE;
     }
 
-    private static int nextID() {
+    private static int nextId() {
         return packId++;
     }
 
     public static void init() {
-        NEENetworkHandler.getInstance().registerMessage(PacketRecipeTransfer.class, PacketRecipeTransfer.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketStackSizeChange.class, PacketStackSizeChange.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketSlotStackChange.class, PacketSlotStackChange.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketCraftingRequest.class, PacketCraftingRequest.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketOpenGui.class, PacketOpenGui.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketOpenCraftAmount.class, PacketOpenCraftAmount.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketValueConfigServer.class, PacketValueConfigServer.class, nextID(), Side.SERVER);
-        NEENetworkHandler.getInstance().registerMessage(PacketValueConfigClient.class, PacketValueConfigClient.class, nextID(), Side.CLIENT);
-        NEENetworkHandler.getInstance().registerMessage(PacketSetRecipe.class, PacketSetRecipe.class, nextID(), Side.SERVER);
+        INSTANCE.registerMessage(PacketRecipeTransfer.Handler.class, PacketRecipeTransfer.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketStackSizeChange.Handler.class, PacketStackSizeChange.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketSlotStackSwitch.Handler.class, PacketSlotStackSwitch.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketCraftingRequest.Handler.class, PacketCraftingRequest.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketOpenGui.Handler.class, PacketOpenGui.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketOpenCraftAmount.Handler.class, PacketOpenCraftAmount.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketValueConfigServer.Handler.class, PacketValueConfigServer.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketValueConfigClient.Handler.class, PacketValueConfigClient.class, nextId(), Side.CLIENT);
+        INSTANCE.registerMessage(PacketSetRecipe.Handler.class, PacketSetRecipe.class, nextId(), Side.SERVER);
     }
 
 }

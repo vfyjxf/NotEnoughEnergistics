@@ -2,24 +2,24 @@ package com.github.vfyjxf.nee.client.gui;
 
 import appeng.client.gui.AEBaseGui;
 import appeng.container.slot.SlotRestrictedInput;
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
-import com.github.vfyjxf.nee.client.gui.widgets.GuiImgButtonRemove;
+import com.github.vfyjxf.nee.client.gui.widgets.PatternRemoveButton;
 import com.github.vfyjxf.nee.container.ContainerPatternInterface;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketValueConfigServer;
+import com.github.vfyjxf.nee.utils.Gobals;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
 
-public class GuiPatternInterface extends AEBaseGui {
+public class PatternInterfaceGui extends AEBaseGui {
 
     private final ContainerPatternInterface container;
-    private GuiImgButtonRemove removeButton;
+    private PatternRemoveButton removeButton;
 
-    public GuiPatternInterface(InventoryPlayer playerInventory, TilePatternInterface tile) {
+    public PatternInterfaceGui(InventoryPlayer playerInventory, TilePatternInterface tile) {
         super(new ContainerPatternInterface(playerInventory, tile));
         this.xSize = 211;
         this.ySize = 197;
@@ -29,7 +29,7 @@ public class GuiPatternInterface extends AEBaseGui {
     @Override
     public void initGui() {
         super.initGui();
-        this.removeButton = new GuiImgButtonRemove(this.guiLeft + 85, this.guiTop + this.ySize - 173);
+        this.removeButton = new PatternRemoveButton(this.guiLeft + 85, this.guiTop + this.ySize - 173);
         addButton(removeButton);
     }
 
@@ -66,6 +66,6 @@ public class GuiPatternInterface extends AEBaseGui {
     }
 
     private ResourceLocation getBackground() {
-        return new ResourceLocation(NotEnoughEnergistics.MODID, "textures/gui/pattern_interface.png");
+        return new ResourceLocation(Gobals.MOD_ID, "textures/gui/pattern_interface.png");
     }
 }

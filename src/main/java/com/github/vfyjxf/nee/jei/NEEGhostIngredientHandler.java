@@ -8,7 +8,7 @@ import appeng.container.slot.SlotFake;
 import appeng.fluids.client.gui.widgets.GuiFluidSlot;
 import appeng.fluids.util.AEFluidStack;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
-import com.github.vfyjxf.nee.network.packet.PacketSlotStackChange;
+import com.github.vfyjxf.nee.network.packet.PacketSlotStackSwitch;
 import mezz.jei.api.gui.IGhostIngredientHandler;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Slot;
@@ -16,14 +16,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
+import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NEEGhostIngredientHandler implements IGhostIngredientHandler<AEBaseGui> {
 
+    @Nonnull
     @Override
-    public <I> List<Target<I>> getTargets(AEBaseGui gui, I ingredient, boolean doStart) {
+    public <I> List<Target<I>> getTargets(@Nonnull AEBaseGui gui, @Nonnull I ingredient, boolean doStart) {
         List<Target<I>> targets = new ArrayList<>();
         if (ingredient instanceof ItemStack) {
             if (gui instanceof GuiPatternTerm) {
@@ -77,16 +79,17 @@ public class NEEGhostIngredientHandler implements IGhostIngredientHandler<AEBase
             this.rectangle = new Rectangle(gui.getGuiLeft() + slot.xPos, gui.getGuiTop() + slot.yPos, 16, 16);
         }
 
+        @Nonnull
         @Override
         public Rectangle getArea() {
             return this.rectangle;
         }
 
         @Override
-        public void accept(ItemStack ingredient) {
+        public void accept(@Nonnull ItemStack ingredient) {
             List<Integer> slots = new ArrayList<>();
             slots.add(this.slot.slotNumber);
-            NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackChange(ingredient, slots));
+            NEENetworkHandler.getInstance().sendToServer(new PacketSlotStackSwitch(ingredient, slots));
         }
     }
 
@@ -100,13 +103,14 @@ public class NEEGhostIngredientHandler implements IGhostIngredientHandler<AEBase
             this.rectangle = new Rectangle(slot.xPos() + gui.getGuiLeft(), slot.yPos() + gui.getGuiTop(), slot.getWidth(), slot.getHeight());
         }
 
+        @Nonnull
         @Override
         public Rectangle getArea() {
             return this.rectangle;
         }
 
         @Override
-        public void accept(FluidStack ingredient) {
+        public void accept(@Nonnull FluidStack ingredient) {
             slot.setFluidStack(AEFluidStack.fromFluidStack(ingredient));
         }
 

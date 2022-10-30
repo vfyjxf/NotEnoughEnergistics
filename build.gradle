@@ -1,14 +1,9 @@
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
         maven {
             name = "forge"
             url = "https://maven.minecraftforge.net"
-        }
-        maven {
-            name = "github"
-            url = "https://github.com/juanmuscaria/maven/raw/master"
         }
     }
     dependencies {
@@ -70,13 +65,13 @@ repositories {
     }
     maven {
         name = "covers Maven"
-        url = "http://maven.covers1624.net"
+        url = "https://maven.covers1624.net"
     }
     maven {
         name = "CurseMaven"
         url = "https://www.cursemaven.com"
     }
-    maven { url = "http://maven.cil.li/" }
+    maven { url = "https://maven.cil.li/" }
     flatDir {
         dirs 'libs'
     }
@@ -85,6 +80,7 @@ repositories {
 dependencies {
 
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}"
+//    compile "curse.maven:modularui-624243:3895901"
     deobfCompile "curse.maven:applied-energistics-2-223794:2747063"
     deobfCompile "curse.maven:wireless-crafting-terminal-244559:2830252"
     compile "curse.maven:ae2wtlib-304024:2830114"

@@ -1,34 +1,25 @@
 package com.github.vfyjxf.nee;
 
-import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.utils.ItemUtils;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class NEECommands extends CommandBase {
+    @Nonnull
     @Override
     public String getName() {
         return "nee";
     }
 
+    @Nonnull
     @Override
-    public String getUsage(ICommandSender sender) {
+    public String getUsage(@Nonnull ICommandSender sender) {
         return "";
     }
 
@@ -37,8 +28,9 @@ public class NEECommands extends CommandBase {
         return 1;
     }
 
+    @Nonnull
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
+    public List<String> getTabCompletions(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         if (args.length == 1) {
             return CommandBase.getListOfStringsMatchingLastWord(args, "add", "reload","help");
         } else if (args.length == 2) {
@@ -48,7 +40,8 @@ public class NEECommands extends CommandBase {
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+    public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args) {
+        /*
         if (args.length > 0) {
             if("help".equalsIgnoreCase(args[0])){
                 sender.sendMessage(new TextComponentString("Usage:"));
@@ -85,20 +78,22 @@ public class NEECommands extends CommandBase {
                     if (!ItemUtils.hasModId(modid)) {
                         List<String> newModIDList = new ArrayList<>(Arrays.asList(NEEConfig.modPriorityList));
                         newModIDList.add(modid);
-                        NEEConfig.setModPriorityList(newModIDList.toArray(new String[0]));
+                        NEEConfig.setPriorityMods(newModIDList.toArray(new String[0]));
                     }
                 } else if ("itemCombinationWhitelist".equalsIgnoreCase(args[1]) && args.length == 3) {
                     String recipeType = args[2];
                     if (!Arrays.asList(NEEConfig.itemCombinationWhitelist).contains(recipeType)) {
                         List<String> newLists = new ArrayList<>(Arrays.asList(NEEConfig.itemCombinationWhitelist));
                         newLists.add(recipeType);
-                        NEEConfig.setItemCombinationWhitelist(newLists.toArray(new String[0]));
+                        NEEConfig.setMergeBlacklist(newLists.toArray(new String[0]));
                     }
                 }
             } else if ("reload".equalsIgnoreCase(args[0])) {
-                ConfigManager.sync(NotEnoughEnergistics.MODID, Config.Type.INSTANCE);
+                ConfigManager.sync(NotEnoughEnergistics.MOD_ID, Config.Type.INSTANCE);
             }
         }
+
+         */
     }
 
 }

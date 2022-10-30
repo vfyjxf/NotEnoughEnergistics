@@ -5,16 +5,23 @@ import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.slot.AppEngSlot;
 import appeng.helpers.IContainerCraftingPacket;
+import mezz.jei.gui.recipes.RecipesGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nullable;
+
 /**
  * @author vfyjxf
  */
 public class GuiUtils {
+
+    private GuiUtils(){
+
+    }
 
     public static boolean isCraftingSlot(Slot slot) {
         Container container = Minecraft.getMinecraft().player.openContainer;
@@ -89,6 +96,15 @@ public class GuiUtils {
 
     public static boolean isGuiCraftConfirm(GuiScreen gui) {
         return gui instanceof GuiCraftConfirm || isWirelessGuiCraftConfirm(gui);
+    }
+
+    @Nullable
+    public static GuiScreen getParentScreen() {
+        if (Minecraft.getMinecraft().currentScreen instanceof RecipesGui) {
+            return ((RecipesGui) Minecraft.getMinecraft().currentScreen).getParentScreen();
+        } else {
+            return null;
+        }
     }
 
 }
