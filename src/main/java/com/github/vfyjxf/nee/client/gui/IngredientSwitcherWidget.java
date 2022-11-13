@@ -20,10 +20,12 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
@@ -31,11 +33,12 @@ import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
 /**
  * A draggable widget to switch ingredient in pattern.
  * //TODO:AE2FC support
+ * //TODO:scrolling functions
  */
 public class IngredientSwitcherWidget extends Gui {
 
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
     private final int width;
     private final int height;
     private int scrollOffset;
@@ -60,7 +63,7 @@ public class IngredientSwitcherWidget extends Gui {
         this.height = height;
         this.screen = screen;
         this.selectedSlot = slot;
-        this.slotRect = new Rectangle(slot.xPos + screen.guiLeft, slot.yPos + screen.guiTop, 20, 20);
+        this.slotRect = new Rectangle(slot.xPos + screen.guiLeft - 2, slot.yPos + screen.guiTop - 2, 20, 20);
         this.searchField = new MEGuiTextField(Minecraft.getMinecraft().fontRenderer, x + 6, y + 5, 54, 11);
         this.searchField.setEnableBackgroundDrawing(false);
         this.searchField.setMaxStringLength(25);
@@ -91,7 +94,7 @@ public class IngredientSwitcherWidget extends Gui {
                 this.widgets.add(widget);
             }
         }
-        this.maxScroll = viewStacks.size() / 4;
+        this.maxScroll = (this.viewStacks.size() + 3) / 4 - 4;
     }
 
     public void draw(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
@@ -108,6 +111,7 @@ public class IngredientSwitcherWidget extends Gui {
         this.searchField.drawTextBox();
         this.addButton.drawButton(mc, mouseX, mouseY, partialTicks);
         this.opeButton.drawButton(mc, mouseX, mouseY, partialTicks);
+        drawScrollBar(textureManager);
         GlStateManager.enableDepth();
         GlStateManager.popMatrix();
 
@@ -116,6 +120,20 @@ public class IngredientSwitcherWidget extends Gui {
         }
 
         drawTooltips(mc, mouseX, mouseY);
+    }
+
+    private void drawScrollBar(TextureManager textureManager) {
+        if (maxScroll <= 0) return;
+        int scrollBarLeft = x + width - 13;
+        int scrollBarTop = y + 20;
+        textureManager.bindTexture(new ResourceLocation(Gobals.MOD_ID, "textures/gui/states.png"));
+        GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
+        if (this.scrollOffset == 0) {
+            drawTexturedModalRect(scrollBarLeft, scrollBarTop, 4, 51, 7, 11);
+        } else {
+            final int offsetY = (this.scrollOffset) * 59 / maxScroll;
+            drawTexturedModalRect(scrollBarLeft, offsetY + scrollBarTop, 4, 51, 7, 11);
+        }
     }
 
     public void drawTooltips(Minecraft mc, int mouseX, int mouseY) {
@@ -138,6 +156,12 @@ public class IngredientSwitcherWidget extends Gui {
     }
 
     public boolean handleKeyPressed(char typedChar, int eventKey) {
+
+        if (this.searchField.isFocused() && eventKey == Keyboard.KEY_RETURN) {
+            this.searchField.setFocused(false);
+            return true;
+        }
+
         if (this.searchField.isFocused() && searchField.textboxKeyTyped(typedChar, eventKey)) {
             updateViews();
             return true;
@@ -146,9 +170,9 @@ public class IngredientSwitcherWidget extends Gui {
     }
 
     public boolean handleMouseClicked(int eventButton, int mouseX, int mouseY) {
-        if (this.searchField.isMouseIn(mouseX, mouseY) && this.searchField.mouseClicked(mouseX, mouseY, eventButton)) {
-            return true;
-        }
+
+        this.searchField.mouseClicked(mouseX, mouseY, eventButton);
+
         if (this.addButton.mousePressed(this.screen.mc, mouseX, mouseY)) {
             return true;
         }
@@ -171,18 +195,24 @@ public class IngredientSwitcherWidget extends Gui {
         return result;
     }
 
-    public void mouseScroll(int offset) {
-        if (offset == 0) return;
-        this.scrollOffset = Math.max(0, Math.min(this.maxScroll, this.scrollOffset + offset));
+    public boolean mouseScroll(int offset, int mouseX, int mouseY) {
+        if (offset == 0 || !isMouseOver(mouseX, mouseY)) return false;
+        this.scrollOffset += Math.max(Math.min(-offset, 1), -1);
+        this.scrollOffset = Math.max(Math.min(scrollOffset, this.maxScroll), 0);
+        int startIndex = this.scrollOffset * 4;
+        List<ItemStack> stacks = this.allStacks.subList(startIndex, viewStacks.size());
+        this.initWidgets(stacks);
+        return true;
     }
 
     public boolean apply(ItemStack stack) {
         try {
             List<Integer> craftingSlots = new ArrayList<>();
+            Map<String, List<ItemStack>> switcherData = PatternTransferHandler.getSwitcherData();
             if (NEEConfig.isSyncIngredientSwitcher()) {
                 for (Slot slot : getCraftingSlots(screen)) {
-                    List<ItemStack> ingredients = PatternTransferHandler.ingredients.get(INPUT_KEY + slot.getSlotIndex());
-                    List<ItemStack> selectedIngredients = PatternTransferHandler.ingredients.get(INPUT_KEY + selectedSlot.getSlotIndex());
+                    List<ItemStack> ingredients = switcherData.get(INPUT_KEY + slot.getSlotIndex());
+                    List<ItemStack> selectedIngredients = switcherData.get(INPUT_KEY + selectedSlot.getSlotIndex());
                     boolean areItemStackEqual = selectedSlot.getHasStack() &&
                             slot.getHasStack() &&
                             ItemUtils.matches(selectedSlot.getStack(), slot.getStack());
@@ -247,10 +277,6 @@ public class IngredientSwitcherWidget extends Gui {
 
     public boolean isRenderingTooltip() {
         return renderingTooltip;
-    }
-
-    public boolean dragWidget() {
-        return false;
     }
 
     public interface OnResultApply {

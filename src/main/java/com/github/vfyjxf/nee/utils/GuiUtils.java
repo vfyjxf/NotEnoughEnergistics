@@ -1,8 +1,6 @@
 package com.github.vfyjxf.nee.utils;
 
-import appeng.client.gui.implementations.GuiCraftConfirm;
 import appeng.client.gui.implementations.GuiCraftingTerm;
-import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.slot.AppEngSlot;
 import appeng.helpers.IContainerCraftingPacket;
 import mezz.jei.gui.recipes.RecipesGui;
@@ -59,24 +57,6 @@ public class GuiUtils {
         }
     }
 
-    public static boolean isContainerWirelessCraftingConfirm(Object container) {
-        try {
-            Class<?> containerWirelessCraftingConfirm = Class.forName("p455w0rd.wct.container.ContainerCraftConfirm");
-            return containerWirelessCraftingConfirm.isInstance(container);
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-    public static boolean isWCTContainerCraftingConfirm(Container container) {
-        try {
-            Class<?> wctContainerCrafting = Class.forName("com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm");
-            return wctContainerCrafting.isInstance(container);
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
     public static boolean isWirelessTerminalGuiObject(Object guiObj) {
         try {
             Class<?> wirelessTerminalGuiObjClass = Class.forName("p455w0rd.ae2wtlib.api.WTGuiObject");
@@ -86,16 +66,8 @@ public class GuiUtils {
         }
     }
 
-    public static boolean isContainerCraftingTerm(Container container) {
-        return container instanceof ContainerCraftingTerm || isWirelessCraftingTermContainer(container);
-    }
-
-    public static boolean isGuiCraftingTerm(GuiScreen gui) {
+    public static boolean isCraftingTerm(GuiScreen gui) {
         return gui instanceof GuiCraftingTerm || isGuiWirelessCrafting(gui);
-    }
-
-    public static boolean isGuiCraftConfirm(GuiScreen gui) {
-        return gui instanceof GuiCraftConfirm || isWirelessGuiCraftConfirm(gui);
     }
 
     @Nullable

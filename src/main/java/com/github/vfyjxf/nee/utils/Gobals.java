@@ -7,4 +7,5 @@ public class Gobals {
     public static final String DEPENDENCIES = "required-after:jei;required-after:appliedenergistics2";
     public static final String GUI_FACTORY = "com.github.vfyjxf.nee.config.NEEConfigGuiFactory";
 
+    public static final String WCT = "wct";
 }

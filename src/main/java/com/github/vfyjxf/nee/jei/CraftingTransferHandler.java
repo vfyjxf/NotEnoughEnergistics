@@ -14,21 +14,24 @@ import com.github.vfyjxf.nee.config.KeyBindings;
 import com.github.vfyjxf.nee.helper.CraftingHelper;
 import com.github.vfyjxf.nee.helper.IngredientRequester;
 import com.github.vfyjxf.nee.helper.RecipeAnalyzer;
+import com.github.vfyjxf.nee.utils.Gobals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
-import com.github.vfyjxf.nee.utils.ModIds;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.IItemHandler;
+import p455w0rd.wct.client.gui.GuiWCT;
 import p455w0rd.wct.init.ModNetworking;
 
 import javax.annotation.Nonnull;
@@ -45,6 +48,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
 
     private static boolean isPatternInterfaceExists = false;
 
+    //TODO:Rewrite this, because the recipe length accepted by pae2 varies between 9 and 16.
     public static final int RECIPE_LENGTH = 9;
 
     public CraftingTransferHandler(Class<C> containerClass) {
@@ -62,34 +66,51 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
     @Override
     public IRecipeTransferError transferRecipe(@Nonnull C container, @Nonnull IRecipeLayout recipeLayout, @Nonnull EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         GuiScreen parent = GuiUtils.getParentScreen();
-        if (parent instanceof GuiCraftingTerm) {
-            GuiCraftingTerm craftingTerm = (GuiCraftingTerm) parent;
+        if (parent != null && GuiUtils.isCraftingTerm(parent)) {
+            GuiContainer craftingTerm = (GuiContainer) parent;
             //TODO:Pattern Interface support
-            //TODO:Wireless Crafting Term support
             if (doTransfer) {
                 boolean preview = KeyBindings.isPreviewKeyDown();
                 boolean nonPreview = KeyBindings.isNonPreviewKeyDown();
                 if (preview || nonPreview) {
-                    requester.setRequested(false, nonPreview, getIngredient(craftingTerm, recipeLayout, player));
+                    RecipeAnalyzer analyzer = createAnalyzer(parent);
+                    if (analyzer == null) return null;
+                    requester.setRequested(false, nonPreview, initAnalyzer(analyzer, craftingTerm, recipeLayout, player).analyzeRecipe(recipeLayout));
                     requester.requestNext();
                 } else {
                     moveItems(container, recipeLayout);
                 }
             } else {
-                return new CraftingInfoError(getIngredient(craftingTerm, recipeLayout, player), true);
+                RecipeAnalyzer analyzer = createAnalyzer(parent);
+                if (analyzer == null) return null;
+                return new CraftingInfoError(initAnalyzer(analyzer, craftingTerm, recipeLayout, player), true);
             }
         }
         return null;
     }
 
-    private List<RecipeAnalyzer.RecipeIngredient> getIngredient(@Nonnull GuiCraftingTerm craftingTerm, @Nonnull IRecipeLayout recipeLayout, @Nonnull EntityPlayer player) {
-        RecipeAnalyzer analyzer = new RecipeAnalyzer(craftingTerm);
+    private RecipeAnalyzer initAnalyzer(@Nonnull RecipeAnalyzer analyzer, @Nonnull GuiContainer craftingTerm, @Nonnull IRecipeLayout recipeLayout, @Nonnull EntityPlayer player) {
         IItemHandler craftMatrix = CraftingHelper.getCraftMatrix(craftingTerm);
         List<ItemStack> stacks = new ArrayList<>();
         if (craftMatrix != null) stacks.addAll(CraftingHelper.copyAllNonEmpty(craftMatrix));
         if (player.inventory != null) stacks.addAll(CraftingHelper.copyAllNonEmpty(player.inventory));
         stacks.forEach(analyzer::addAvailableIngredient);
-        return analyzer.analyzeRecipe(recipeLayout);
+        return analyzer;
+    }
+
+    private RecipeAnalyzer createAnalyzer(@Nonnull GuiScreen screen) {
+        if (screen instanceof GuiCraftingTerm) {
+            return new RecipeAnalyzer(((GuiCraftingTerm) screen));
+        }
+        if (Loader.isModLoaded(Gobals.WCT)) {
+            return createAnalyzer((GuiContainer) screen);
+        }
+        return null;
+    }
+
+    @Optional.Method(modid = Gobals.WCT)
+    private RecipeAnalyzer createAnalyzer(@Nonnull GuiContainer wirelessTerm) {
+        return new RecipeAnalyzer((GuiWCT) wirelessTerm);
     }
 
     /**
@@ -220,7 +241,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
 
      */
 
-    @Optional.Method(modid = ModIds.WCT)
+    @Optional.Method(modid = Gobals.WCT)
     private void moveItemsForWirelessTerm(NBTTagCompound recipe) {
         try {
             ModNetworking.instance().sendToServer(new p455w0rd.wct.sync.packets.PacketJEIRecipe(recipe));

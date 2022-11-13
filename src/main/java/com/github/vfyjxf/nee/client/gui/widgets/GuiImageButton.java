@@ -9,10 +9,10 @@ import javax.annotation.Nonnull;
 public abstract class GuiImageButton extends GuiButton {
 
     private final boolean halfSize;
-    private final OnPress onPress;
+    private OnPress onPress;
 
     public GuiImageButton(int x, int y, int width, int height, boolean halfSize) {
-        this(x, y, width, height, halfSize, null);
+        this(x, y, width, height, halfSize, (button -> true));
     }
 
     public GuiImageButton(int x, int y, int width, int height, boolean halfSize, OnPress onPress) {
@@ -35,6 +35,7 @@ public abstract class GuiImageButton extends GuiButton {
             } else {
                 GlStateManager.color(0.5f, 0.5f, 0.5f, 1.0f);
             }
+            GlStateManager.enableAlpha();
             this.drawImage(mc);
             this.mouseDragged(mc, mouseX, mouseY);
             GlStateManager.popMatrix();
@@ -51,6 +52,10 @@ public abstract class GuiImageButton extends GuiButton {
     @Override
     public boolean mousePressed(@Nonnull Minecraft mc, int mouseX, int mouseY) {
         return onPress.onPress(this);
+    }
+
+    public void setOnPress(OnPress onPress) {
+        this.onPress = onPress;
     }
 
     public interface OnPress {

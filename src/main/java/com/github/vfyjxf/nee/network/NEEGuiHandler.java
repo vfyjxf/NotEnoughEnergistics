@@ -15,11 +15,12 @@ import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import com.github.vfyjxf.nee.client.gui.ConfirmWrapperGui;
 import com.github.vfyjxf.nee.client.gui.CraftingAmountGui;
 import com.github.vfyjxf.nee.client.gui.PatternInterfaceGui;
+import com.github.vfyjxf.nee.client.gui.WirelessConfirmWrapperGui;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
 import com.github.vfyjxf.nee.container.ContainerPatternInterface;
 import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
-import com.github.vfyjxf.nee.utils.ModIds;
+import com.github.vfyjxf.nee.utils.Gobals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -48,16 +49,18 @@ public class NEEGuiHandler implements IGuiHandler {
     public static final int CRAFTING_AMOUNT_ID = 0;
     public static final int CRAFTING_CONFIRM_ID = 1;
     public static final int PATTERN_INTERFACE_ID = 2;
-    public static final int WIRELESS_CRAFTING_CONFIRM_ID = 3;
-    public static final int WIRELESS_CRAFTING_AMOUNT_ID = 4;
-    public static final int CONFIRM_WRAPPER_ID = 5;
-    public static final int WIRELESS_CONFIRM_WRAPPER_ID = 6;
+    public static final int CONFIRM_WRAPPER_ID = 3;
+
+    public static final int WIRELESS_START_INDEX = 100;
+    public static final int WIRELESS_CRAFTING_CONFIRM_ID = WIRELESS_START_INDEX + 1;
+    public static final int WIRELESS_CRAFTING_AMOUNT_ID = WIRELESS_START_INDEX + 2;
+    public static final int WIRELESS_CONFIRM_WRAPPER_ID = WIRELESS_START_INDEX + 3;
 
     @Nullable
     @Override
     public Object getServerGuiElement(int ordinal, EntityPlayer player, World world, int x, int y, int z) {
-        final int guiId = ordinal >> 4;
-        if (guiId != WIRELESS_CRAFTING_AMOUNT_ID && guiId != WIRELESS_CRAFTING_CONFIRM_ID) {
+        final int guiId = ordinal >> 8;
+        if (guiId < WIRELESS_START_INDEX) {
             final AEPartLocation side = AEPartLocation.fromOrdinal(ordinal & 7);
             //There should be no crafting terminal in the center of the block, right?
             TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
@@ -95,12 +98,12 @@ public class NEEGuiHandler implements IGuiHandler {
                     }
                 }
             }
-        } else if (Loader.isModLoaded(ModIds.WCT)) {
+        } else if (Loader.isModLoaded(Gobals.WCT)) {
 
             final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
             if (craftingTerminal != null) {
+                Container container = player.openContainer;
                 if (guiId == WIRELESS_CRAFTING_AMOUNT_ID) {
-                    Container container = player.openContainer;
                     if (container instanceof ContainerWCT) {
                         return new ContainerCraftingAmount(player.inventory, craftingTerminal);
                     }
@@ -115,8 +118,8 @@ public class NEEGuiHandler implements IGuiHandler {
     @Nullable
     @Override
     public Object getClientGuiElement(int ordinal, EntityPlayer player, World world, int x, int y, int z) {
-        final int guiId = ordinal >> 4;
-        if (guiId != WIRELESS_CRAFTING_AMOUNT_ID && guiId != WIRELESS_CRAFTING_CONFIRM_ID) {
+        final int guiId = ordinal >> 8;
+        if (guiId < WIRELESS_START_INDEX) {
             final AEPartLocation side = AEPartLocation.fromOrdinal(ordinal & 7);
             //There should be no crafting terminal in the center of the block, right?
             TileEntity tile = world.getTileEntity(new BlockPos(x, y, z));
@@ -136,7 +139,7 @@ public class NEEGuiHandler implements IGuiHandler {
                                 return updateGui(new GuiCraftConfirm(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
                             return null;
-                            case CONFIRM_WRAPPER_ID:
+                        case CONFIRM_WRAPPER_ID:
                             if (part instanceof PartCraftingTerminal) {
                                 return updateGui(new ConfirmWrapperGui(player.inventory, (ITerminalHost) part), world, x, y, z, side, part);
                             }
@@ -154,21 +157,20 @@ public class NEEGuiHandler implements IGuiHandler {
                     }
                 }
             }
-        } else if (Loader.isModLoaded(ModIds.WCT)) {
+        } else if (Loader.isModLoaded(Gobals.WCT)) {
             final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
             if (craftingTerminal != null) {
+                Container container = player.openContainer;
                 if (guiId == WIRELESS_CRAFTING_AMOUNT_ID) {
-                    Container container = player.openContainer;
                     if (container instanceof ContainerWCT) {
                         return new CraftingAmountGui(player.inventory, craftingTerminal, (ContainerWCT) container);
                     }
+                } else if (guiId == WIRELESS_CONFIRM_WRAPPER_ID) {
+                    return new WirelessConfirmWrapperGui(player.inventory, craftingTerminal, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
                 } else {
-
                     return new p455w0rd.wct.client.gui.GuiCraftConfirm(player.inventory, craftingTerminal, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
                 }
             }
-
-
         }
         return null;
     }
@@ -186,22 +188,22 @@ public class NEEGuiHandler implements IGuiHandler {
         return newContainer;
     }
 
-    public static void openGui(EntityPlayer player, int ID, TileEntity tile, AEPartLocation side) {
+    public static void openGui(EntityPlayer player, int id, TileEntity tile, AEPartLocation side) {
         int x = tile.getPos().getX();
         int y = tile.getPos().getY();
         int z = tile.getPos().getZ();
-        player.openGui(instance, ID << 4 | side.ordinal(), tile.getWorld(), x, y, z);
+        player.openGui(instance, id << 8 | side.ordinal(), tile.getWorld(), x, y, z);
     }
 
-    public static void openGui(EntityPlayer player, int ID, World world) {
+    public static void openGui(EntityPlayer player, int id, World world) {
         int x = (int) player.posX;
         int y = (int) player.posY;
         int z = (int) player.posZ;
-        player.openGui(instance, (ID << 4), world, x, y, z);
+        player.openGui(instance, (id << 8), world, x, y, z);
     }
 
     @SuppressWarnings("unchecked")
-    @Optional.Method(modid = ModIds.WCT)
+    @Optional.Method(modid = Gobals.WCT)
     private ITerminalHost getCraftingTerminal(final EntityPlayer player, final boolean isBauble, final int slot) {
         ItemStack wirelessTerminal;
         if (slot >= 0) {

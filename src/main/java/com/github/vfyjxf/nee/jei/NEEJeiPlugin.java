@@ -123,7 +123,7 @@ public class NEEJeiPlugin implements IModPlugin {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked","rawtypes"})
         public Pair<C, V> onValueSet(R row, C col, V value) {
             String canonicalName = value.getClass().getCanonicalName();
             if (row == ContainerPatternTerm.class && "appeng.integration.modules.jei.RecipeTransferHandler".equals(canonicalName)) {
@@ -137,7 +137,7 @@ public class NEEJeiPlugin implements IModPlugin {
                 NotEnoughEnergistics.logger.info("Crafting terminal transfer handler replaced successfully (Overwrite Denied)");
             }
             if (wctContainer != null) {
-                if (row == wctContainer && "p455w0rd.wct.integration.JEI$RecipeTransferHandler".equals(canonicalName)) {
+                if (row == wctContainer && "p455w0rd.wct.integration.JEI.RecipeTransferHandler".equals(canonicalName)) {
                     col = (C) VanillaRecipeCategoryUid.CRAFTING;
                     value = (V) new CraftingTransferHandler<>(wctContainer);
                     NotEnoughEnergistics.logger.info("Wireless crafting terminal transfer handler replaced successfully (Overwrite Denied)");

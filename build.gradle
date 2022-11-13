@@ -88,6 +88,8 @@ dependencies {
 //    deobfCompile "p455w0rd:WirelessCraftingTerminal:1.12.2-3.12.97"
 //    deobfCompile "p455w0rd:AE2WTLib:1.12.2-1.0.34"
 //    deobfCompile "p455w0rd:p455w0rdslib:1.12.2-2.3.161"
+    //Big orediect test
+    deobfCompile "CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.680"
 
 }
 
@@ -99,6 +101,10 @@ task devJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+runClient {
+    args '--username', 'developer'
 }
 
 jar {

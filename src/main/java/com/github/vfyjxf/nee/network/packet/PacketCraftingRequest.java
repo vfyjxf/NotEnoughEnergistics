@@ -25,8 +25,8 @@ import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
 import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
 import com.github.vfyjxf.nee.network.NEEGuiHandler;
+import com.github.vfyjxf.nee.utils.Gobals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
-import com.github.vfyjxf.nee.utils.ModIds;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -38,14 +38,12 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import org.apache.commons.lang3.tuple.Pair;
 import p455w0rd.wct.api.IWCTContainer;
-import p455w0rd.wct.init.ModGuiHandler;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -213,7 +211,7 @@ public class PacketCraftingRequest implements IMessage {
                                     ccc.setPatternIndex(pair.getRight());
                                     ccc.detectAndSendChanges();
                                 }
-                            } else if (Loader.isModLoaded(ModIds.WCT) && container.isWirelessTerm()) {
+                            } else if (Loader.isModLoaded(Gobals.WCT) && container.isWirelessTerm()) {
 
                                 NEEGuiHandler.openGui(player, NEEGuiHandler.WIRELESS_CRAFTING_CONFIRM_ID, player.world);
 
@@ -252,7 +250,7 @@ public class PacketCraftingRequest implements IMessage {
                     int y = (int) player.posY;
                     int z = (int) player.posZ;
 
-                    ModGuiHandler.open(ModGuiHandler.GUI_CRAFT_CONFIRM, player, player.getEntityWorld(), new BlockPos(x, y, z), false, iwtContainer.isWTBauble(), iwtContainer.getWTSlot());
+                    NEEGuiHandler.openGui(player, NEEGuiHandler.WIRELESS_CONFIRM_WRAPPER_ID, player.world);
 
                     if (player.openContainer instanceof p455w0rd.wct.container.ContainerCraftConfirm) {
                         final p455w0rd.wct.container.ContainerCraftConfirm ccc = (p455w0rd.wct.container.ContainerCraftConfirm) player.openContainer;

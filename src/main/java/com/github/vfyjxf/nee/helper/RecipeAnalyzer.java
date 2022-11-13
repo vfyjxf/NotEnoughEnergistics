@@ -1,21 +1,22 @@
 package com.github.vfyjxf.nee.helper;
 
 import appeng.api.storage.data.IAEItemStack;
-import appeng.api.storage.data.IItemList;
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.me.ItemRepo;
 import appeng.util.item.AEItemStack;
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.config.NEEConfig;
+import com.github.vfyjxf.nee.utils.Gobals;
 import com.github.vfyjxf.nee.utils.IngredientStatus;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.Optional;
+import p455w0rd.wct.client.gui.GuiWCT;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -24,11 +25,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
+import static net.minecraftforge.fml.common.ObfuscationReflectionHelper.getPrivateValue;
 
 /**
  * A tool class to get the ingredients available in ae for the current recipe.
- * TODO:Wireless Crafting Term support
  */
 public class RecipeAnalyzer {
 
@@ -38,7 +39,7 @@ public class RecipeAnalyzer {
     private static List<IAEItemStack> craftableCache = new ArrayList<>();
     @Nonnull
     private static List<IAEItemStack> allStacksCache = new ArrayList<>();
-    private final GuiMEMonitorable term;
+    private final GuiContainer term;
     private final boolean craftableOnly;
     private final boolean isWireless;
     /**
@@ -47,6 +48,7 @@ public class RecipeAnalyzer {
      */
     private final List<ItemStack> availableItems = new ArrayList<>();
     private long lastUpdateTime;
+    private List<RecipeIngredient> ingredientsCache;
 
     public RecipeAnalyzer(GuiPatternTerm patternTerm) {
         this.term = patternTerm;
@@ -71,7 +73,18 @@ public class RecipeAnalyzer {
         this.isWireless = false;
         if (cleanCache) clearCache();
         if (allStacksCache.isEmpty()) allStacksCache = getStorage();
-        NotEnoughEnergistics.logger.debug("Network Storage Item:" + allStacksCache.size());
+    }
+
+    public RecipeAnalyzer(GuiWCT wirelessTerm) {
+        this(wirelessTerm, shouldCleanCache);
+    }
+
+    public RecipeAnalyzer(GuiWCT wirelessTerm, boolean cleanCache) {
+        this.term = wirelessTerm;
+        this.craftableOnly = false;
+        this.isWireless = true;
+        if (cleanCache) clearCache();
+        if (allStacksCache.isEmpty()) allStacksCache = getStorage();
     }
 
     public static void setCleanCache(boolean cleanCache) {
@@ -79,10 +92,11 @@ public class RecipeAnalyzer {
     }
 
     public List<RecipeIngredient> analyzeRecipe(IRecipeLayout recipeLayout) {
+        if (ingredientsCache != null) return ingredientsCache;
         Stream<List<IGuiIngredient<ItemStack>>> merged = mergeIngredients(recipeLayout).stream();
         if (craftableOnly) {
             //Craftable mode is only used for highlighted rendering, so we don't need an identifier.
-            return merged.filter(ingredient -> craftableCache.parallelStream()
+            return ingredientsCache = merged.filter(ingredient -> craftableCache.parallelStream()
                             .anyMatch(craftable -> ingredient.get(0)
                                     .getAllIngredients()
                                     .parallelStream()
@@ -92,7 +106,7 @@ public class RecipeAnalyzer {
                     .collect(Collectors.toList());
         } else {
             //fist check EXISTS and available ingredient,if not enough,use craftable ingredient
-            return merged.map(this::getExistData).collect(Collectors.toList());
+            return ingredientsCache = merged.map(this::getExistData).collect(Collectors.toList());
         }
 
     }
@@ -109,7 +123,7 @@ public class RecipeAnalyzer {
 
         if (System.currentTimeMillis() - lastUpdateTime > NEEConfig.getUpdateIntervalTime()) {
             lastUpdateTime = System.currentTimeMillis();
-            //TODO:
+            updateCache();
         }
     }
 
@@ -170,6 +184,18 @@ public class RecipeAnalyzer {
     private void clearCache() {
         craftableCache = Collections.emptyList();
         allStacksCache = Collections.emptyList();
+        shouldCleanCache = false;
+    }
+
+    private void updateCache() {
+        if (craftableOnly) {
+            craftableCache = getStorage().stream()
+                    .filter(IAEItemStack::isCraftable)
+                    .collect(Collectors.toList());
+        } else {
+            allStacksCache = getStorage();
+        }
+        this.ingredientsCache = null;
     }
 
     private List<List<IGuiIngredient<ItemStack>>> mergeIngredients(IRecipeLayout recipeLayout) {
@@ -208,21 +234,28 @@ public class RecipeAnalyzer {
             int count = identifier.getCount();
             Stream<IAEItemStack> stackStream = allStacksCache.parallelStream();
             if (identifier.isEmpty()) {
-                stackStream = stackStream.filter(stack -> first.getAllIngredients().parallelStream().anyMatch(guiStack -> ItemUtils.matches(stack.getDefinition(), guiStack)));
+                stackStream = stackStream.filter(stack ->
+                        first.getAllIngredients()
+                                .parallelStream()
+                                .anyMatch(guiStack -> ItemUtils.matches(stack.getDefinition(), guiStack))
+                );
             } else {
-                stackStream = stackStream.filter(stack -> first.getAllIngredients().parallelStream().anyMatch(guiStack -> ItemUtils.matches(stack.getDefinition(), identifier) || ItemUtils.matches(stack.getDefinition(), guiStack)));
+                stackStream = stackStream.filter(stack ->
+                        first.getAllIngredients()
+                                .parallelStream()
+                                .anyMatch(guiStack -> ItemUtils.matches(stack.getDefinition(), identifier) || ItemUtils.matches(stack.getDefinition(), guiStack))
+                );
             }
             IAEItemStack aeStack = stackStream
                     .findAny()
                     .orElse(null);
             if (aeStack == null) {
-                return new RecipeIngredient(IngredientStatus.MISSING, ItemStack.EMPTY, ingredients);
+                return new RecipeIngredient(IngredientStatus.MISSING, ItemStack.EMPTY, ingredients, required);
             }
             count += aeStack.getStackSize();
             int missingCount = required - count;
-            IngredientStatus status = missingCount > 0 ? IngredientStatus.CRAFTABLE : IngredientStatus.EXISTS;
+            IngredientStatus status = missingCount > 0 ? (aeStack.isCraftable() ? IngredientStatus.CRAFTABLE : IngredientStatus.MISSING) : IngredientStatus.EXISTS;
             return new RecipeIngredient(status, aeStack.getDefinition().copy(), ingredients, missingCount);
-
         }
 
     }
@@ -234,11 +267,20 @@ public class RecipeAnalyzer {
     }
 
     private List<IAEItemStack> getStorage() {
-        ItemRepo repo = ObfuscationReflectionHelper.getPrivateValue(GuiMEMonitorable.class, term, "repo");
-        if (repo == null) return Collections.emptyList();
-        IItemList<IAEItemStack> all = ObfuscationReflectionHelper.getPrivateValue(ItemRepo.class, repo, "list");
-        if (all == null) return Collections.emptyList();
-        else return StreamSupport.stream(all.spliterator(), false).collect(Collectors.toList());
+        return ItemUtils.getStorage(getRepo());
+    }
+
+    private ItemRepo getRepo() {
+        if (isWireless) {
+            return getWirelessRepo();
+        } else {
+            return getPrivateValue(GuiMEMonitorable.class, (GuiMEMonitorable) term, "repo");
+        }
+    }
+
+    @Optional.Method(modid = Gobals.WCT)
+    private ItemRepo getWirelessRepo() {
+        return getPrivateValue(GuiWCT.class, (GuiWCT) term, "repo");
     }
 
 }

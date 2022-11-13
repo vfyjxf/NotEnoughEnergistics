@@ -1,5 +1,6 @@
 package com.github.vfyjxf.nee.client.gui.widgets;
 
+import com.github.vfyjxf.nee.helper.PreferenceHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -16,6 +17,7 @@ public class ItemWidget extends Gui {
     private int posY;
     private int width;
     private int height;
+    private boolean isPreferred;
     private final ItemStack ingredient;
 
     public ItemWidget(ItemStack ingredient, int posX, int posY) {
@@ -25,6 +27,7 @@ public class ItemWidget extends Gui {
         this.width = 18;
         this.height = 18;
         this.visible = true;
+        this.isPreferred = PreferenceHelper.isPreferItem(ingredient);
     }
 
     public void setVisible(boolean visible) {
@@ -60,6 +63,10 @@ public class ItemWidget extends Gui {
             RenderHelper.disableStandardItemLighting();
             this.zLevel -= 300;
             mc.getRenderItem().zLevel -= 300;
+
+            if (isPreferred){
+
+            }
 
             if (isSelected) {
                 GlStateManager.disableDepth();

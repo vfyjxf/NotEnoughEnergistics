@@ -8,6 +8,7 @@ import appeng.helpers.IContainerCraftingPacket;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
@@ -28,7 +29,9 @@ public class CraftingHelper {
     }
 
     public static boolean isSupportedGui(GuiScreen screen) {
-        return screen instanceof GuiCraftingTerm || screen instanceof GuiPatternTerm || GuiUtils.isGuiWirelessCrafting(screen);
+        return screen instanceof GuiCraftingTerm ||
+                screen instanceof GuiPatternTerm ||
+                GuiUtils.isGuiWirelessCrafting(screen);
     }
 
     public static List<Slot> getCraftingSlots(AEBaseGui gui) {
@@ -43,7 +46,7 @@ public class CraftingHelper {
     }
 
     @Nullable
-    public static IItemHandler getCraftMatrix(AEBaseGui gui) {
+    public static IItemHandler getCraftMatrix(GuiContainer gui) {
         Container container = gui.inventorySlots;
         if (container instanceof IContainerCraftingPacket) {
             return ((IContainerCraftingPacket) container).getInventoryByName("crafting");

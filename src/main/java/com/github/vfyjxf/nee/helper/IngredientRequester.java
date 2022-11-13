@@ -50,7 +50,7 @@ public class IngredientRequester {
                 .filter(ingredient -> ingredient.getStatus() == IngredientStatus.CRAFTABLE)
                 .collect(Collectors.toList());
         this.currentIndex = 0;
-        this.finished = false;
+        this.finished = currentIndex >= requested.size();
     }
 
 }

@@ -18,8 +18,8 @@ import appeng.parts.reporting.PartCraftingTerminal;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketCraftingRequest;
+import com.github.vfyjxf.nee.utils.Gobals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
-import com.github.vfyjxf.nee.utils.ModIds;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -102,7 +102,7 @@ public class CraftingAmountGui extends AEBaseGui {
             this.originalGui = GuiBridge.GUI_CRAFTING_TERMINAL;
         }
 
-        if (Loader.isModLoaded(ModIds.WCT) && GuiUtils.isWirelessTerminalGuiObject(target) && this.wctObj != null) {
+        if (Loader.isModLoaded(Gobals.WCT) && GuiUtils.isWirelessTerminalGuiObject(target) && this.wctObj != null) {
             myIcon = getIcon();
         }
 
@@ -191,7 +191,7 @@ public class CraftingAmountGui extends AEBaseGui {
             if (btn == this.originalGuiBtn) {
                 if (!this.isWirelessCrafting) {
                     NetworkHandler.instance().sendToServer(new PacketSwitchGuis(this.originalGui));
-                } else if (Loader.isModLoaded(ModIds.WCT)) {
+                } else if (Loader.isModLoaded(Gobals.WCT)) {
                     openWirelessTerminalGui();
                 }
             }
@@ -251,7 +251,7 @@ public class CraftingAmountGui extends AEBaseGui {
         }
     }
 
-    @Optional.Method(modid = ModIds.WCT)
+    @Optional.Method(modid = Gobals.WCT)
     private ItemStack getIcon() {
         if (wctObj instanceof ContainerWCT) {
             ContainerWCT wct = (ContainerWCT) this.wctObj;
@@ -266,7 +266,7 @@ public class CraftingAmountGui extends AEBaseGui {
         return null;
     }
 
-    @Optional.Method(modid = ModIds.WCT)
+    @Optional.Method(modid = Gobals.WCT)
     private void openWirelessTerminalGui() {
         ModNetworking.instance().sendToServer(new p455w0rd.wct.sync.packets.PacketSwitchGuis(ModGuiHandler.GUI_WCT));
     }

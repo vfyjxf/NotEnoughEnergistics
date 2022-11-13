@@ -5,11 +5,11 @@ import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
 import com.github.vfyjxf.nee.client.gui.IngredientSwitcherWidget;
 import com.github.vfyjxf.nee.client.gui.widgets.MergeConfigButton;
-import com.github.vfyjxf.nee.config.IngredientMergeMode;
 import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.helper.CraftingHelper;
 import com.github.vfyjxf.nee.helper.RecipeAnalyzer;
 import com.github.vfyjxf.nee.jei.PatternTransferHandler;
+import com.github.vfyjxf.nee.utils.ItemUtils;
 import mezz.jei.gui.recipes.RecipesGui;
 import mezz.jei.input.MouseHelper;
 import net.minecraft.client.Minecraft;
@@ -91,18 +91,22 @@ public class GuiEventHandler {
             if (GuiScreen.isShiftKeyDown() && Mouse.getEventButton() == 2) {
                 Slot slot = patternTerm.getSlotUnderMouse();
                 if (slot instanceof SlotFake && slot.getHasStack()) {
-                    List<ItemStack> ingredients = PatternTransferHandler.ingredients.get(INPUT_KEY + slot.getSlotIndex());
+                    List<ItemStack> ingredients = PatternTransferHandler.getSwitcherData().get(INPUT_KEY + slot.getSlotIndex());
                     if (ingredients != null) {
-                        this.switcherWidget = new IngredientSwitcherWidget(
-                                slot.xPos + patternTerm.guiLeft +18 ,
-                                slot.yPos,
-                                94,
-                                97,
-                                ingredients,
-                                patternTerm,
-                                slot,
-                                () -> this.switcherWidget = null);
-                        return true;
+                        ItemStack slotStack = slot.getStack();
+                        boolean findAny = ingredients.stream().anyMatch(itemStack -> ItemUtils.matches(slotStack, itemStack));
+                        if (findAny) {
+                            this.switcherWidget = new IngredientSwitcherWidget(
+                                    slot.xPos + patternTerm.guiLeft + 18,
+                                    slot.yPos,
+                                    94,
+                                    97,
+                                    ingredients,
+                                    patternTerm,
+                                    slot,
+                                    () -> this.switcherWidget = null);
+                            return true;
+                        }
                     }
                 }
             }
@@ -117,7 +121,7 @@ public class GuiEventHandler {
                     return switcherWidget.handleMouseClicked(eventButton, mouseX, mouseY);
                 }
             } else if (Mouse.getEventDWheel() != 0) {
-
+                return handleMouseScroll(Mouse.getEventDWheel(), mouseX, mouseY);
             }
         }
         return false;
@@ -125,6 +129,13 @@ public class GuiEventHandler {
 
     private boolean handleSwitcherKeyInput(char typedChar, int eventKey) {
         return switcherWidget != null && switcherWidget.handleKeyPressed(typedChar, eventKey);
+    }
+
+    private boolean handleMouseScroll(int dWheel, int mouseX, int mouseY) {
+        if (switcherWidget != null) {
+            return switcherWidget.mouseScroll(dWheel, mouseX, mouseY);
+        }
+        return false;
     }
 
 
@@ -143,23 +154,6 @@ public class GuiEventHandler {
         if (event.getGui() instanceof GuiPatternTerm) {
             GuiPatternTerm gui = (GuiPatternTerm) event.getGui();
             event.getButtonList().add(buttonCombination = new MergeConfigButton(gui.guiLeft + 84, gui.guiTop + gui.ySize - 163, NEEConfig.getMergeMode()));
-        }
-    }
-
-    @SubscribeEvent
-    public void onActionPerformed(GuiScreenEvent.ActionPerformedEvent.Pre event) {
-        if (event.getButton() instanceof MergeConfigButton) {
-            MergeConfigButton button = (MergeConfigButton) event.getButton();
-            int ordinal = Mouse.getEventButton() != 2 ? button.getMergeMode().ordinal() + 1 : button.getMergeMode().ordinal() - 1;
-
-            if (ordinal >= IngredientMergeMode.values().length) {
-                ordinal = 0;
-            }
-            if (ordinal < 0) {
-                ordinal = IngredientMergeMode.values().length - 1;
-            }
-            button.setMode(IngredientMergeMode.values()[ordinal]);
-            NEEConfig.setMergeMode(IngredientMergeMode.values()[ordinal]);
         }
     }
 

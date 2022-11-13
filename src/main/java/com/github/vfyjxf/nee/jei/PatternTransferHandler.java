@@ -1,6 +1,9 @@
 package com.github.vfyjxf.nee.jei;
 
+import appeng.api.storage.data.IAEItemStack;
+import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.gui.implementations.GuiPatternTerm;
+import appeng.client.me.ItemRepo;
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.config.NEEConfig;
@@ -20,6 +23,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -39,7 +43,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
 
     public static final String OUTPUT_KEY = "O";
     public static final String INPUT_KEY = "#";
-    public static Map<String, List<ItemStack>> ingredients = new HashMap<>();
+    private static final Map<String, List<ItemStack>> SWITCHER_DATA = new HashMap<>();
 
     public PatternTransferHandler() {
     }
@@ -50,37 +54,42 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
         return ContainerPatternTerm.class;
     }
 
+    public static Map<String, List<ItemStack>> getSwitcherData() {
+        return SWITCHER_DATA;
+    }
+
     @Nullable
     @Override
     public IRecipeTransferError transferRecipe(@Nonnull ContainerPatternTerm container, IRecipeLayout recipeLayout, @Nonnull EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         String recipeType = recipeLayout.getRecipeCategory().getUid();
         boolean isCraftingRecipe = isCraftingRecipe(recipeType);
-        if (doTransfer) {
-            Pair<NBTTagCompound, NBTTagCompound> recipePair = packRecipe(container, recipeLayout, recipeType);
-            NEENetworkHandler.getInstance().sendToServer(new PacketRecipeTransfer(recipePair.getLeft(), recipePair.getRight(), isCraftingRecipe));
-            if (NEEConfig.isPrintRecipeType()) {
-                NotEnoughEnergistics.logger.info(recipeType);
-            }
-        } else {
-            //TODO:Wireless Pattern Term support?
-            //TODO:Prefer item in network
-            GuiScreen parent = GuiUtils.getParentScreen();
-            if (parent instanceof GuiPatternTerm) {
-                GuiPatternTerm patternTerm = (GuiPatternTerm) parent;
-                RecipeAnalyzer analyzer = new RecipeAnalyzer(patternTerm);
-                return new CraftingInfoError(analyzer.analyzeRecipe(recipeLayout), false);
+        GuiScreen parent = GuiUtils.getParentScreen();
+        if (parent instanceof GuiPatternTerm) {
+            GuiPatternTerm patternTerm = (GuiPatternTerm) parent;
+            if (doTransfer) {
+                Pair<NBTTagCompound, NBTTagCompound> recipePair = packRecipe(getRepo(patternTerm), container, recipeLayout, recipeType);
+                NEENetworkHandler.getInstance().sendToServer(new PacketRecipeTransfer(recipePair.getLeft(), recipePair.getRight(), isCraftingRecipe));
+                if (NEEConfig.isPrintRecipeType()) {
+                    NotEnoughEnergistics.logger.info(recipeType);
+                }
+            } else {
+                //TODO:Wireless Pattern Term support?
+                //TODO:Prefer item in network
+                return new CraftingInfoError(new RecipeAnalyzer(patternTerm), false);
             }
         }
 
         return null;
     }
 
-    private Pair<NBTTagCompound, NBTTagCompound> packRecipe(ContainerPatternTerm container, IRecipeLayout recipeLayout, String recipeType) {
+    private Pair<NBTTagCompound, NBTTagCompound> packRecipe(ItemRepo repo, ContainerPatternTerm container, IRecipeLayout recipeLayout, String recipeType) {
+        SWITCHER_DATA.clear();
         boolean isCraftingRecipe = isCraftingRecipe(recipeType);
         boolean shouldMerge = shouldMerge(recipeType);
         NBTTagCompound inputs = new NBTTagCompound();
         NBTTagCompound outputs = new NBTTagCompound();
         Map<Integer, ? extends IGuiIngredient<ItemStack>> ingredients = recipeLayout.getItemStacks().getGuiIngredients();
+        List<IAEItemStack> storage = ItemUtils.getStorage(repo);
         List<StackWrapper> inputsList = new ArrayList<>();
         int inputIndex = 0;
         int outputIndex = 0;
@@ -118,14 +127,20 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
         for (StackWrapper preference : mapToPreference(inputsList)) {
 
             if (BlackListHelper.isBlacklistItem(preference.getStack())) continue;
-
             ItemStack finalStack = preference.getStack().copy();
+            if(!storage.isEmpty()) {
+                ItemStack origin = finalStack;
+                finalStack = storage.stream()
+                        .filter(stored -> ItemUtils.matches(stored.getDefinition(), origin))
+                        .findFirst()
+                        .map(stored -> stored.getDefinition().copy())
+                        .orElse(origin);
+            }
             finalStack.setCount(preference.getCount());
 
             inputs.setTag(INPUT_KEY + inputIndex, finalStack.writeToNBT(new NBTTagCompound()));
-            PatternTransferHandler.ingredients.put(INPUT_KEY + inputIndex, preference.getIngredients());
+            SWITCHER_DATA.put(INPUT_KEY + inputIndex, preference.getIngredients());
             inputIndex++;
-            //TODO:Ingredient Switcher data
 
         }
 
@@ -142,7 +157,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
     private boolean shouldMerge(String recipeType) {
         switch (NEEConfig.getMergeMode()) {
             case ENABLED:
-                return NEEConfig.getMergeBlacklist().contains(recipeType);
+                return !NEEConfig.getMergeBlacklist().contains(recipeType);
             case DISABLED:
             default:
                 return false;
@@ -154,6 +169,10 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                 .map(wrapper -> new StackWrapper(getFromPreference(wrapper.getIngredients(), wrapper.getStack()), wrapper.getIngredients()))
                 .filter(wrapper -> NEEConfig.getBlacklist().stream().noneMatch(stack -> ItemUtils.matches(wrapper.getStack(), stack)))
                 .collect(Collectors.toList());
+    }
+
+    private ItemRepo getRepo(GuiPatternTerm patternTerm) {
+        return ObfuscationReflectionHelper.getPrivateValue(GuiMEMonitorable.class, patternTerm, "repo");
     }
 
 }

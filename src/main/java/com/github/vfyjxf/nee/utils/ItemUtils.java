@@ -1,9 +1,17 @@
 package com.github.vfyjxf.nee.utils;
 
+import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IItemList;
+import appeng.client.me.ItemRepo;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.item.ItemStack;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static net.minecraftforge.fml.common.ObfuscationReflectionHelper.getPrivateValue;
 
 /**
  * @author vfyjxf
@@ -50,6 +58,13 @@ public final class ItemUtils {
                 .findFirst()
                 .map(ItemStack::copy)
                 .orElse(ItemStack.EMPTY);
+    }
+
+    public static List<IAEItemStack> getStorage(ItemRepo repo){
+        if (repo == null) return Collections.emptyList();
+        IItemList<IAEItemStack> all = getPrivateValue(ItemRepo.class, repo, "list");
+        if (all == null) return Collections.emptyList();
+        else return StreamSupport.stream(all.spliterator(), false).collect(Collectors.toList());
     }
 
 }

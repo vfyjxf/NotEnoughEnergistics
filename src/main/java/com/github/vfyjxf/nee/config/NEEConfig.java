@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.io.IOUtils;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -51,8 +52,9 @@ public class NEEConfig {
     private static IngredientMergeMode mergeMode = IngredientMergeMode.ENABLED;
     private static List<String> mergeBlacklist = new ArrayList<>();
 
-    private static boolean matchOtherItems = true;
     private static int updateIntervalTime = 1500;
+    private static Color craftableHighlightColor = new Color(0.0f, 0.0f, 1.0f, 0.4f);
+    private static Color missingHighlightColor = new Color(1.0f, 0.0f, 0.0f, 0.4f);
 
     private static boolean syncIngredientSwitcher = true;
 
@@ -64,7 +66,6 @@ public class NEEConfig {
         config = new Configuration(modConfigFile);
 
         loadConfig();
-
     }
 
     public static Configuration getConfig() {
@@ -123,12 +124,6 @@ public class NEEConfig {
         }
 
         {
-            matchOtherItems = config.getBoolean(
-                    "MatchOtherItems",
-                    CATEGORY_CRAFTING_HELPER,
-                    matchOtherItems,
-                    "If true, Crafting Helper will match other items even they can't auto-crafting"
-            );
 
             updateIntervalTime = config.getInt(
                     "UpdateIntervalTime",
@@ -140,11 +135,29 @@ public class NEEConfig {
                             " Never updated when set to -1."
             );
 
+            craftableHighlightColor = new Color(Integer.decode(
+                    config.getString(
+                            "CraftableHighlightColor",
+                            CATEGORY_CRAFTING_HELPER,
+                            "0x660000FF",
+                            "Highlight colour of craftable ingredients in Recipe Gui.\n" +
+                                    " Format: 0xRRGGBBAA"
+                    )), true);
+
+            missingHighlightColor = new Color(Integer.decode(
+                    config.getString(
+                            "MissingHighlightColour",
+                            CATEGORY_CRAFTING_HELPER,
+                            "0x66FF0000",
+                            "Highlight colour of missing ingredients in Recipe Gui.\n" +
+                                    " Format: 0xRRGGBBAA"
+                    )), true);
+
         }
 
         {
             syncIngredientSwitcher = config.getBoolean(
-                    "AllowSynchronousSwitchIngredient",
+                    "SyncIngredientSwitcher",
                     CATEGORY_OTHER_SETTINGS,
                     syncIngredientSwitcher,
                     "If true, it will make all similar ingredient switch at the same time."
@@ -225,12 +238,16 @@ public class NEEConfig {
         return mergeBlacklist;
     }
 
-    public static boolean isMatchOtherItems() {
-        return matchOtherItems;
-    }
-
     public static int getUpdateIntervalTime() {
         return updateIntervalTime;
+    }
+
+    public static Color getMissingHighlightColor() {
+        return missingHighlightColor;
+    }
+
+    public static Color getCraftableHighlightColor() {
+        return craftableHighlightColor;
     }
 
     public static boolean isSyncIngredientSwitcher() {
