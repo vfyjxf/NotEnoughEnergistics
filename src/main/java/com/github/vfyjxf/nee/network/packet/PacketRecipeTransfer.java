@@ -6,8 +6,10 @@ import appeng.api.networking.security.ISecurityGrid;
 import appeng.api.networking.storage.IStorageGrid;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.helpers.IContainerCraftingPacket;
+import appeng.parts.reporting.PartPatternTerminal;
 import appeng.util.helpers.ItemHandlerUtil;
 import appeng.util.inv.WrapperInvItemHandler;
+import com.google.common.collect.Sets;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -20,6 +22,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashSet;
 
 import static com.github.vfyjxf.nee.jei.PatternRecipeTransferHandler.OUTPUT_KEY;
 
@@ -81,7 +86,8 @@ public class PacketRecipeTransfer implements IMessage, IMessageHandler<PacketRec
         Container container = player.openContainer;
         player.getServerWorld().addScheduledTask(() -> {
             if (container instanceof ContainerPatternTerm) {
-                ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(message.getCraftingMode());
+                // ((ContainerPatternTerm) container).getPatternTerminal().setCraftingRecipe(message.getCraftingMode());
+                this.setCraftingRecipe((ContainerPatternTerm) container, message.getCraftingMode());
                 ItemStack[] recipeInputs = new ItemStack[9];
                 ItemStack[] recipeOutputs = null;
                 NBTTagCompound currentStack;
@@ -130,6 +136,59 @@ public class PacketRecipeTransfer implements IMessage, IMessageHandler<PacketRec
             }
         });
         return null;
+    }
+
+
+    private Method getPartPatternTerminalMethod;
+
+    private Boolean canSetCraftingRecipe = null;
+
+    private final HashSet<String> possibleSupportedMethodNames = Sets.newHashSet(
+            // Applied Energistics 2
+            "getPatternTerminal",
+            // AE2 Unofficial Extended Life
+            "getPart"
+    );
+
+    private final String noSuchMethodErrorMessage = "no such method: " + String.join(" or ", possibleSupportedMethodNames);
+
+    private void setCraftingRecipe(ContainerPatternTerm container, boolean craftingMode) {
+        if (Boolean.FALSE.equals(canSetCraftingRecipe)) {
+            throw new NoSuchMethodError(noSuchMethodErrorMessage);
+        }
+
+        if (getPartPatternTerminalMethod == null) {
+            Class<ContainerPatternTerm> clazz = ContainerPatternTerm.class;
+            Method[] methods = clazz.getMethods();
+
+            for (Method method : methods) {
+                String methodName = method.getName();
+                if (!possibleSupportedMethodNames.contains(methodName)) {
+                    continue;
+                }
+                getPartPatternTerminalMethod = method;
+                getPartPatternTerminalMethod.setAccessible(true);
+                if (getPartPatternTerminalMethod.getParameters().length > 0) {
+                    continue;
+                }
+                canSetCraftingRecipe = true;
+                break;
+            }
+            if (getPartPatternTerminalMethod == null) {
+                canSetCraftingRecipe = false;
+            }
+        }
+
+        if (getPartPatternTerminalMethod == null) {
+            throw new NoSuchMethodError(noSuchMethodErrorMessage);
+        }
+
+        try {
+            PartPatternTerminal patternTerminal = (PartPatternTerminal) getPartPatternTerminalMethod.invoke(container);
+            patternTerminal.setCraftingRecipe(craftingMode);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new NoSuchMethodError(noSuchMethodErrorMessage);
+        }
     }
 
 }
