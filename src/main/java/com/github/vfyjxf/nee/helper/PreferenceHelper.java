@@ -1,7 +1,8 @@
 package com.github.vfyjxf.nee.helper;
 
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.utils.ItemUtils;
+import com.github.vfyjxf.nee.config.PreferenceList;
+import com.github.vfyjxf.nee.utils.PreferenceIngredient;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -16,12 +17,16 @@ public class PreferenceHelper {
 
     }
 
-    public static ItemStack getFromPreference(List<ItemStack> ingredients, ItemStack origin) {
+    public static ItemStack getFromPreference(List<ItemStack> ingredients, ItemStack origin, String recipeType) {
 
-        ItemStack preferItem = ingredients.stream()
-                .filter(PreferenceHelper::isPreferItem)
-                .findAny()
-                .orElse(ItemStack.EMPTY);
+        PreferenceIngredient preference = PreferenceList.INSTANCE.getPreferenceList().stream()
+                .filter(preferenceIngredient -> ingredients.stream()
+                        .anyMatch(itemStack -> preferenceIngredient.matches(itemStack, recipeType))
+                ).findAny()
+                .orElse(null);
+
+
+        ItemStack preferItem = preference != null ? preference.getIdentifier() : ItemStack.EMPTY;
 
         if (!preferItem.isEmpty()) {
             return preferItem;
@@ -43,10 +48,17 @@ public class PreferenceHelper {
     }
 
     public static boolean isPreferItem(@Nonnull ItemStack stack) {
-        return NEEConfig.getPreferenceList()
+        return PreferenceList.INSTANCE.getPreferenceList()
                 .stream()
-                .anyMatch(is -> ItemUtils.matches(is, stack));
+                .anyMatch(preference -> preference.matches(stack, null));
     }
 
+    public static PreferenceIngredient getPreferIngredient(ItemStack stack, String recipeType) {
+        return PreferenceList.INSTANCE.getPreferenceList()
+                .stream()
+                .filter(preference -> preference.matches(stack, recipeType))
+                .findAny()
+                .orElse(null);
+    }
 
 }

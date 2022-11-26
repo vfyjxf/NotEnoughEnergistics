@@ -44,6 +44,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
     public static final String OUTPUT_KEY = "O";
     public static final String INPUT_KEY = "#";
     private static final Map<String, List<ItemStack>> SWITCHER_DATA = new HashMap<>();
+    private static String lastRecipeType = "";
 
     public PatternTransferHandler() {
     }
@@ -58,6 +59,10 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
         return SWITCHER_DATA;
     }
 
+    public static String getLastRecipeType() {
+        return lastRecipeType;
+    }
+
     @Nullable
     @Override
     public IRecipeTransferError transferRecipe(@Nonnull ContainerPatternTerm container, IRecipeLayout recipeLayout, @Nonnull EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
@@ -70,11 +75,10 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                 Pair<NBTTagCompound, NBTTagCompound> recipePair = packRecipe(getRepo(patternTerm), container, recipeLayout, recipeType);
                 NEENetworkHandler.getInstance().sendToServer(new PacketRecipeTransfer(recipePair.getLeft(), recipePair.getRight(), isCraftingRecipe));
                 if (NEEConfig.isPrintRecipeType()) {
-                    NotEnoughEnergistics.logger.info(recipeType);
+                    NotEnoughEnergistics.logger.info("RecipeType is : " + recipeType);
                 }
             } else {
                 //TODO:Wireless Pattern Term support?
-                //TODO:Prefer item in network
                 return new CraftingInfoError(new RecipeAnalyzer(patternTerm), false);
             }
         }
@@ -124,15 +128,26 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                 }
             }
         }
-        for (StackWrapper preference : mapToPreference(inputsList)) {
+        for (StackWrapper preference : mapToPreference(inputsList, recipeType)) {
 
-            if (BlackListHelper.isBlacklistItem(preference.getStack())) continue;
+            if (BlackListHelper.isBlacklistItem(preference.getStack(), recipeType)) continue;
+
             ItemStack finalStack = preference.getStack().copy();
-            if(!storage.isEmpty()) {
+            if (NEEConfig.isNetworkOrInventoryFirst() && !storage.isEmpty() && !finalStack.isEmpty()) {
                 ItemStack origin = finalStack;
                 finalStack = storage.stream()
-                        .filter(stored -> ItemUtils.matches(stored.getDefinition(), origin))
-                        .findFirst()
+                        .filter(stored -> ItemUtils.contains(origin, stored.getDefinition()))
+                        .min((o1, o2) -> {
+                            if (o1.isCraftable() && o2.isCraftable()) {
+                                return 0;
+                            } else if (o1.isCraftable()) {
+                                return -1;
+                            } else if (o2.isCraftable()) {
+                                return 1;
+                            } else {
+                                return Long.compare(o2.getStackSize(), o1.getStackSize());
+                            }
+                        })
                         .map(stored -> stored.getDefinition().copy())
                         .orElse(origin);
             }
@@ -143,7 +158,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
             inputIndex++;
 
         }
-
+        lastRecipeType = recipeType;
         return Pair.of(inputs, outputs);
     }
 
@@ -164,10 +179,9 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
         }
     }
 
-    private List<StackWrapper> mapToPreference(List<StackWrapper> wrappers) {
+    private List<StackWrapper> mapToPreference(List<StackWrapper> wrappers, String recipeType) {
         return wrappers.stream()
-                .map(wrapper -> new StackWrapper(getFromPreference(wrapper.getIngredients(), wrapper.getStack()), wrapper.getIngredients()))
-                .filter(wrapper -> NEEConfig.getBlacklist().stream().noneMatch(stack -> ItemUtils.matches(wrapper.getStack(), stack)))
+                .map(wrapper -> new StackWrapper(getFromPreference(wrapper.getIngredients(), wrapper.getStack(), recipeType), wrapper.getIngredients()))
                 .collect(Collectors.toList());
     }
 

@@ -1,5 +1,8 @@
 package com.github.vfyjxf.nee.client.gui.widgets;
 
+import com.github.vfyjxf.nee.client.gui.IngredientSwitcherWidget;
+import com.github.vfyjxf.nee.config.PreferenceList;
+import com.github.vfyjxf.nee.helper.PreferenceHelper;
 import mezz.jei.gui.TooltipRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
@@ -11,10 +14,12 @@ import java.util.List;
 
 public class AddPreferenceButton extends GuiImageButton {
 
+    private final IngredientSwitcherWidget widget;
     private boolean ingredientExists;
 
-    public AddPreferenceButton(int x, int y) {
-        super(x, y, 9, 9, false);
+    public AddPreferenceButton(IngredientSwitcherWidget switcherWidget, int x, int y) {
+        super(x, y, 11, 11, false);
+        this.widget = switcherWidget;
     }
 
     @Override
@@ -28,14 +33,25 @@ public class AddPreferenceButton extends GuiImageButton {
         }
     }
 
-
     @Override
     public boolean mousePressed(@Nonnull Minecraft mc, int mouseX, int mouseY) {
-        boolean pressable = super.mousePressed(mc, mouseX, mouseY);
-        if (pressable) {
-
+        if (this.hovered) {
+            if (widget.getSelectedWidget() != null) {
+                if (ingredientExists) {
+                    PreferenceList.INSTANCE.removePreference(widget.getSelectedWidget().getIngredient());
+                } else {
+                    PreferenceList.INSTANCE.addPreference(widget.getSelectedWidget().getIngredient(), null);
+                }
+                ingredientExists = !ingredientExists;
+            }
+            return true;
         }
-        return pressable;
+        return false;
+    }
+
+    public void update() {
+        this.ingredientExists = widget.getSelectedWidget() != null &&
+                PreferenceHelper.isPreferItem(widget.getSelectedWidget().getIngredient());
     }
 
     @Override
@@ -46,10 +62,6 @@ public class AddPreferenceButton extends GuiImageButton {
             tooltips.add(I18n.format("gui.neenergistics.button.tooltip.preference.text1"));
             TooltipRenderer.drawHoveringText(mc, tooltips, mouseX, mouseY);
         }
-    }
-
-    public interface OnSlotPress {
-        void onSlotPress();
     }
 
 }

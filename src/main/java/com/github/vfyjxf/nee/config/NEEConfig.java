@@ -1,25 +1,16 @@
 package com.github.vfyjxf.nee.config;
 
-import com.github.vfyjxf.nee.NotEnoughEnergistics;
 import com.github.vfyjxf.nee.utils.Gobals;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.apache.commons.io.IOUtils;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -43,12 +34,11 @@ public class NEEConfig {
 
     private static boolean printRecipeType = false;
     private static boolean useDisplayed = false;
+    public static boolean networkOrInventoryFirst = true;
     /**
      * Priority: blacklist > preference list > priority mods
      */
     private static List<String> priorityMods = new ArrayList<>();
-    private static List<ItemStack> preferenceList = new ArrayList<>();
-    private static List<ItemStack> blacklist = new ArrayList<>();
     private static IngredientMergeMode mergeMode = IngredientMergeMode.ENABLED;
     private static List<String> mergeBlacklist = new ArrayList<>();
 
@@ -85,14 +75,21 @@ public class NEEConfig {
                     "PrintRecipeType",
                     CATEGORY_PATTERN_TRANSFER,
                     printRecipeType,
-                    "If true, print current recipe type in log.Default:false"
+                    "If true, print current recipe type in log.[Default:false]"
             );
 
             useDisplayed = config.getBoolean(
                     "UseDisplayed",
                     CATEGORY_PATTERN_TRANSFER,
                     useDisplayed,
-                    "If true, the ingredient currently displayed by JEI will be transferred.Default:false"
+                    "If true, the ingredient currently displayed by JEI will be transferred.[Default:false]"
+            );
+
+            networkOrInventoryFirst = config.getBoolean(
+                    "NetworkOrInventoryFirst",
+                    CATEGORY_PATTERN_TRANSFER,
+                    networkOrInventoryFirst,
+                    "If true, the ingredient will be transferred from network first, then from inventory,and finally from jei.[Default:true]"
             );
 
             mergeMode = IngredientMergeMode.valueOf(
@@ -172,42 +169,17 @@ public class NEEConfig {
 
     private static void loadList() {
 
-        try (FileReader reader = new FileReader(preferenceConfigFile)) {
-            List<String> strings = IOUtils.readLines(reader);
-            preferenceList = strings.stream()
-                    .map(s -> {
-                        try {
-                            NBTTagCompound tag = JsonToNBT.getTagFromJson(s);
-                            return new ItemStack(tag);
-                        } catch (NBTException e) {
-                            NotEnoughEnergistics.logger.error("Loading prefer ingredient :" + s + " failed!");
-                        }
-                        return ItemStack.EMPTY;
-                    })
-                    .filter(is -> !is.isEmpty())
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            NotEnoughEnergistics.logger.error("Can't load preference list!");
-        }
+        PreferenceList.INSTANCE.loadList();
+        IngredientBlackList.INSTANCE.loadList();
 
-        try (FileReader reader = new FileReader(blacklistFile)) {
-            List<String> strings = IOUtils.readLines(reader);
-            blacklist = strings.stream()
-                    .map(s -> {
-                        try {
-                            NBTTagCompound tag = JsonToNBT.getTagFromJson(s);
-                            return new ItemStack(tag);
-                        } catch (NBTException e) {
-                            NotEnoughEnergistics.logger.error("Loading ingredient :" + s + " in blacklist failed!");
-                        }
-                        return ItemStack.EMPTY;
-                    })
-                    .filter(is -> !is.isEmpty())
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            NotEnoughEnergistics.logger.error("Can't load blacklist!");
-        }
+    }
 
+    public static File getPreferenceConfigFile() {
+        return preferenceConfigFile;
+    }
+
+    public static File getBlacklistFile() {
+        return blacklistFile;
     }
 
     public static boolean isPrintRecipeType() {
@@ -218,16 +190,12 @@ public class NEEConfig {
         return useDisplayed;
     }
 
+    public static boolean isNetworkOrInventoryFirst() {
+        return networkOrInventoryFirst;
+    }
+
     public static List<String> getPriorityMods() {
         return priorityMods;
-    }
-
-    public static List<ItemStack> getPreferenceList() {
-        return preferenceList;
-    }
-
-    public static List<ItemStack> getBlacklist() {
-        return blacklist;
     }
 
     public static IngredientMergeMode getMergeMode() {
@@ -260,27 +228,13 @@ public class NEEConfig {
 
     public static void setPriorityMods(String[] priorityMods) {
         NEEConfig.priorityMods = Arrays.asList(priorityMods);
-        config.get(CATEGORY_PATTERN_TRANSFER, "modPriorityList", priorityMods,
-                "If oredict has this mod's item, use it first.").set(priorityMods);
+        config.get(CATEGORY_PATTERN_TRANSFER,
+                "PriorityMods",
+                priorityMods,
+                "If oredict has this mod's item, use it first."
+        ).set(priorityMods);
         config.save();
     }
-
-    public static void setItemBlacklist(List<String> itemBlacklist) {
-//        NEEConfig.itemBlacklist = itemBlacklist;
-        config.get(CATEGORY_PATTERN_TRANSFER, "itemBlacklist", itemBlacklist.toArray(new String[0]),
-                "If item in the blacklist, it will not be transferred.\n"
-                        + "example:{\"itemName\":\"gregtech:meta_item_2\",\"meta\":\"32492\"}").set(itemBlacklist.toArray(new String[0]));
-        config.save();
-    }
-
-    public static void setItemPriorityList(String[] itemPriorityList) {
-//        NEEConfig.itemPriorityList = itemPriorityList;
-        config.get(CATEGORY_PATTERN_TRANSFER, "itemPriorityList", itemPriorityList,
-                "If item in tne priority list, it will be transferred first.\n"
-                        + "example:{\"itemName\":\"gregtech:meta_item_2\",\"meta\":\"32492\"}").set(itemPriorityList);
-        config.save();
-    }
-
 
     public static void setMergeMode(IngredientMergeMode mergeMode) {
         NEEConfig.mergeMode = mergeMode;
@@ -295,7 +249,11 @@ public class NEEConfig {
 
     public static void setMergeBlacklist(String[] mergeBlacklist) {
         NEEConfig.mergeBlacklist = Arrays.asList(mergeBlacklist);
-        config.get(CATEGORY_PATTERN_TRANSFER, "itemCombinationWhitelist", mergeBlacklist, "Whitelist for item combination").set(mergeBlacklist);
+        config.get(CATEGORY_PATTERN_TRANSFER,
+                "MergeBlackList",
+                mergeBlacklist,
+                "If a recipe type is in here, it will not be merged."
+        ).set(mergeBlacklist);
         config.save();
     }
 

@@ -17,8 +17,8 @@ gui.neenergistics.button.tooltip.remove=Remove and cancel the current recipe
 gui.neenergistics.button.tooltip.preference.remove=Remove selected stack from preference list.
 gui.neenergistics.button.tooltip.preference.add=Add selected stack from preference list.
 gui.neenergistics.button.tooltip.preference.text1=Use middle click to select slot.
-gui.neenergistics.button.tooltip.preference.open=Open preference list.
+gui.neenergistics.button.tooltip.preference.open=Open preference list(WIP).
 
-tile.neenergistics.pattern_interface.name=Pattern Interface
+tile.neenergistics.pattern_interface.name=Pattern Interface(WIP)
 
 neenergistics.category=Not Enough Energistics

@@ -5,6 +5,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.client.me.ItemRepo;
 import mezz.jei.api.gui.IGuiIngredient;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,22 +19,33 @@ import static net.minecraftforge.fml.common.ObfuscationReflectionHelper.getPriva
  */
 public final class ItemUtils {
 
-    public static int getIngredientIndex(ItemStack stack, List<ItemStack> currentIngredients) {
-        for (int i = 0; i < currentIngredients.size(); i++) {
-
-            if (currentIngredients.get(i) == null) {
-                continue;
-            }
-
-            if (ItemUtils.matches(stack, currentIngredients.get(i))) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public static boolean matches(ItemStack stack1, ItemStack stack2) {
         return ItemStack.areItemsEqual(stack1, stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
+    }
+
+    public static boolean contains(ItemStack based, ItemStack stack) {
+        if (ItemStack.areItemsEqual(based, stack)) {
+            if (based.getTagCompound() == null && stack.getTagCompound() == null) {
+                return based.areCapsCompatible(stack);
+            } else if (based.getTagCompound() == null) {
+                return based.areCapsCompatible(stack);
+            } else if (stack.getTagCompound() != null) {
+                NBTTagCompound tagCompound = stack.getTagCompound();
+                return based.areCapsCompatible(stack) &&
+                        based.getTagCompound()
+                                .getKeySet()
+                                .stream()
+                                .allMatch(keyName -> {
+                                            if (!tagCompound.hasKey(keyName)) {
+                                                return false;
+                                            } else {
+                                                return tagCompound.getTag(keyName).equals(based.getTagCompound().getTag(keyName));
+                                            }
+                                        }
+                                );
+            }
+        }
+        return false;
     }
 
     public static ItemStack getFirstStack(IGuiIngredient<ItemStack> ingredient) {
@@ -60,7 +72,7 @@ public final class ItemUtils {
                 .orElse(ItemStack.EMPTY);
     }
 
-    public static List<IAEItemStack> getStorage(ItemRepo repo){
+    public static List<IAEItemStack> getStorage(ItemRepo repo) {
         if (repo == null) return Collections.emptyList();
         IItemList<IAEItemStack> all = getPrivateValue(ItemRepo.class, repo, "list");
         if (all == null) return Collections.emptyList();

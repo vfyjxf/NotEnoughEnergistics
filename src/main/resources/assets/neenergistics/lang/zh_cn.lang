@@ -17,9 +17,9 @@ gui.neenergistics.button.tooltip.remove=删除并取消当前配方
 gui.neenergistics.button.tooltip.preference.remove=从偏好列表中删除选中的物品
 gui.neenergistics.button.tooltip.preference.add=将选中的物品添加到偏好列表中
 gui.neenergistics.button.tooltip.preference.text1=使用鼠标中键选中物品。
-gui.neenergistics.button.tooltip.preference.open=打开偏好列表。
+gui.neenergistics.button.tooltip.preference.open=打开偏好列表(WIP)。
 
-tile.neenergistics.pattern_interface.name=样板接口
+tile.neenergistics.pattern_interface.name=样板接口(WIP)
 
 neenergistics.category=Not Enough Energistics
 

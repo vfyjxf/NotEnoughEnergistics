@@ -33,7 +33,6 @@ import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
 /**
  * A draggable widget to switch ingredient in pattern.
  * //TODO:AE2FC support
- * //TODO:scrolling functions
  */
 public class IngredientSwitcherWidget extends Gui {
 
@@ -76,7 +75,7 @@ public class IngredientSwitcherWidget extends Gui {
         this.widgets = new ArrayList<>();
         this.initWidgets(viewStacks);
         this.scrollOffset = 0;
-        this.addButton = new AddPreferenceButton(x + width - 32, y + 5);
+        this.addButton = new AddPreferenceButton(this, x + width - 32, y + 5);
         this.opeButton = new OpenPreferenceDataButton(x + width - 19, y + 5);
         this.action = action;
     }
@@ -192,6 +191,8 @@ public class IngredientSwitcherWidget extends Gui {
                 }
             }
         }
+        this.addButton.update();
+
         return result;
     }
 
@@ -277,6 +278,15 @@ public class IngredientSwitcherWidget extends Gui {
 
     public boolean isRenderingTooltip() {
         return renderingTooltip;
+    }
+
+    public ItemWidget getSelectedWidget() {
+        return selectedWidget;
+    }
+
+    public void cleanSelection() {
+        this.selectedWidget.setSelected(false);
+        this.selectedWidget = null;
     }
 
     public interface OnResultApply {

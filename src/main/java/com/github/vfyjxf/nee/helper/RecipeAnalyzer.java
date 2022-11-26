@@ -143,6 +143,14 @@ public class RecipeAnalyzer {
             this.missingSlots = getMissingSlots(missingCount);
         }
 
+        public RecipeIngredient(IngredientStatus status, ItemStack identifier, List<IGuiIngredient<ItemStack>> merged) {
+            this.status = status;
+            this.identifier = identifier;
+            this.merged = merged;
+            this.missingCount = 0;
+            this.missingSlots = merged.size();
+        }
+
         private int getMissingSlots(int missingCount) {
             int count = 0;
             for (int i = 0, mergedSize = merged.size(); i < mergedSize; i++) {
@@ -151,10 +159,6 @@ public class RecipeAnalyzer {
                 if ((count += first.getCount()) >= missingCount) return i + 1;
             }
             return 0;
-        }
-
-        public RecipeIngredient(IngredientStatus status, ItemStack identifier, List<IGuiIngredient<ItemStack>> merged) {
-            this(status, identifier, merged, 0);
         }
 
         public IngredientStatus getStatus() {

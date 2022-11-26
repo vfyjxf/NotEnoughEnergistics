@@ -7,7 +7,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class OpenPreferenceDataButton extends GuiImageButton {
     public OpenPreferenceDataButton(int x, int y) {
-        super(x, y, 9, 9, false);
+        super(x, y, 11, 11, false);
     }
 
     @Override

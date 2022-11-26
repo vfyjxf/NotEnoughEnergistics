@@ -9,16 +9,10 @@ import javax.annotation.Nonnull;
 public abstract class GuiImageButton extends GuiButton {
 
     private final boolean halfSize;
-    private OnPress onPress;
 
     public GuiImageButton(int x, int y, int width, int height, boolean halfSize) {
-        this(x, y, width, height, halfSize, (button -> true));
-    }
-
-    public GuiImageButton(int x, int y, int width, int height, boolean halfSize, OnPress onPress) {
         super(0, x, y, width, height, "");
         this.halfSize = halfSize;
-        this.onPress = onPress;
     }
 
     @Override
@@ -51,15 +45,9 @@ public abstract class GuiImageButton extends GuiButton {
 
     @Override
     public boolean mousePressed(@Nonnull Minecraft mc, int mouseX, int mouseY) {
-        return onPress.onPress(this);
+        if (this.hovered) {
+            return true;
+        }
+        return false;
     }
-
-    public void setOnPress(OnPress onPress) {
-        this.onPress = onPress;
-    }
-
-    public interface OnPress {
-        boolean onPress(GuiImageButton button);
-    }
-
 }
