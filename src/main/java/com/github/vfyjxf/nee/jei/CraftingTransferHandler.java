@@ -14,7 +14,7 @@ import com.github.vfyjxf.nee.config.KeyBindings;
 import com.github.vfyjxf.nee.helper.CraftingHelper;
 import com.github.vfyjxf.nee.helper.IngredientRequester;
 import com.github.vfyjxf.nee.helper.RecipeAnalyzer;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
@@ -31,7 +31,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.IItemHandler;
-import p455w0rd.wct.client.gui.GuiWCT;
 import p455w0rd.wct.init.ModNetworking;
 
 import javax.annotation.Nonnull;
@@ -102,15 +101,15 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
         if (screen instanceof GuiCraftingTerm) {
             return new RecipeAnalyzer(((GuiCraftingTerm) screen));
         }
-        if (Loader.isModLoaded(Gobals.WCT)) {
+        if (Loader.isModLoaded(Globals.WCT)) {
             return createAnalyzer((GuiContainer) screen);
         }
         return null;
     }
 
-    @Optional.Method(modid = Gobals.WCT)
+    @Optional.Method(modid = Globals.WCT)
     private RecipeAnalyzer createAnalyzer(@Nonnull GuiContainer wirelessTerm) {
-        return new RecipeAnalyzer((GuiWCT) wirelessTerm);
+        return new RecipeAnalyzer(wirelessTerm);
     }
 
     /**
@@ -241,7 +240,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
 
      */
 
-    @Optional.Method(modid = Gobals.WCT)
+    @Optional.Method(modid = Globals.WCT)
     private void moveItemsForWirelessTerm(NBTTagCompound recipe) {
         try {
             ModNetworking.instance().sendToServer(new p455w0rd.wct.sync.packets.PacketJEIRecipe(recipe));

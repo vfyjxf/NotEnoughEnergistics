@@ -81,6 +81,8 @@ dependencies {
 
     deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}"
 //    compile "curse.maven:modularui-624243:3895901"
+    //    AE2 Unofficial Extended Life
+//    deobfCompile "curse.maven:ae2-extended-life-570458:4094223"
     deobfCompile "curse.maven:applied-energistics-2-223794:2747063"
     deobfCompile "curse.maven:wireless-crafting-terminal-244559:2830252"
     compile "curse.maven:ae2wtlib-304024:2830114"

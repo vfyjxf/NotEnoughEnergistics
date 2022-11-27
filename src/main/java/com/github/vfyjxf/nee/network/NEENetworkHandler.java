@@ -1,13 +1,13 @@
 package com.github.vfyjxf.nee.network;
 
 import com.github.vfyjxf.nee.network.packet.*;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class NEENetworkHandler {
 
-    private static final SimpleNetworkWrapper INSTANCE = new SimpleNetworkWrapper(Gobals.MOD_ID);
+    private static final SimpleNetworkWrapper INSTANCE = new SimpleNetworkWrapper(Globals.MOD_ID);
     private static int packId = 0;
 
     public static SimpleNetworkWrapper getInstance() {

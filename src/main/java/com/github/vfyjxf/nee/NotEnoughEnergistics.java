@@ -2,7 +2,7 @@ package com.github.vfyjxf.nee;
 
 import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.proxy.CommonProxy;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -14,16 +14,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-@Mod(modid = Gobals.MOD_ID,
-        version = Gobals.VERSION,
-        name = Gobals.NAME,
-        dependencies = Gobals.DEPENDENCIES,
-        guiFactory = Gobals.GUI_FACTORY,
+@Mod(modid = Globals.MOD_ID,
+        version = Globals.VERSION,
+        name = Globals.NAME,
+        dependencies = Globals.DEPENDENCIES,
+        guiFactory = Globals.GUI_FACTORY,
         useMetadata = true)
 public class NotEnoughEnergistics {
     public static final Logger logger = LogManager.getLogger("NotEnoughEnergistics");
 
-    @Mod.Instance(Gobals.MOD_ID)
+    @Mod.Instance(Globals.MOD_ID)
     public static NotEnoughEnergistics instance;
 
     @SidedProxy(clientSide = "com.github.vfyjxf.nee.proxy.ClientProxy", serverSide = "com.github.vfyjxf.nee.proxy.ServerProxy")

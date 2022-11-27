@@ -8,7 +8,7 @@ import com.github.vfyjxf.nee.config.NEEConfig;
 import com.github.vfyjxf.nee.jei.PatternTransferHandler;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketSlotStackSwitch;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import net.minecraft.client.Minecraft;
@@ -105,7 +105,7 @@ public class IngredientSwitcherWidget extends Gui {
         RenderHelper.disableStandardItemLighting();
         GlStateManager.disableDepth();
         TextureManager textureManager = mc.getTextureManager();
-        textureManager.bindTexture(new ResourceLocation(Gobals.MOD_ID, "textures/gui/ingredient_switcher_widget.png"));
+        textureManager.bindTexture(new ResourceLocation(Globals.MOD_ID, "textures/gui/ingredient_switcher_widget.png"));
         drawModalRectWithCustomSizedTexture(x, y, 0, 0, this.width, this.height, this.width, this.height);
         this.searchField.drawTextBox();
         this.addButton.drawButton(mc, mouseX, mouseY, partialTicks);
@@ -125,7 +125,7 @@ public class IngredientSwitcherWidget extends Gui {
         if (maxScroll <= 0) return;
         int scrollBarLeft = x + width - 13;
         int scrollBarTop = y + 20;
-        textureManager.bindTexture(new ResourceLocation(Gobals.MOD_ID, "textures/gui/states.png"));
+        textureManager.bindTexture(new ResourceLocation(Globals.MOD_ID, "textures/gui/states.png"));
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
         if (this.scrollOffset == 0) {
             drawTexturedModalRect(scrollBarLeft, scrollBarTop, 4, 51, 7, 11);

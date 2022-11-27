@@ -1,6 +1,6 @@
 package com.github.vfyjxf.nee.utils;
 
-public class Gobals {
+public class Globals {
     public static final String MOD_ID = "neenergistics";
     public static final String NAME = "NotEnoughEnergistics";
     public static final String VERSION = "@VERSION@";

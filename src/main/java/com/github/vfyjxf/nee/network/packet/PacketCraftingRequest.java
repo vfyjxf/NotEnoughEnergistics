@@ -25,7 +25,7 @@ import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
 import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
 import com.github.vfyjxf.nee.network.NEEGuiHandler;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
@@ -211,7 +211,7 @@ public class PacketCraftingRequest implements IMessage {
                                     ccc.setPatternIndex(pair.getRight());
                                     ccc.detectAndSendChanges();
                                 }
-                            } else if (Loader.isModLoaded(Gobals.WCT) && container.isWirelessTerm()) {
+                            } else if (Loader.isModLoaded(Globals.WCT) && container.isWirelessTerm()) {
 
                                 NEEGuiHandler.openGui(player, NEEGuiHandler.WIRELESS_CRAFTING_CONFIRM_ID, player.world);
 

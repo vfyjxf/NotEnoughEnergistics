@@ -1,6 +1,7 @@
 package com.github.vfyjxf.nee.asm;
 
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.helper.ModChecker;
 import net.minecraft.launchwrapper.IClassTransformer;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -48,6 +49,8 @@ public class NEEClassTransformer implements IClassTransformer {
             return classWriter.toByteArray();
         }
         if ("appeng/core/sync/packets/PacketMEInventoryUpdate".equals(internalName)) {
+            if (ModChecker.isUnofficialAppeng) return basicClass;
+
             ClassNode classNode = new ClassNode();
             ClassReader classReader = new ClassReader(basicClass);
             classReader.accept(classNode, 0);
@@ -70,7 +73,7 @@ public class NEEClassTransformer implements IClassTransformer {
                             insnList.add(new MethodInsnNode(INVOKESTATIC,
                                     "com/github/vfyjxf/nee/asm/AppengHooks",
                                     "updateMeInventory",
-                                    "(Lnet/minecraft/client/gui/GuiScreen;Ljava/util/List;)V",
+                                    "(Ljava/lang/Object;Ljava/util/List;)V",
                                     false));
                             methodNode.instructions.insertBefore(instruction, insnList);
                         }

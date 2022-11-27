@@ -1,6 +1,6 @@
 package com.github.vfyjxf.nee.config;
 
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -49,8 +49,8 @@ public class NEEConfig {
     private static boolean syncIngredientSwitcher = true;
 
     public static void preInit(FMLPreInitializationEvent event) {
-        File configDir = new File(event.getModConfigurationDirectory(), Gobals.MOD_ID);
-        modConfigFile = new File(configDir, Gobals.MOD_ID + ".cfg");
+        File configDir = new File(event.getModConfigurationDirectory(), Globals.MOD_ID);
+        modConfigFile = new File(configDir, Globals.MOD_ID + ".cfg");
         preferenceConfigFile = new File(configDir, "preference.ini");
         blacklistFile = new File(configDir, "blacklist.ini");
         config = new Configuration(modConfigFile);
@@ -259,7 +259,7 @@ public class NEEConfig {
 
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (event.getModID().equals(Gobals.MOD_ID)) {
+        if (event.getModID().equals(Globals.MOD_ID)) {
             if (config.hasChanged()) {
                 config.save();
             }

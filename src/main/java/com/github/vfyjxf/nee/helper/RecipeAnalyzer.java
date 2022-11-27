@@ -7,7 +7,7 @@ import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.me.ItemRepo;
 import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.IngredientStatus;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import mezz.jei.api.gui.IGuiIngredient;
@@ -75,11 +75,14 @@ public class RecipeAnalyzer {
         if (allStacksCache.isEmpty()) allStacksCache = getStorage();
     }
 
-    public RecipeAnalyzer(GuiWCT wirelessTerm) {
+    /**
+     *For some reason, we can't explicitly reference GuiWCT。
+     */
+    public RecipeAnalyzer(GuiContainer wirelessTerm) {
         this(wirelessTerm, shouldCleanCache);
     }
 
-    public RecipeAnalyzer(GuiWCT wirelessTerm, boolean cleanCache) {
+    public RecipeAnalyzer(GuiContainer wirelessTerm, boolean cleanCache) {
         this.term = wirelessTerm;
         this.craftableOnly = false;
         this.isWireless = true;
@@ -282,7 +285,7 @@ public class RecipeAnalyzer {
         }
     }
 
-    @Optional.Method(modid = Gobals.WCT)
+    @Optional.Method(modid = Globals.WCT)
     private ItemRepo getWirelessRepo() {
         return getPrivateValue(GuiWCT.class, (GuiWCT) term, "repo");
     }

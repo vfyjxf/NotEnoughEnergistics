@@ -5,7 +5,7 @@ import appeng.core.features.BlockStackSrc;
 import appeng.tile.AEBaseTile;
 import com.github.vfyjxf.nee.block.BlockPatternInterface;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@Mod.EventBusSubscriber(modid = Gobals.MOD_ID)
+@Mod.EventBusSubscriber(modid = Globals.MOD_ID)
 public class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
@@ -36,7 +36,7 @@ public class CommonProxy {
     @SubscribeEvent
     public static void onBlockRegister(RegistryEvent.Register<Block> event) {
         event.getRegistry().register(BlockPatternInterface.BLOCK_INSTANCE);
-        GameRegistry.registerTileEntity(TilePatternInterface.class, new ResourceLocation(Gobals.MOD_ID, "patterninterface"));
+        GameRegistry.registerTileEntity(TilePatternInterface.class, new ResourceLocation(Globals.MOD_ID, "patterninterface"));
     }
 
 }

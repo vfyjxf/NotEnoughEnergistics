@@ -7,7 +7,7 @@ import com.github.vfyjxf.nee.client.gui.widgets.PatternRemoveButton;
 import com.github.vfyjxf.nee.container.ContainerPatternInterface;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketValueConfigServer;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
@@ -66,6 +66,6 @@ public class PatternInterfaceGui extends AEBaseGui {
     }
 
     private ResourceLocation getBackground() {
-        return new ResourceLocation(Gobals.MOD_ID, "textures/gui/pattern_interface.png");
+        return new ResourceLocation(Globals.MOD_ID, "textures/gui/pattern_interface.png");
     }
 }

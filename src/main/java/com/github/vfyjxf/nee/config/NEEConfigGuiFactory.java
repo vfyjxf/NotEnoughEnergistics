@@ -1,6 +1,6 @@
 package com.github.vfyjxf.nee.config;
 
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.common.config.ConfigElement;
@@ -27,7 +27,7 @@ public class NEEConfigGuiFactory implements IModGuiFactory {
 
     @Override
     public GuiScreen createConfigGui(GuiScreen parentScreen) {
-        return new GuiConfig(parentScreen, getConfigElements(), Gobals.MOD_ID, false, false, Gobals.NAME);
+        return new GuiConfig(parentScreen, getConfigElements(), Globals.MOD_ID, false, false, Globals.NAME);
     }
 
     @Override

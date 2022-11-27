@@ -20,7 +20,7 @@ import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
 import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
 import com.github.vfyjxf.nee.container.ContainerPatternInterface;
 import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
-import com.github.vfyjxf.nee.utils.Gobals;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -98,7 +98,7 @@ public class NEEGuiHandler implements IGuiHandler {
                     }
                 }
             }
-        } else if (Loader.isModLoaded(Gobals.WCT)) {
+        } else if (Loader.isModLoaded(Globals.WCT)) {
 
             final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
             if (craftingTerminal != null) {
@@ -157,7 +157,7 @@ public class NEEGuiHandler implements IGuiHandler {
                     }
                 }
             }
-        } else if (Loader.isModLoaded(Gobals.WCT)) {
+        } else if (Loader.isModLoaded(Globals.WCT)) {
             final ITerminalHost craftingTerminal = getCraftingTerminal(player, ModGuiHandler.isBauble(), ModGuiHandler.getSlot());
             if (craftingTerminal != null) {
                 Container container = player.openContainer;
@@ -203,7 +203,7 @@ public class NEEGuiHandler implements IGuiHandler {
     }
 
     @SuppressWarnings("unchecked")
-    @Optional.Method(modid = Gobals.WCT)
+    @Optional.Method(modid = Globals.WCT)
     private ITerminalHost getCraftingTerminal(final EntityPlayer player, final boolean isBauble, final int slot) {
         ItemStack wirelessTerminal;
         if (slot >= 0) {
