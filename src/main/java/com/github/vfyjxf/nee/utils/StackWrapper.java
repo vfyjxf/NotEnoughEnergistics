@@ -19,6 +19,12 @@ public class StackWrapper {
         this.count = stack.getCount();
     }
 
+    public StackWrapper(@Nonnull ItemStack stack, List<ItemStack> ingredients, int count) {
+        this.stack = stack;
+        this.ingredients = new ArrayList<>(ingredients);
+        this.count = count;
+    }
+
     public boolean merge(ItemStack other) {
         if (ItemUtils.matches(stack, other) && count + other.getCount() <= stack.getMaxStackSize()) {
             count += other.getCount();

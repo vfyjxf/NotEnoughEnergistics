@@ -79,7 +79,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                 }
             } else {
                 //TODO:Wireless Pattern Term support?
-                return new CraftingInfoError(new RecipeAnalyzer(patternTerm), false);
+                return new CraftingInfoError(new RecipeAnalyzer(patternTerm), recipeLayout, false);
             }
         }
 
@@ -120,7 +120,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                         inputsList.add(current);
                     }
                 } else {
-                    if (outputIndex >= 3 || stack.isEmpty() || (container.isCraftingMode())) {
+                    if (outputIndex >= 3 || stack.isEmpty() || isCraftingRecipe) {
                         continue;
                     }
                     outputs.setTag(OUTPUT_KEY + outputIndex, stack.writeToNBT(new NBTTagCompound()));
@@ -181,7 +181,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
 
     private List<StackWrapper> mapToPreference(List<StackWrapper> wrappers, String recipeType) {
         return wrappers.stream()
-                .map(wrapper -> new StackWrapper(getFromPreference(wrapper.getIngredients(), wrapper.getStack(), recipeType), wrapper.getIngredients()))
+                .map(wrapper -> new StackWrapper(getFromPreference(wrapper.getIngredients(), wrapper.getStack(), recipeType), wrapper.getIngredients(), wrapper.getCount()))
                 .collect(Collectors.toList());
     }
 

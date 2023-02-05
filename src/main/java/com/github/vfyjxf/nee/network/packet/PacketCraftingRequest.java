@@ -117,6 +117,7 @@ public class PacketCraftingRequest implements IMessage {
         public IMessage onMessage(PacketCraftingRequest message, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().player;
             Container container = player.openContainer;
+            if(!(container instanceof AEBaseContainer)) return null;
             player.getServerWorld().addScheduledTask(() -> {
                 AEBaseContainer baseContainer = (AEBaseContainer) container;
                 Object target = baseContainer.getTarget();

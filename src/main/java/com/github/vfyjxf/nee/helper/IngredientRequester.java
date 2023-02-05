@@ -37,6 +37,7 @@ public class IngredientRequester {
         } catch (Exception e) {
             LOGGER.error("Fail to request ingredient: {} ,try to request next ingredient.", ingredient.getIdentifier().getDisplayName());
             currentIndex++;
+            finished = currentIndex >= requested.size();
             return requestNext();
         }
         finished = currentIndex >= requested.size();

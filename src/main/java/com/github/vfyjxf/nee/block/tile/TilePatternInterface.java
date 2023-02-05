@@ -69,6 +69,8 @@ public class TilePatternInterface extends AENetworkInvTile implements IGridTicka
     private final List<ICraftingPatternDetails> craftingList;
     private List<ItemStack> waitingToSend;
     private final MachineSource source;
+    private boolean processing = false;
+    private String recipeType = "";
 
     private final boolean[] workStarted = new boolean[9];
 
@@ -317,6 +319,8 @@ public class TilePatternInterface extends AENetworkInvTile implements IGridTicka
         }
         this.patterns.readFromNBT(data, "patterns");
         this.ejectInv.readFromNBT(data, "ejectInv");
+        this.processing = data.getBoolean("processing");
+        this.recipeType = data.getString("recipeType");
 
     }
 
@@ -325,6 +329,8 @@ public class TilePatternInterface extends AENetworkInvTile implements IGridTicka
         super.writeToNBT(data);
         this.patterns.writeToNBT(data, "patterns");
         this.ejectInv.writeToNBT(data, "ejectInv");
+        data.setBoolean("processing", this.processing);
+        data.setString("recipeType", this.recipeType);
 
         final NBTTagList waitingToSend = new NBTTagList();
         if (this.waitingToSend != null) {

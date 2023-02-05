@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 import p455w0rd.wct.client.gui.GuiWCT;
 
 import javax.annotation.Nonnull;
@@ -23,6 +24,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +37,7 @@ public class RecipeAnalyzer {
 
     private static boolean shouldCleanCache = false;
 
+    private static final List<Consumer<Pair<List<IAEItemStack>, List<IAEItemStack>>>> updateListener = new ArrayList<>();
     @Nonnull
     private static List<IAEItemStack> craftableCache = new ArrayList<>();
     @Nonnull
@@ -76,7 +79,7 @@ public class RecipeAnalyzer {
     }
 
     /**
-     *For some reason, we can't explicitly reference GuiWCT。
+     * For some reason, we can't explicitly reference GuiWCT。
      */
     public RecipeAnalyzer(GuiContainer wirelessTerm) {
         this(wirelessTerm, shouldCleanCache);
@@ -92,6 +95,10 @@ public class RecipeAnalyzer {
 
     public static void setCleanCache(boolean cleanCache) {
         RecipeAnalyzer.shouldCleanCache = cleanCache;
+    }
+
+    public static void addUpdateListener(Consumer<Pair<List<IAEItemStack>, List<IAEItemStack>>> listener) {
+        updateListener.add(listener);
     }
 
     public List<RecipeIngredient> analyzeRecipe(IRecipeLayout recipeLayout) {
@@ -112,6 +119,20 @@ public class RecipeAnalyzer {
             return ingredientsCache = merged.map(this::getExistData).collect(Collectors.toList());
         }
 
+    }
+
+    @Nonnull
+    public static List<IAEItemStack> getAllStacks() {
+        return allStacksCache;
+    }
+
+    @Nonnull
+    public static List<IAEItemStack> getCraftables() {
+        return craftableCache;
+    }
+
+    public GuiContainer getTerm() {
+        return term;
     }
 
     public void addAvailableIngredient(@Nonnull ItemStack stack) {
@@ -202,6 +223,7 @@ public class RecipeAnalyzer {
         } else {
             allStacksCache = getStorage();
         }
+        updateListener.forEach(listener -> listener.accept(Pair.of(craftableCache, allStacksCache)));
         this.ingredientsCache = null;
     }
 

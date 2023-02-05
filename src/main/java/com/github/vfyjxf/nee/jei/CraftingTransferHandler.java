@@ -82,7 +82,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
             } else {
                 RecipeAnalyzer analyzer = createAnalyzer(parent);
                 if (analyzer == null) return null;
-                return new CraftingInfoError(initAnalyzer(analyzer, craftingTerm, recipeLayout, player), true);
+                return new CraftingInfoError(initAnalyzer(analyzer, craftingTerm, recipeLayout, player), recipeLayout, true);
             }
         }
         return null;

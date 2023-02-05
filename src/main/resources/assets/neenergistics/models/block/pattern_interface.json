@@ -1,6 +1,12 @@
 {
-  "parent": "block/cube_all",
+  "parent": "block/cube",
   "textures": {
-    "all": "neenergistics:blocks/pattern_interface"
+    "particle": "neenergistics:blocks/pattern_interface",
+    "down": "neenergistics:blocks/pattern_interface_surface",
+    "up": "neenergistics:blocks/pattern_interface_surface",
+    "north": "neenergistics:blocks/pattern_interface_side",
+    "east": "neenergistics:blocks/pattern_interface_side",
+    "south": "neenergistics:blocks/pattern_interface_side",
+    "west": "neenergistics:blocks/pattern_interface_side"
   }
 }
