@@ -1,0 +1,31 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "aba",
+    "cdc",
+    "eee"
+  ],
+  "key": {
+    "a": {
+      "item": "appliedenergistics2:material",
+      "data": 52
+    },
+    "b": {
+      "item": "appliedenergistics2:part",
+      "data": 340
+    },
+    "c": {
+      "item": "appliedenergistics2:interface"
+    },
+    "d": {
+      "item": "appliedenergistics2:crafting_monitor"
+    },
+    "e": {
+      "item": "appliedenergistics2:part",
+      "data": 56
+    }
+  },
+  "result": {
+    "item": "neenergistics:pattern_interface"
+  }
+}

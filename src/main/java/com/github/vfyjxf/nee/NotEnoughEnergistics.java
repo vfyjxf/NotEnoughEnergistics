@@ -1,5 +1,8 @@
 package com.github.vfyjxf.nee;
 
+import com.github.vfyjxf.nee.integration.IPatternProvider;
+import com.github.vfyjxf.nee.integration.InterfacePatternProvider;
+import com.github.vfyjxf.nee.integration.PartInterfacePatternProvider;
 import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.proxy.CommonProxy;
 import com.github.vfyjxf.nee.utils.Globals;
@@ -37,6 +40,8 @@ public class NotEnoughEnergistics {
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new NEEGuiHandler());
+        IPatternProvider.PROVIDERS.add(new InterfacePatternProvider());
+        IPatternProvider.PROVIDERS.add(new PartInterfacePatternProvider());
     }
 
     @EventHandler

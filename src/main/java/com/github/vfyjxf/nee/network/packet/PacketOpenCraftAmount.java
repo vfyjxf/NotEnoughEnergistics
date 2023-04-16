@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import static com.github.vfyjxf.nee.jei.PatternTransferHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_ID;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.WIRELESS_CRAFTING_AMOUNT_ID;
 
@@ -80,7 +80,7 @@ public class PacketOpenCraftAmount implements IMessage {
                         if (player.openContainer instanceof ContainerCraftingAmount) {
                             ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
                             if (message.recipe != null && !message.recipe.isEmpty()) {
-                                NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                                NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY_HEAD);
                                 ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
                                 cca.setResultStack(result);
                                 cca.getResultSlot().putStack(result);
@@ -96,7 +96,7 @@ public class PacketOpenCraftAmount implements IMessage {
                     if (player.openContainer instanceof ContainerCraftingAmount) {
                         ContainerCraftingAmount cca = (ContainerCraftingAmount) player.openContainer;
                         if (message.recipe != null) {
-                            NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY);
+                            NBTTagCompound resultTag = message.recipe.getCompoundTag(OUTPUT_KEY_HEAD);
                             ItemStack result = resultTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(resultTag);
                             cca.setResultStack(result);
                             cca.getResultSlot().putStack(result);

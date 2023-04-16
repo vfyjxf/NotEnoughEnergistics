@@ -2,7 +2,6 @@ package com.github.vfyjxf.nee.helper;
 
 import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.implementations.GuiCraftingTerm;
-import appeng.client.gui.implementations.GuiMEMonitorable;
 import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.me.ItemRepo;
 import appeng.util.item.AEItemStack;
@@ -37,7 +36,7 @@ public class RecipeAnalyzer {
 
     private static boolean shouldCleanCache = false;
 
-    private static final List<Consumer<Pair<List<IAEItemStack>, List<IAEItemStack>>>> updateListener = new ArrayList<>();
+    private final List<Consumer<Pair<List<IAEItemStack>, List<IAEItemStack>>>> updateListener = new ArrayList<>();
     @Nonnull
     private static List<IAEItemStack> craftableCache = new ArrayList<>();
     @Nonnull
@@ -97,7 +96,7 @@ public class RecipeAnalyzer {
         RecipeAnalyzer.shouldCleanCache = cleanCache;
     }
 
-    public static void addUpdateListener(Consumer<Pair<List<IAEItemStack>, List<IAEItemStack>>> listener) {
+    public void addUpdateListener(Consumer<Pair<List<IAEItemStack>, List<IAEItemStack>>> listener) {
         updateListener.add(listener);
     }
 
@@ -122,12 +121,20 @@ public class RecipeAnalyzer {
     }
 
     @Nonnull
-    public static List<IAEItemStack> getAllStacks() {
+    public List<IAEItemStack> getAllStacks() {
+        if (allStacksCache.isEmpty()) {
+            allStacksCache = getStorage();
+        }
         return allStacksCache;
     }
 
     @Nonnull
-    public static List<IAEItemStack> getCraftables() {
+    public List<IAEItemStack> getCraftables() {
+        if (craftableCache.isEmpty()) {
+            craftableCache = getStorage().stream()
+                    .filter(IAEItemStack::isCraftable)
+                    .collect(Collectors.toList());
+        }
         return craftableCache;
     }
 
@@ -300,16 +307,7 @@ public class RecipeAnalyzer {
     }
 
     private ItemRepo getRepo() {
-        if (isWireless) {
-            return getWirelessRepo();
-        } else {
-            return getPrivateValue(GuiMEMonitorable.class, (GuiMEMonitorable) term, "repo");
-        }
-    }
-
-    @Optional.Method(modid = Globals.WCT)
-    private ItemRepo getWirelessRepo() {
-        return getPrivateValue(GuiWCT.class, (GuiWCT) term, "repo");
+        return PlatformHelper.getRepo(term);
     }
 
 }

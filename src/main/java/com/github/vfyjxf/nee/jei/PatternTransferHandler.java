@@ -11,6 +11,7 @@ import com.github.vfyjxf.nee.helper.BlackListHelper;
 import com.github.vfyjxf.nee.helper.RecipeAnalyzer;
 import com.github.vfyjxf.nee.network.NEENetworkHandler;
 import com.github.vfyjxf.nee.network.packet.PacketRecipeTransfer;
+import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import com.github.vfyjxf.nee.utils.StackWrapper;
@@ -35,14 +36,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.github.vfyjxf.nee.helper.PreferenceHelper.getFromPreference;
+import static com.github.vfyjxf.nee.utils.Globals.INPUT_KEY_HEAD;
 
 /**
  * @author vfyjxf
  */
 public class PatternTransferHandler implements IRecipeTransferHandler<ContainerPatternTerm> {
 
-    public static final String OUTPUT_KEY = "O";
-    public static final String INPUT_KEY = "#";
     private static final Map<String, List<ItemStack>> SWITCHER_DATA = new HashMap<>();
     private static String lastRecipeType = "";
 
@@ -123,7 +123,7 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                     if (outputIndex >= 3 || stack.isEmpty() || isCraftingRecipe) {
                         continue;
                     }
-                    outputs.setTag(OUTPUT_KEY + outputIndex, stack.writeToNBT(new NBTTagCompound()));
+                    outputs.setTag(Globals.OUTPUT_KEY_HEAD + outputIndex, stack.writeToNBT(new NBTTagCompound()));
                     outputIndex++;
                 }
             }
@@ -153,8 +153,8 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
             }
             finalStack.setCount(preference.getCount());
 
-            inputs.setTag(INPUT_KEY + inputIndex, finalStack.writeToNBT(new NBTTagCompound()));
-            SWITCHER_DATA.put(INPUT_KEY + inputIndex, preference.getIngredients());
+            inputs.setTag(INPUT_KEY_HEAD + inputIndex, finalStack.writeToNBT(new NBTTagCompound()));
+            SWITCHER_DATA.put(INPUT_KEY_HEAD + inputIndex, preference.getIngredients());
             inputIndex++;
 
         }

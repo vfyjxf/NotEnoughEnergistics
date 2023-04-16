@@ -94,14 +94,20 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
 
     compileOnly fg.deobf("mezz.jei:jei_${mc_version}:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei_${mc_version}:${jei_version}")
 //    compile "curse.maven:modularui-624243:3895901"
-    //    AE2 Unofficial Extended Life
-//    deobfCompile "curse.maven:ae2-extended-life-570458:4264378"
+    //AE2 Unofficial Extended Life
+//    compileOnly fg.deobf("curse.maven:ae2-extended-life-570458:4463434")
     compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:2747063")
-    compileOnly "curse.maven:ae2-extended-life-570458:4463434"
-    compile "curse.maven:wireless-crafting-terminal-244559:2830252"
-    compile "curse.maven:ae2wtlib-304024:2830114"
-    compile "curse.maven:p455w0rds-library-255232:2830265"
+    runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:2747063")
+//    compileOnly "curse.maven:ae2-extended-life-570458:4463434"
+    compileOnly "curse.maven:wireless-crafting-terminal-244559:2830252"
+    compileOnly "curse.maven:ae2wtlib-304024:2830114"
+    compileOnly "curse.maven:p455w0rds-library-255232:2830265"
+
+    runtimeOnly "curse.maven:wireless-crafting-terminal-244559:2830252"
+    runtimeOnly "curse.maven:ae2wtlib-304024:2830114"
+    runtimeOnly "curse.maven:p455w0rds-library-255232:2830265"
 //    deobfCompile "p455w0rd:WirelessCraftingTerminal:1.12.2-3.12.97"
 //    deobfCompile "p455w0rd:AE2WTLib:1.12.2-1.0.34"
 //    deobfCompile "p455w0rd:p455w0rdslib:1.12.2-2.3.161"

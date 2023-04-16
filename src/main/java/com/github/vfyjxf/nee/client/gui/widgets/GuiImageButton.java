@@ -1,12 +1,15 @@
 package com.github.vfyjxf.nee.client.gui.widgets;
 
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 
 public abstract class GuiImageButton extends GuiButton {
+    public static final ResourceLocation STATES = new ResourceLocation(Globals.MOD_ID, "textures/gui/states.png");
 
     private final boolean halfSize;
 

@@ -3,6 +3,7 @@ package com.github.vfyjxf.nee.network.packet;
 import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
+import com.github.vfyjxf.nee.helper.PlatformHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
@@ -58,7 +59,7 @@ public class PacketStackSizeChange implements IMessage {
             player.getServerWorld().addScheduledTask(() -> {
                 if (container instanceof AEBaseContainer) {
 
-                    if (container instanceof ContainerPatternTerm && ((ContainerPatternTerm) container).isCraftingMode()) {
+                    if (container instanceof ContainerPatternTerm && PlatformHelper.isCraftingMode(container)) {
                         return;
                     }
 

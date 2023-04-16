@@ -28,6 +28,9 @@ public class NEENetworkHandler {
         INSTANCE.registerMessage(PacketValueConfigServer.Handler.class, PacketValueConfigServer.class, nextId(), Side.SERVER);
         INSTANCE.registerMessage(PacketValueConfigClient.Handler.class, PacketValueConfigClient.class, nextId(), Side.CLIENT);
         INSTANCE.registerMessage(PacketSetRecipe.Handler.class, PacketSetRecipe.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketSyncInterfaceDataServer.Handler.class, PacketSyncInterfaceDataServer.class, nextId(), Side.SERVER);
+        INSTANCE.registerMessage(PacketSyncInterfaceDataClient.Handler.class, PacketSyncInterfaceDataClient.class, nextId(), Side.CLIENT);
+        INSTANCE.registerMessage(PacketPlayerAction.Handler.class, PacketPlayerAction.class, nextId(), Side.SERVER);
     }
 
 }

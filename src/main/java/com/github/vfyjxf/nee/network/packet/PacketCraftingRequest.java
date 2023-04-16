@@ -50,8 +50,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 
 import static com.github.vfyjxf.nee.jei.CraftingTransferHandler.RECIPE_LENGTH;
-import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
-import static com.github.vfyjxf.nee.jei.PatternTransferHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 
 public class PacketCraftingRequest implements IMessage {
 
@@ -273,7 +272,7 @@ public class PacketCraftingRequest implements IMessage {
                 if (gridNode.getMachine() instanceof TilePatternInterface) {
 
                     TilePatternInterface tpi = (TilePatternInterface) gridNode.getMachine();
-                    NBTTagCompound currentTag = recipe.getCompoundTag(OUTPUT_KEY);
+                    NBTTagCompound currentTag = recipe.getCompoundTag(OUTPUT_KEY_HEAD);
                     ItemStack result = currentTag.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentTag);
 
                     if (tpi.getProxy().isActive() && tpi.canPutPattern(result)) {
@@ -299,7 +298,7 @@ public class PacketCraftingRequest implements IMessage {
             ItemStack[] recipeInputs = new ItemStack[RECIPE_LENGTH];
             NBTTagCompound currentStack;
             for (int i = 0; i < recipeInputs.length; i++) {
-                currentStack = recipe.getCompoundTag(INPUT_KEY + i);
+                currentStack = recipe.getCompoundTag(Globals.INPUT_KEY_HEAD + i);
                 recipeInputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
             }
             InventoryCrafting ic = new InventoryCrafting(new ContainerNull(), 3, 3);

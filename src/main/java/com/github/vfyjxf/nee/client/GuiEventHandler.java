@@ -26,7 +26,7 @@ import org.lwjgl.input.Mouse;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
+import static com.github.vfyjxf.nee.utils.Globals.INPUT_KEY_HEAD;
 
 public class GuiEventHandler {
 
@@ -93,7 +93,7 @@ public class GuiEventHandler {
             if (GuiScreen.isShiftKeyDown() && Mouse.getEventButton() == 2) {
                 Slot slot = patternTerm.getSlotUnderMouse();
                 if (slot instanceof SlotFake && slot.getHasStack()) {
-                    List<ItemStack> ingredients = PatternTransferHandler.getSwitcherData().get(INPUT_KEY + slot.getSlotIndex());
+                    List<ItemStack> ingredients = PatternTransferHandler.getSwitcherData().get(INPUT_KEY_HEAD + slot.getSlotIndex());
                     if (ingredients != null) {
                         ItemStack slotStack = slot.getStack();
                         boolean findAny = ingredients.stream().anyMatch(itemStack -> ItemUtils.matches(slotStack, itemStack));

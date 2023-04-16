@@ -6,6 +6,7 @@ import appeng.helpers.IContainerCraftingPacket;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.util.helpers.ItemHandlerUtil;
 import appeng.util.inv.WrapperInvItemHandler;
+import com.github.vfyjxf.nee.utils.Globals;
 import com.google.common.collect.Sets;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -23,7 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 
-import static com.github.vfyjxf.nee.jei.PatternTransferHandler.OUTPUT_KEY;
+import static com.github.vfyjxf.nee.utils.Globals.INPUT_KEY_HEAD;
+import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 
 /**
  * @author vfyjxf
@@ -91,14 +93,14 @@ public class PacketRecipeTransfer implements IMessage {
                     NBTTagCompound currentStack;
 
                     for (int i = 0; i < recipeInputs.length; i++) {
-                        currentStack = message.getInput().getCompoundTag("#" + i);
+                        currentStack = message.getInput().getCompoundTag(INPUT_KEY_HEAD + i);
                         recipeInputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
                     }
 
                     if (!message.output.isEmpty()) {
                         recipeOutputs = new ItemStack[3];
                         for (int i = 0; i < recipeOutputs.length; i++) {
-                            currentStack = message.getOutput().getCompoundTag(OUTPUT_KEY + i);
+                            currentStack = message.getOutput().getCompoundTag(OUTPUT_KEY_HEAD + i);
                             recipeOutputs[i] = currentStack.isEmpty() ? ItemStack.EMPTY : new ItemStack(currentStack);
                         }
                     }

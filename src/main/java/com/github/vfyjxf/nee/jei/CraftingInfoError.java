@@ -1,7 +1,6 @@
 package com.github.vfyjxf.nee.jei;
 
 import appeng.api.storage.data.IAEItemStack;
-import appeng.api.storage.data.IAEStack;
 import appeng.container.AEBaseContainer;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketInventoryAction;
@@ -19,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
+import org.apache.commons.lang3.time.StopWatch;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.github.vfyjxf.nee.config.KeyBindings.AUTO_CRAFT_WITH_PREVIEW;
 import static com.github.vfyjxf.nee.jei.CraftingTransferHandler.isIsPatternInterfaceExists;
@@ -36,7 +35,6 @@ public class CraftingInfoError implements IRecipeTransferError {
 
     private final boolean crafting;
     private final RecipeAnalyzer analyzer;
-
 
     public CraftingInfoError(RecipeAnalyzer analyzer, IRecipeLayout recipeLayout, boolean isCrafting) {
         this.analyzer = analyzer;
@@ -105,23 +103,17 @@ public class CraftingInfoError implements IRecipeTransferError {
      */
     private static class CraftingInfoCallback implements ITooltipCallback<ItemStack> {
 
+        private static final List<ItemStack> SUCCESS = new ArrayList<>();
         private final Stopwatch lastClicked = Stopwatch.createStarted();
         private final RecipeAnalyzer analyzer;
-        private List<ItemStack> craftables;
+        private List<IAEItemStack> craftables;
 
         private CraftingInfoCallback(RecipeAnalyzer analyzer) {
             this.analyzer = analyzer;
-            this.craftables = RecipeAnalyzer.getCraftables()
-                    .stream()
-                    .map(stack -> stack.getDefinition().copy())
-                    .collect(Collectors.toList());
-            RecipeAnalyzer.addUpdateListener(pair -> {
-                List<IAEItemStack> stacks = pair.getLeft().isEmpty() ?
-                        pair.getRight().stream().filter(IAEStack::isCraftable).collect(Collectors.toList()) :
-                        pair.getLeft();
-                craftables = stacks.stream()
-                        .map(stack -> stack.getDefinition().copy())
-                        .collect(Collectors.toList());
+            this.craftables = analyzer.getCraftables();
+            analyzer.addUpdateListener(pair -> {
+                craftables = analyzer.getCraftables();
+                SUCCESS.clear();
             });
         }
 
@@ -129,10 +121,14 @@ public class CraftingInfoError implements IRecipeTransferError {
         public void onTooltip(int slotIndex, boolean input, @Nonnull ItemStack ingredient, @Nonnull List<String> tooltip) {
             analyzer.update();
             if (!input | ingredient.isEmpty() | craftables.isEmpty()) return;
-            boolean anyMatch = craftables.stream().anyMatch(ingredient::isItemEqual);
+            boolean isCache = SUCCESS.stream().anyMatch(ingredient::isItemEqual);
+            boolean anyMatch = isCache || craftables.stream().anyMatch(craftable -> {
+                boolean match = craftable.isSameType(ingredient);
+                if (match) SUCCESS.add(ingredient);
+                return match;
+            });
             if (anyMatch) {
                 tooltip.add(TextFormatting.BLUE + String.format("[%s]", I18n.format("jei.tooltip.nee.helper.craftable")));
-
                 if (Mouse.isButtonDown(2) && this.lastClicked.elapsed(TimeUnit.MILLISECONDS) > 200) {
                     this.lastClicked.reset().start();
                     IAEItemStack target = AEItemStack.fromItemStack(ingredient);
@@ -145,7 +141,6 @@ public class CraftingInfoError implements IRecipeTransferError {
                     }
                 }
             }
-
         }
     }
 

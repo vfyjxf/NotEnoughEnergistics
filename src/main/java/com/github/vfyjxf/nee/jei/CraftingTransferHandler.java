@@ -13,6 +13,7 @@ import appeng.util.Platform;
 import com.github.vfyjxf.nee.config.KeyBindings;
 import com.github.vfyjxf.nee.helper.CraftingHelper;
 import com.github.vfyjxf.nee.helper.IngredientRequester;
+import com.github.vfyjxf.nee.helper.PlatformHelper;
 import com.github.vfyjxf.nee.helper.RecipeAnalyzer;
 import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
@@ -101,7 +102,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
         if (screen instanceof GuiCraftingTerm) {
             return new RecipeAnalyzer(((GuiCraftingTerm) screen));
         }
-        if (Loader.isModLoaded(Globals.WCT)) {
+        if (Loader.isModLoaded(Globals.WCT) || PlatformHelper.isWirelessGui(screen)) {
             return createAnalyzer((GuiContainer) screen);
         }
         return null;
@@ -155,7 +156,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
                             tags.appendTag(tag);
                         }
 
-                        recipe.setTag("#" + slot.getSlotIndex(), tags);
+                        recipe.setTag(Globals.INPUT_KEY_HEAD + slot.getSlotIndex(), tags);
                         break;
                     }
                 }
@@ -165,7 +166,7 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
         }
 
         try {
-            if (container instanceof ContainerCraftingTerm) {
+            if (container instanceof ContainerCraftingTerm || PlatformHelper.isWirelessContainer(container)) {
                 NetworkHandler.instance().sendToServer(new PacketJEIRecipe(recipe));
             } else if (GuiUtils.isWirelessCraftingTermContainer(container)) {
                 moveItemsForWirelessTerm(recipe);
@@ -175,70 +176,6 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
         }
 
     }
-
-    /*
-    private NBTTagCompound packCraftingRecipe(IRecipeLayout recipeLayout) {
-        final NBTTagCompound recipe = new NBTTagCompound();
-        NBTTagCompound reslut = null;
-        String recipeType = recipeLayout.getRecipeCategory().getUid();
-        final Map<Integer, ? extends IGuiIngredient<ItemStack>> ingredients = recipeLayout.getItemStacks().getGuiIngredients();
-        int inputIndex = 0;
-
-        List<StackProcessor> tInputs = new ArrayList<>();
-        for (Map.Entry<Integer, ? extends IGuiIngredient<ItemStack>> entry : ingredients.entrySet()) {
-            final IGuiIngredient<ItemStack> ingredient = entry.getValue();
-            if (ingredient != null) {
-                //get itemstack from ingredient
-                ItemStack displayedIngredient = ingredient.getDisplayedIngredient() == null ? ItemStack.EMPTY : ingredient.getDisplayedIngredient().copy();
-                ItemStack firstIngredient = ingredient.getAllIngredients().isEmpty() ? ItemStack.EMPTY : ingredient.getAllIngredients().get(0).copy();
-                ItemStack currentStack = NEEConfig.useDisplayedIngredient ? displayedIngredient : firstIngredient;
-                if (ingredient.isInput()) {
-                    tInputs.add(new StackProcessor(ingredient, currentStack, currentStack.getCount()));
-                } else {
-                    if (!currentStack.isEmpty() && reslut == null) {
-                        reslut = currentStack.writeToNBT(new NBTTagCompound());
-                        recipe.setTag(OUTPUT_KEY, reslut);
-                    }
-                }
-
-            }
-
-        }
-
-        for (StackProcessor currentIngredient : tInputs) {
-            ItemStack currentStack = currentIngredient.getCurrentStack();
-            ItemStack preferModItem = ItemUtils.isPreferModItem(currentStack) ? currentStack : ItemUtils.getPreferModItem(currentIngredient.getIngredient());
-
-            if (!currentStack.isEmpty()) {
-                currentStack.setCount(currentIngredient.getStackSize());
-            }
-
-            if (!currentStack.isEmpty() && preferModItem != null && !preferModItem.isEmpty()) {
-                currentStack = preferModItem.copy();
-                currentStack.setCount(currentIngredient.getStackSize());
-            }
-            for (ItemStack stack : currentIngredient.getIngredient().getAllIngredients()) {
-                if (ItemUtils.isPreferItems(stack, recipeType) && !currentStack.isEmpty()) {
-                    currentStack = stack.copy();
-                    currentStack.setCount(currentIngredient.getStackSize());
-                }
-            }
-            recipe.setTag("#" + inputIndex, currentStack.writeToNBT(new NBTTagCompound()));
-            inputIndex++;
-        }
-
-        return recipe;
-    }
-
-    @Optional.Method(modid = ModIds.WCT)
-    private void openWirelessCraftingAmountGui(Container container, IRecipeLayout recipeLayout) {
-        if (container instanceof ContainerWCT) {
-            ContainerWCT wct = (ContainerWCT) container;
-            NEENetworkHandler.getInstance().sendToServer(new PacketOpenCraftAmount(packCraftingRecipe(recipeLayout), wct.isWTBauble(), wct.getWTSlot()));
-        }
-    }
-
-     */
 
     @Optional.Method(modid = Globals.WCT)
     private void moveItemsForWirelessTerm(NBTTagCompound recipe) {

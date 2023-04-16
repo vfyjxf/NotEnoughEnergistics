@@ -20,12 +20,12 @@ import static net.minecraftforge.fml.common.ObfuscationReflectionHelper.getPriva
 public final class ItemUtils {
 
     public static boolean matches(ItemStack stack1, ItemStack stack2) {
-        if(stack1 == null || stack2 == null)
-            return false;
+        if (stack1 == null || stack2 == null) return false;
         return ItemStack.areItemsEqual(stack1, stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
     }
 
     public static boolean contains(ItemStack based, ItemStack stack) {
+        if (based == null || stack == null) return false;
         if (ItemStack.areItemsEqual(based, stack)) {
             if (based.getTagCompound() == null && stack.getTagCompound() == null) {
                 return based.areCapsCompatible(stack);
@@ -51,7 +51,7 @@ public final class ItemUtils {
     }
 
     public static ItemStack getFirstStack(IGuiIngredient<ItemStack> ingredient) {
-        if (ingredient.getAllIngredients().isEmpty()) {
+        if (ingredient == null || ingredient.getAllIngredients().isEmpty()) {
             return ItemStack.EMPTY;
         }
         return ingredient.getAllIngredients()
@@ -63,7 +63,7 @@ public final class ItemUtils {
     }
 
     public static ItemStack getFirstStack(List<ItemStack> ingredients) {
-        if (ingredients.isEmpty()) {
+        if (ingredients == null || ingredients.isEmpty()) {
             return ItemStack.EMPTY;
         }
         return ingredients
@@ -79,6 +79,10 @@ public final class ItemUtils {
         IItemList<IAEItemStack> all = getPrivateValue(ItemRepo.class, repo, "list");
         if (all == null) return Collections.emptyList();
         else return StreamSupport.stream(all.spliterator(), false).collect(Collectors.toList());
+    }
+
+    public static ItemStack fromTagOrEmpty(NBTTagCompound tag) {
+        return tag == null ? ItemStack.EMPTY : tag.isEmpty() ? ItemStack.EMPTY : new ItemStack(tag);
     }
 
 }

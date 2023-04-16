@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
+import static com.github.vfyjxf.nee.utils.Globals.INPUT_KEY_HEAD;
 
 /**
  * A draggable widget to switch ingredient in pattern.
  * //TODO:AE2FC support
  */
-public class IngredientSwitcherWidget extends Gui {
+public class IngredientSwitcherWidget extends Gui implements IInnerWidget{
 
     private final int x;
     private final int y;
@@ -96,6 +96,7 @@ public class IngredientSwitcherWidget extends Gui {
         this.maxScroll = (this.viewStacks.size() + 3) / 4 - 4;
     }
 
+    @Override
     public void draw(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (mc == null) {
             return;
@@ -135,6 +136,7 @@ public class IngredientSwitcherWidget extends Gui {
         }
     }
 
+    @Override
     public void drawTooltips(Minecraft mc, int mouseX, int mouseY) {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.disableLighting();
@@ -154,6 +156,7 @@ public class IngredientSwitcherWidget extends Gui {
         this.renderingTooltip = false;
     }
 
+    @Override
     public boolean handleKeyPressed(char typedChar, int eventKey) {
 
         if (this.searchField.isFocused() && eventKey == Keyboard.KEY_RETURN) {
@@ -168,6 +171,7 @@ public class IngredientSwitcherWidget extends Gui {
         return false;
     }
 
+    @Override
     public boolean handleMouseClicked(int eventButton, int mouseX, int mouseY) {
 
         this.searchField.mouseClicked(mouseX, mouseY, eventButton);
@@ -212,8 +216,8 @@ public class IngredientSwitcherWidget extends Gui {
             Map<String, List<ItemStack>> switcherData = PatternTransferHandler.getSwitcherData();
             if (NEEConfig.isSyncIngredientSwitcher()) {
                 for (Slot slot : getCraftingSlots(screen)) {
-                    List<ItemStack> ingredients = switcherData.get(INPUT_KEY + slot.getSlotIndex());
-                    List<ItemStack> selectedIngredients = switcherData.get(INPUT_KEY + selectedSlot.getSlotIndex());
+                    List<ItemStack> ingredients = switcherData.get(INPUT_KEY_HEAD + slot.getSlotIndex());
+                    List<ItemStack> selectedIngredients = switcherData.get(INPUT_KEY_HEAD + selectedSlot.getSlotIndex());
                     boolean areItemStackEqual = selectedSlot.getHasStack() &&
                             slot.getHasStack() &&
                             ItemUtils.matches(selectedSlot.getStack(), slot.getStack());

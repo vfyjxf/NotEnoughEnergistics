@@ -3,6 +3,7 @@ package com.github.vfyjxf.nee.utils;
 import appeng.client.gui.implementations.GuiCraftingTerm;
 import appeng.container.slot.AppEngSlot;
 import appeng.helpers.IContainerCraftingPacket;
+import com.github.vfyjxf.nee.helper.PlatformHelper;
 import mezz.jei.gui.recipes.RecipesGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -67,7 +68,7 @@ public class GuiUtils {
     }
 
     public static boolean isCraftingTerm(GuiScreen gui) {
-        return gui instanceof GuiCraftingTerm || isGuiWirelessCrafting(gui);
+        return gui instanceof GuiCraftingTerm || isGuiWirelessCrafting(gui) || PlatformHelper.isWirelessGui(gui);
     }
 
     @Nullable
