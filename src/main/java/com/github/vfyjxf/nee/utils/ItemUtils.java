@@ -20,6 +20,8 @@ import static net.minecraftforge.fml.common.ObfuscationReflectionHelper.getPriva
 public final class ItemUtils {
 
     public static boolean matches(ItemStack stack1, ItemStack stack2) {
+        if(stack1 == null || stack2 == null)
+            return false;
         return ItemStack.areItemsEqual(stack1, stack2) && ItemStack.areItemStackTagsEqual(stack1, stack2);
     }
 

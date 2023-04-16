@@ -14,6 +14,7 @@ import mezz.jei.gui.recipes.RecipesGui;
 import mezz.jei.input.MouseHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -22,6 +23,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static com.github.vfyjxf.nee.jei.PatternTransferHandler.INPUT_KEY;
@@ -97,7 +99,7 @@ public class GuiEventHandler {
                         boolean findAny = ingredients.stream().anyMatch(itemStack -> ItemUtils.matches(slotStack, itemStack));
                         if (findAny) {
                             this.switcherWidget = new IngredientSwitcherWidget(
-                                    slot.xPos + patternTerm.guiLeft + 18,
+                                    slot.xPos + patternTerm.getGuiLeft() + 18,
                                     slot.yPos,
                                     94,
                                     97,
@@ -153,20 +155,27 @@ public class GuiEventHandler {
     public void onInitGui(GuiScreenEvent.InitGuiEvent.Post event) {
         if (event.getGui() instanceof GuiPatternTerm) {
             GuiPatternTerm gui = (GuiPatternTerm) event.getGui();
-            event.getButtonList().add(buttonCombination = new MergeConfigButton(gui.guiLeft + 84, gui.guiTop + gui.ySize - 163, NEEConfig.getMergeMode()));
+            event.getButtonList().add(buttonCombination = new MergeConfigButton(gui.getGuiLeft() + 84, gui.getGuiTop() + gui.getYSize() - 163, NEEConfig.getMergeMode()));
         }
     }
 
     @SubscribeEvent
     public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
         if (event.getGui() instanceof GuiPatternTerm) {
-            ContainerPatternTerm container = (ContainerPatternTerm) ((GuiPatternTerm) event.getGui()).inventorySlots;
-            if (container.isCraftingMode()) {
-                buttonCombination.enabled = false;
-                buttonCombination.visible = false;
-            } else {
-                buttonCombination.enabled = true;
-                buttonCombination.visible = true;
+            try {
+                //ContainerWirelessPatternTerminal;
+                //ContainerPatternTerm;
+                Container container = ((GuiPatternTerm) event.getGui()).inventorySlots;
+                Method saveMethod = container.getClass().getMethod("isCraftingMode");
+                if ((boolean) saveMethod.invoke(container)) {
+                    buttonCombination.enabled = false;
+                    buttonCombination.visible = false;
+                } else {
+                    buttonCombination.enabled = true;
+                    buttonCombination.visible = true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             if (switcherWidget != null) {
                 int mouseX = event.getMouseX();
@@ -181,7 +190,6 @@ public class GuiEventHandler {
         } else {
             switcherWidget = null;
         }
-
     }
 
 }

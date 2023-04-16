@@ -62,7 +62,7 @@ public class IngredientSwitcherWidget extends Gui {
         this.height = height;
         this.screen = screen;
         this.selectedSlot = slot;
-        this.slotRect = new Rectangle(slot.xPos + screen.guiLeft - 2, slot.yPos + screen.guiTop - 2, 20, 20);
+        this.slotRect = new Rectangle(slot.xPos + screen.getGuiLeft() - 2, slot.yPos + screen.getGuiTop() - 2, 20, 20);
         this.searchField = new MEGuiTextField(Minecraft.getMinecraft().fontRenderer, x + 6, y + 5, 54, 11);
         this.searchField.setEnableBackgroundDrawing(false);
         this.searchField.setMaxStringLength(25);
