@@ -23,6 +23,15 @@ public class ReflectionHelper {
         }
     }
 
+    @Nullable
+    public static Class<?> getClassForName(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     /**
      * Not support obfuscation method.
      */

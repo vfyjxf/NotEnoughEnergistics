@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.github.vfyjxf.nee.helper.PreferenceHelper.getFromPreference;
@@ -79,7 +80,8 @@ public class PatternTransferHandler implements IRecipeTransferHandler<ContainerP
                 }
             } else {
                 //TODO:Wireless Pattern Term support?
-                return new CraftingInfoError(new RecipeAnalyzer(patternTerm), recipeLayout, false);
+                Supplier<ItemRepo> repoSupplier = () -> getRepo(patternTerm);
+                return new CraftingInfoError(new RecipeAnalyzer(patternTerm, true, repoSupplier), recipeLayout, false);
             }
         }
 

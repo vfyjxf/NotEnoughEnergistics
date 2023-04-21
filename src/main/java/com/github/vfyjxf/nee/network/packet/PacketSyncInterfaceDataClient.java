@@ -1,10 +1,7 @@
 package com.github.vfyjxf.nee.network.packet;
 
-import com.github.vfyjxf.nee.client.GuiEventHandler;
-import com.github.vfyjxf.nee.client.gui.QuickPusherWidget;
 import com.github.vfyjxf.nee.network.SyncAction;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;

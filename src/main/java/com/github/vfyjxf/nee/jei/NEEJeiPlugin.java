@@ -8,6 +8,7 @@ import appeng.client.gui.AEBaseGui;
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.implementations.ContainerPatternTerm;
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
+import com.github.vfyjxf.nee.helper.PlatformHelper;
 import com.github.vfyjxf.nee.utils.ReflectionHelper;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table.Cell;
@@ -36,18 +37,13 @@ import java.util.function.Supplier;
 public class NEEJeiPlugin implements IModPlugin {
 
     public static IRecipeRegistry recipeRegistry;
-    private static final Class wctContainer;
+    private static Class wctContainer;
     private static Class containerWirelessCraftingTerminalClass;
 
     static {
-        Class<?> clazz;
-        try {
-            clazz = Class.forName("p455w0rd.wct.container.ContainerWCT");
-            containerWirelessCraftingTerminalClass = Class.forName("appeng.container.implementations.ContainerWirelessCraftingTerminal");
-        } catch (ClassNotFoundException e) {
-            clazz = null;
-        }
-        wctContainer = clazz;
+        wctContainer = ReflectionHelper.getClassForName("p455w0rd.wct.container.ContainerWCT");
+        containerWirelessCraftingTerminalClass = ReflectionHelper.getClassForName("appeng.container.implementations.ContainerWirelessCraftingTerminal");
+        PlatformHelper.init();
     }
 
     @Override
@@ -163,7 +159,7 @@ public class NEEJeiPlugin implements IModPlugin {
                     NotEnoughEnergistics.logger.info("Wireless crafting terminal transfer handler replaced successfully (Overwrite Denied)");
                 }
             }
-            if (containerWirelessCraftingTerminalClass != null){
+            if (containerWirelessCraftingTerminalClass != null) {
                 if (row == containerWirelessCraftingTerminalClass && "appeng.integration.modules.jei.RecipeTransferHandler".equals(canonicalName)) {
                     col = (C) VanillaRecipeCategoryUid.CRAFTING;
                     value = (V) new CraftingTransferHandler<>(containerWirelessCraftingTerminalClass);

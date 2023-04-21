@@ -18,15 +18,18 @@ import appeng.container.ContainerNull;
 import appeng.container.ContainerOpenContext;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerCraftingTerm;
+import appeng.container.interfaces.IInventorySlotAware;
 import appeng.core.AELog;
 import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.block.tile.TilePatternInterface;
 import com.github.vfyjxf.nee.container.ContainerCraftingAmount;
-import com.github.vfyjxf.nee.container.ContainerCraftingConfirm;
+import com.github.vfyjxf.nee.container.ContainerCraftingConfirmWrapper;
 import com.github.vfyjxf.nee.container.WCTContainerCraftingConfirm;
+import com.github.vfyjxf.nee.helper.PlatformHelper;
 import com.github.vfyjxf.nee.network.NEEGuiHandler;
 import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
+import com.github.vfyjxf.nee.utils.ReflectionHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -116,7 +119,7 @@ public class PacketCraftingRequest implements IMessage {
         public IMessage onMessage(PacketCraftingRequest message, MessageContext ctx) {
             EntityPlayerMP player = ctx.getServerHandler().player;
             Container container = player.openContainer;
-            if(!(container instanceof AEBaseContainer)) return null;
+            if (!(container instanceof AEBaseContainer)) return null;
             player.getServerWorld().addScheduledTask(() -> {
                 AEBaseContainer baseContainer = (AEBaseContainer) container;
                 Object target = baseContainer.getTarget();
@@ -127,8 +130,8 @@ public class PacketCraftingRequest implements IMessage {
                     final IGrid grid = gn.getGrid();
                     final ISecurityGrid security = grid.getCache(ISecurityGrid.class);
                     if (security.hasPermission(player, SecurityPermissions.CRAFT)) {
-                        if (container instanceof ContainerCraftingTerm) {
-                            handlerCraftingTermRequest((ContainerCraftingTerm) baseContainer, message, grid, player);
+                        if (container instanceof ContainerCraftingTerm || PlatformHelper.isWirelessContainer(container)) {
+                            handlerCraftingTermRequest(baseContainer, message, grid, ah, player);
                         }
                         if (container instanceof ContainerCraftingAmount) {
                             handlerCraftingAmountRequest((ContainerCraftingAmount) baseContainer, message, grid, player);
@@ -143,7 +146,7 @@ public class PacketCraftingRequest implements IMessage {
             return null;
         }
 
-        private void handlerCraftingTermRequest(ContainerCraftingTerm container, PacketCraftingRequest message, IGrid grid, EntityPlayerMP player) {
+        private void handlerCraftingTermRequest(AEBaseContainer container, PacketCraftingRequest message, IGrid grid, IActionHost ah, EntityPlayerMP player) {
             if (message.getRequireToCraftStack() != null) {
                 Future<ICraftingJob> futureJob = null;
                 try {
@@ -153,7 +156,11 @@ public class PacketCraftingRequest implements IMessage {
                     final ContainerOpenContext context = container.getOpenContext();
                     if (context != null) {
                         final TileEntity te = context.getTile();
-                        NEEGuiHandler.openGui(player, NEEGuiHandler.CONFIRM_WRAPPER_ID, te, context.getSide());
+                        if (te == null) {
+                            unofficialHelper(ah, player);
+                        } else {
+                            NEEGuiHandler.openGui(player, NEEGuiHandler.CONFIRM_WRAPPER_ID, te, context.getSide());
+                        }
                         if (player.openContainer instanceof ContainerCraftConfirm) {
                             final ContainerCraftConfirm ccc = (ContainerCraftConfirm) player.openContainer;
                             ccc.setAutoStart(message.isAutoStart());
@@ -167,6 +174,14 @@ public class PacketCraftingRequest implements IMessage {
                     }
                     AELog.debug(e);
                 }
+            }
+        }
+
+        private static void unofficialHelper(IActionHost host, EntityPlayer player) {
+            if (host instanceof IInventorySlotAware) {
+                IInventorySlotAware slotAware = (IInventorySlotAware) host;
+                boolean isBauble = Boolean.TRUE.equals(ReflectionHelper.invoke(IInventorySlotAware.class, slotAware, "isBauble"));
+                NEEGuiHandler.openWirelessGui(player, NEEGuiHandler.WIRELESS_CRAFTING_CONFIRM_UNOFFICIAL_ID, slotAware.getInventorySlot(), isBauble);
             }
         }
 
@@ -203,8 +218,8 @@ public class PacketCraftingRequest implements IMessage {
                             if (context != null) {
                                 final TileEntity te = context.getTile();
                                 NEEGuiHandler.openGui(player, NEEGuiHandler.CRAFTING_CONFIRM_ID, te, context.getSide());
-                                if (player.openContainer instanceof ContainerCraftingConfirm) {
-                                    final ContainerCraftingConfirm ccc = (ContainerCraftingConfirm) player.openContainer;
+                                if (player.openContainer instanceof ContainerCraftingConfirmWrapper) {
+                                    final ContainerCraftingConfirmWrapper ccc = (ContainerCraftingConfirmWrapper) player.openContainer;
                                     ccc.setAutoStart(message.isAutoStart());
                                     ccc.setJob(futureJob);
                                     ccc.setTile(pair.getLeft());

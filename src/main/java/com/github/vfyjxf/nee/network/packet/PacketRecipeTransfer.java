@@ -6,7 +6,6 @@ import appeng.helpers.IContainerCraftingPacket;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.util.helpers.ItemHandlerUtil;
 import appeng.util.inv.WrapperInvItemHandler;
-import com.github.vfyjxf.nee.utils.Globals;
 import com.google.common.collect.Sets;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;

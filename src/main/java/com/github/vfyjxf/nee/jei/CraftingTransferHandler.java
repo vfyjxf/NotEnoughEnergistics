@@ -1,6 +1,7 @@
 package com.github.vfyjxf.nee.jei;
 
-import appeng.client.gui.implementations.GuiCraftingTerm;
+import appeng.client.gui.implementations.GuiMEMonitorable;
+import appeng.client.me.ItemRepo;
 import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerCraftingTerm;
 import appeng.container.slot.SlotCraftingMatrix;
@@ -17,6 +18,7 @@ import com.github.vfyjxf.nee.helper.PlatformHelper;
 import com.github.vfyjxf.nee.helper.RecipeAnalyzer;
 import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.GuiUtils;
+import com.github.vfyjxf.nee.utils.ReflectionHelper;
 import mezz.jei.api.gui.IGuiIngredient;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
@@ -32,6 +34,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.items.IItemHandler;
+import p455w0rd.wct.client.gui.GuiWCT;
 import p455w0rd.wct.init.ModNetworking;
 
 import javax.annotation.Nonnull;
@@ -40,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraftingPacket> implements IRecipeTransferHandler<C> {
 
@@ -99,18 +103,16 @@ public class CraftingTransferHandler<C extends AEBaseContainer & IContainerCraft
     }
 
     private RecipeAnalyzer createAnalyzer(@Nonnull GuiScreen screen) {
-        if (screen instanceof GuiCraftingTerm) {
-            return new RecipeAnalyzer(((GuiCraftingTerm) screen));
+        if (screen instanceof GuiMEMonitorable) {
+            GuiMEMonitorable term = ((GuiMEMonitorable) screen);
+            Supplier<ItemRepo> repoSupplier = () -> PlatformHelper.getRepo(((GuiMEMonitorable) screen));
+            return new RecipeAnalyzer(term, false, repoSupplier);
         }
-        if (Loader.isModLoaded(Globals.WCT) || PlatformHelper.isWirelessGui(screen)) {
-            return createAnalyzer((GuiContainer) screen);
+        if (Loader.isModLoaded(Globals.WCT) || PlatformHelper.isWctGui(screen)) {
+            Supplier<ItemRepo> repoSupplier = () -> ReflectionHelper.getFieldValue(GuiWCT.class, screen, "repo");
+            return new RecipeAnalyzer(((GuiContainer) screen), false, repoSupplier);
         }
         return null;
-    }
-
-    @Optional.Method(modid = Globals.WCT)
-    private RecipeAnalyzer createAnalyzer(@Nonnull GuiContainer wirelessTerm) {
-        return new RecipeAnalyzer(wirelessTerm);
     }
 
     /**

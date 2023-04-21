@@ -16,9 +16,9 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.CRAFTING_AMOUNT_ID;
 import static com.github.vfyjxf.nee.network.NEEGuiHandler.WIRELESS_CRAFTING_AMOUNT_ID;
+import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 
 public class PacketOpenCraftAmount implements IMessage {
 

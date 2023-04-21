@@ -25,8 +25,8 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import java.util.Optional;
 
 import static com.github.vfyjxf.nee.jei.CraftingTransferHandler.RECIPE_LENGTH;
-import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 import static com.github.vfyjxf.nee.utils.Globals.INPUT_KEY_HEAD;
+import static com.github.vfyjxf.nee.utils.Globals.OUTPUT_KEY_HEAD;
 
 public class PacketSetRecipe implements IMessage {
 

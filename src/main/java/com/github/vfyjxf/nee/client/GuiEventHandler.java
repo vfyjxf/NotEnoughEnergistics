@@ -1,7 +1,6 @@
 package com.github.vfyjxf.nee.client;
 
 import appeng.client.gui.implementations.GuiPatternTerm;
-import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.slot.SlotFake;
 import com.github.vfyjxf.nee.client.gui.IngredientSwitcherWidget;
 import com.github.vfyjxf.nee.client.gui.widgets.MergeConfigButton;

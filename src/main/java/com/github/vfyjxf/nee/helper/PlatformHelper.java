@@ -20,31 +20,28 @@ public class PlatformHelper {
 
     }
 
-    private static final boolean IS_UNOFFICIAL;
-    private static Class<?> containerPatternEncoderClass = null;
-    private static Class<?> containerPatternTermClass = ContainerPatternTerm.class;
-    private static Class<?> guiWCTClass = null;
-    private static Class<?> guiMEMonitorable = GuiMEMonitorable.class;
-    private static Class<?> wirelessCraftingTermClass = null;
-    private static Class<?> wirelessCraftingGuiClass = null;
+    private static boolean unofficial;
+    public static Class<?> containerPatternEncoderClass = null;
+    public static Class<?> containerPatternTermClass = ContainerPatternTerm.class;
+    public static Class<?> guiWCTClass = null;
 
+    public static Class<?> guiMEMonitorable = GuiMEMonitorable.class;
+    public static Class<?> containerWirelessCraftingTermClass = null;
+    public static Class<?> wirelessCraftingGuiClass = null;
 
-    static {
-        IS_UNOFFICIAL = Loader.instance()
+    public static void init() {
+        unofficial = Loader.instance()
                 .getModList()
                 .stream()
                 .anyMatch(modContainer -> (modContainer.getModId().equals(Globals.APPENG) && modContainer.getVersion().contains("extended_life")));
-        try {
-            containerPatternEncoderClass = Class.forName("appeng.container.implementations.ContainerPatternEncoder");
-            guiWCTClass = Class.forName("p455w0rd.wct.client.gui.GuiWCT");
-            wirelessCraftingTermClass = Class.forName("appeng.container.implementations.ContainerWirelessCraftingTerminal");
-            wirelessCraftingGuiClass = Class.forName("appeng.client.gui.implementations.GuiWirelessCraftingTerminal");
-        } catch (ClassNotFoundException ignored) {
-        }
+        containerPatternEncoderClass = ReflectionHelper.getClassForName("appeng.container.implementations.ContainerPatternEncoder");
+        guiWCTClass = ReflectionHelper.getClassForName("p455w0rd.wct.client.gui.GuiWCT");
+        containerWirelessCraftingTermClass = ReflectionHelper.getClassForName("appeng.container.implementations.ContainerWirelessCraftingTerminal");
+        wirelessCraftingGuiClass = ReflectionHelper.getClassForName("appeng.client.gui.implementations.GuiWirelessCraftingTerminal");
     }
 
     public static boolean issUnofficial() {
-        return IS_UNOFFICIAL;
+        return unofficial;
     }
 
     public static boolean isCraftingMode(Container container) {
@@ -55,12 +52,19 @@ public class PlatformHelper {
         return ReflectionHelper.possibleValueGetter(Lists.newArrayList(guiWCTClass, guiMEMonitorable), gui, "repo");
     }
 
+    public static ItemRepo getRepo(GuiMEMonitorable term) {
+        return ReflectionHelper.getFieldValue(GuiMEMonitorable.class, term, "repo");
+    }
+
     public static boolean isWirelessContainer(Container container) {
-        return wirelessCraftingTermClass != null && wirelessCraftingTermClass.isInstance(container);
+        return containerWirelessCraftingTermClass != null && containerWirelessCraftingTermClass.isInstance(container);
     }
 
     public static boolean isWirelessGui(GuiScreen gui) {
         return wirelessCraftingGuiClass != null && wirelessCraftingGuiClass.isInstance(gui);
     }
 
+    public static boolean isWctGui(GuiScreen screen) {
+        return guiWCTClass != null && guiWCTClass.isInstance(screen);
+    }
 }

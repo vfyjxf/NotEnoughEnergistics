@@ -8,13 +8,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 
-public class ContainerCraftingConfirm extends ContainerCraftConfirm {
+public class ContainerCraftingConfirmWrapper extends ContainerCraftConfirm {
 
     private TilePatternInterface tile;
     private int patternIndex;
     private boolean hasWorkCommitted = false;
 
-    public ContainerCraftingConfirm(InventoryPlayer ip, ITerminalHost te) {
+    public ContainerCraftingConfirmWrapper(InventoryPlayer ip, ITerminalHost te) {
         super(ip, te);
     }
 

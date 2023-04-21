@@ -18,7 +18,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
-import org.apache.commons.lang3.time.StopWatch;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 

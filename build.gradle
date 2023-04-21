@@ -1,22 +1,33 @@
 buildscript {
     repositories {
-        jcenter()
-        maven { url = "https://maven.minecraftforge.net/" }
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
+        mavenCentral()
     }
 }
-apply plugin: 'net.minecraftforge.gradle'
+plugins {
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'wtf.gofancy.fancygradle' version '1.1.+'
+}
+
+fancyGradle {
+    patches {
+        resources
+        coremods
+        codeChickenLib
+        asm
+        mergetool
+    }
+}
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 version = mod_version
 group = mod_group
-archivesBaseName = mod_archives_name
+archivesBaseName = mod_archives_name + '-' + mc_version + '-' + mod_version
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = "UTF-8"
 }
 
@@ -100,7 +111,6 @@ dependencies {
 //    compileOnly fg.deobf("curse.maven:ae2-extended-life-570458:4463434")
     compileOnly fg.deobf("curse.maven:applied-energistics-2-223794:2747063")
     runtimeOnly fg.deobf("curse.maven:applied-energistics-2-223794:2747063")
-//    compileOnly "curse.maven:ae2-extended-life-570458:4463434"
     compileOnly "curse.maven:wireless-crafting-terminal-244559:2830252"
     compileOnly "curse.maven:ae2wtlib-304024:2830114"
     compileOnly "curse.maven:p455w0rds-library-255232:2830265"
@@ -119,6 +129,7 @@ dependencies {
 jar.finalizedBy('reobfJar')
 
 processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
 
@@ -143,19 +154,18 @@ processResources {
 }
 
 // workaround for userdev bug
-//tasks.create("copyResourceToClasses", Copy.class) {
-//    tasks.classes.dependsOn(it)
-//    dependsOn(tasks.processResources)
-//    onlyIf { gradle.taskGraph.hasTask(tasks.prepareRuns) }
-//
-//    into("$buildDir/classes/java/main")
-//    // if you write @Mod class in kotlin, please use code below
-//    // into("$buildDir/classes/kotlin/main")
-//    from(tasks.processResources.destinationDir)
-//}
+tasks.create("copyResourceToClasses", Copy.class) {
+    tasks.classes.dependsOn(it)
+    dependsOn(tasks.processResources)
+    onlyIf { gradle.taskGraph.hasTask(tasks.prepareRuns) }
+
+    into("$buildDir/classes/java/main")
+    // if you write @Mod class in kotlin, please use code below
+    // into("$buildDir/classes/kotlin/main")
+    from(tasks.processResources.destinationDir)
+}
 
 jar {
-    appendix version
     manifest.attributes(
             'FMLAT': 'neenergistics_at.cfg',
             'FMLCorePlugin': 'com.github.vfyjxf.nee.asm.NEELoadingPlugin',

@@ -1,12 +1,9 @@
 package com.github.vfyjxf.nee.helper;
 
 import appeng.api.storage.data.IAEItemStack;
-import appeng.client.gui.implementations.GuiCraftingTerm;
-import appeng.client.gui.implementations.GuiPatternTerm;
 import appeng.client.me.ItemRepo;
 import appeng.util.item.AEItemStack;
 import com.github.vfyjxf.nee.config.NEEConfig;
-import com.github.vfyjxf.nee.utils.Globals;
 import com.github.vfyjxf.nee.utils.IngredientStatus;
 import com.github.vfyjxf.nee.utils.ItemUtils;
 import mezz.jei.api.gui.IGuiIngredient;
@@ -14,9 +11,7 @@ import mezz.jei.api.gui.IRecipeLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.Optional;
 import org.apache.commons.lang3.tuple.Pair;
-import p455w0rd.wct.client.gui.GuiWCT;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -24,10 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static net.minecraftforge.fml.common.ObfuscationReflectionHelper.getPrivateValue;
 
 /**
  * A tool class to get the ingredients available in ae for the current recipe.
@@ -43,7 +37,7 @@ public class RecipeAnalyzer {
     private static List<IAEItemStack> allStacksCache = new ArrayList<>();
     private final GuiContainer term;
     private final boolean craftableOnly;
-    private final boolean isWireless;
+    private final Supplier<ItemRepo> itemRepo;
     /**
      * Contains player inventory and crafting grid.
      * Not contain stacks in the network.
@@ -52,44 +46,20 @@ public class RecipeAnalyzer {
     private long lastUpdateTime;
     private List<RecipeIngredient> ingredientsCache;
 
-    public RecipeAnalyzer(GuiPatternTerm patternTerm) {
-        this.term = patternTerm;
-        this.craftableOnly = true;
-        this.isWireless = false;
+    public RecipeAnalyzer(GuiContainer term, boolean craftableOnly, Supplier<ItemRepo> itemRepo) {
+        this.term = term;
+        this.itemRepo = itemRepo;
+        this.craftableOnly = craftableOnly;
         if (shouldCleanCache) clearCache();
 
-        if (craftableCache.isEmpty()) {
+        if (craftableOnly && craftableCache.isEmpty()) {
             craftableCache = getStorage().stream()
                     .filter(IAEItemStack::isCraftable)
                     .collect(Collectors.toList());
         }
-    }
-
-    public RecipeAnalyzer(GuiCraftingTerm craftingTerm) {
-        this(craftingTerm, shouldCleanCache);
-    }
-
-    public RecipeAnalyzer(GuiCraftingTerm craftingTerm, boolean cleanCache) {
-        this.term = craftingTerm;
-        this.craftableOnly = false;
-        this.isWireless = false;
-        if (cleanCache) clearCache();
-        if (allStacksCache.isEmpty()) allStacksCache = getStorage();
-    }
-
-    /**
-     * For some reason, we can't explicitly reference GuiWCT。
-     */
-    public RecipeAnalyzer(GuiContainer wirelessTerm) {
-        this(wirelessTerm, shouldCleanCache);
-    }
-
-    public RecipeAnalyzer(GuiContainer wirelessTerm, boolean cleanCache) {
-        this.term = wirelessTerm;
-        this.craftableOnly = false;
-        this.isWireless = true;
-        if (cleanCache) clearCache();
-        if (allStacksCache.isEmpty()) allStacksCache = getStorage();
+        if (!craftableOnly && allStacksCache.isEmpty()) {
+            allStacksCache = getStorage();
+        }
     }
 
     public static void setCleanCache(boolean cleanCache) {
@@ -303,11 +273,6 @@ public class RecipeAnalyzer {
     }
 
     private List<IAEItemStack> getStorage() {
-        return ItemUtils.getStorage(getRepo());
+        return ItemUtils.getStorage(itemRepo.get());
     }
-
-    private ItemRepo getRepo() {
-        return PlatformHelper.getRepo(term);
-    }
-
 }

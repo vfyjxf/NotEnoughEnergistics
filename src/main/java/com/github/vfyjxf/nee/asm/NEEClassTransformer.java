@@ -1,8 +1,9 @@
 package com.github.vfyjxf.nee.asm;
 
 import com.github.vfyjxf.nee.NotEnoughEnergistics;
-import com.github.vfyjxf.nee.helper.ModChecker;
+import com.github.vfyjxf.nee.utils.Globals;
 import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraftforge.fml.common.Loader;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.*;
@@ -49,7 +50,7 @@ public class NEEClassTransformer implements IClassTransformer {
             return classWriter.toByteArray();
         }
         if ("appeng/core/sync/packets/PacketMEInventoryUpdate".equals(internalName)) {
-            if (ModChecker.isUnofficialAppeng) return basicClass;
+            if (checkUnOfficial()) return basicClass;
 
             ClassNode classNode = new ClassNode();
             ClassReader classReader = new ClassReader(basicClass);
@@ -84,7 +85,7 @@ public class NEEClassTransformer implements IClassTransformer {
             classNode.accept(classWriter);
             return classWriter.toByteArray();
         }
-        if ("p455w0rd/wct/sync/packets/PacketMEInventoryUpdate".equals(internalName)){
+        if ("p455w0rd/wct/sync/packets/PacketMEInventoryUpdate".equals(internalName)) {
             ClassNode classNode = new ClassNode();
             ClassReader classReader = new ClassReader(basicClass);
             classReader.accept(classNode, 0);
@@ -120,4 +121,12 @@ public class NEEClassTransformer implements IClassTransformer {
         }
         return basicClass;
     }
+
+    private static boolean checkUnOfficial() {
+        return Loader.instance()
+                .getModList()
+                .stream()
+                .anyMatch(modContainer -> (modContainer.getModId().equals(Globals.APPENG) && modContainer.getVersion().contains("extended_life")));
+    }
+
 }
