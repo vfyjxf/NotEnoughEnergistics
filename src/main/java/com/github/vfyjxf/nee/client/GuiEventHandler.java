@@ -112,8 +112,7 @@ public class GuiEventHandler {
                 }
             }
         }
-        Minecraft minecraft = screen.mc;
-        if (minecraft != null) {
+        if (screen != null && screen.mc != null) {
             int mouseX = MouseHelper.getX();
             int mouseY = MouseHelper.getY();
             int eventButton = Mouse.getEventButton();

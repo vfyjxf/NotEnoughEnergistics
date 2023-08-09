@@ -23,7 +23,7 @@ fancyGradle {
 
 version = mod_version
 group = mod_group
-archivesBaseName = mod_archives_name + '-' + mc_version + '-' + mod_version
+archivesBaseName = mod_archives_name + '-' + mc_version
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
