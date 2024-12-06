@@ -1,0 +1,20 @@
+neenergistics.gui.tooltip.helper.crafting.text1=Klicken, um fehlende Gegenstände anzufordern
+neenergistics.gui.tooltip.helper.crafting.text2=Klicken, um das Rezept anzufordern.
+neenergistics.gui.tooltip.missing=Fehlende Gegenstände
+neenergistics.gui.tooltip.helper.pattern=Autocrafting möglich
+
+nei.options.keys.nee=NotEnoughEnergistics
+nei.options.keys.nee.count=Gegenstandsanzahl ändern
+nei.options.keys.nee.ingredient=Bestandteil auswählen
+nei.options.keys.nee.preview=Crafting Hilfe
+nei.options.keys.nee.nopreview=Crafting Hilfe(Keine Vorschau)
+
+gui.neenergistics.button.title.combination=Gegenstände kombinieren
+gui.neenergistics.button.tooltip.combination=Aktueller Modus: %s
+gui.neenergistics.button.name.enabled=Aktiviert
+gui.neenergistics.button.name.disabled=Deaktiviert
+gui.neenergistics.button.name.whitelist=Whitelist
+gui.neenergistics.button.title.remove=Entfernen
+gui.neenergistics.button.tooltip.remove=Entfernen und Abbrechen des laufenden Rezepts
+
+tile.neenergistics.pattern_interface.name=Vorlagen-Schnittstelle
